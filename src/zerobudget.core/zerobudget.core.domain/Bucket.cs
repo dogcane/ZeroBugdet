@@ -7,6 +7,7 @@ public partial class Bucket : AggregateRoot<int>
 {
     #region Fields
     private readonly List<MonthlySpending> _spendings = [];
+    private readonly List<Spending> _directSpendings = [];
     #endregion
     #region  Properties
     public string Name { get; protected set; } = string.Empty;
@@ -14,6 +15,7 @@ public partial class Bucket : AggregateRoot<int>
     public decimal DefaultLimit { get; protected set; } = 0;
     public decimal DefaultBalance { get; protected set; } = 0;
     public IEnumerable<MonthlySpending> Spendings => _spendings.AsReadOnly();
+    public IEnumerable<Spending> DirectSpendings => _directSpendings.AsReadOnly();
     #endregion
 
     #region Constructors
@@ -47,6 +49,24 @@ public partial class Bucket : AggregateRoot<int>
     {
         if (spending == null) throw new ArgumentNullException(nameof(spending));
         if (_spendings.Remove(spending))
+        {
+            DefaultBalance -= spending.Amount;
+            return true;
+        }
+        return false;
+    }
+
+    public void AddDirectSpending(Spending spending)
+    {
+        if (spending == null) throw new ArgumentNullException(nameof(spending));
+        _directSpendings.Add(spending);
+        DefaultBalance += spending.Amount;
+    }
+
+    public bool RemoveDirectSpending(Spending spending)
+    {
+        if (spending == null) throw new ArgumentNullException(nameof(spending));
+        if (_directSpendings.Remove(spending))
         {
             DefaultBalance -= spending.Amount;
             return true;
