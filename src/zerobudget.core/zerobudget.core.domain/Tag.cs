@@ -1,0 +1,29 @@
+using ECO;
+using Resulz;
+
+namespace zerobudget.core.domain;
+
+public partial class Tag : AggregateRoot<int>
+{
+    #region Properties
+    public string Name { get; protected set; } = string.Empty;
+    #endregion
+
+    #region Constructors
+    protected Tag() : base() { }
+    protected Tag(string name) : base()
+        => Name = name;
+    #endregion
+
+    #region Factory Methods
+    public static OperationResult<Tag> Create(string name)
+        => Validate(name)
+            .IfSuccessThenReturn(() => new Tag(name));
+    #endregion
+
+    #region Methods
+    public void Update(string name)
+        => Validate(name)
+            .IfSuccess(res => Name = name);
+    #endregion
+}
