@@ -27,10 +27,11 @@ public partial class Spending : AggregateRoot<int>
     #endregion
 
     #region Methods
-    public void Update(DateOnly date, string description, decimal amount, string owner, Tag[] tags)
+    public OperationResult Update(DateOnly date, string description, decimal amount, string owner, Tag[] tags)
         => Validate(date, description, amount, owner, tags)
             .IfSuccess(res => (Date, Description, Amount, Owner, Tags) = (date, description, amount, owner, tags));
-    
+    public OperationResult<MonthlySpending> CreateMonthly(MonthlyBucket monthlyBucket)
+        => MonthlySpending.Create(Date, Description, Amount, Owner, Tags, monthlyBucket);
     public override int GetHashCode() =>
         HashCode.Combine(Date, Description, Amount, Owner);
     #endregion

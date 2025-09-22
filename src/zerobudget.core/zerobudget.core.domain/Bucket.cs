@@ -13,7 +13,6 @@ public partial class Bucket : AggregateRoot<int>
     public string Description { get; protected set; } = string.Empty;
     public decimal DefaultLimit { get; protected set; } = 0;
     public decimal DefaultBalance { get; protected set; } = 0;
-    public IEnumerable<MonthlySpending> Spendings => _spendings.AsReadOnly();
     #endregion
 
     #region Constructors
@@ -33,25 +32,8 @@ public partial class Bucket : AggregateRoot<int>
         => Validate(name, description, defaultLimit)
             .IfSuccess(res => (Name, Description, DefaultLimit) = (name, description, defaultLimit));
 
-    public MonthlyBucket CreateMonthlyBucket(short year, short month)
-        => new MonthlyBucket(year, month, this);
+    public MonthlyBucket CreateMonthly(short year, short month)
+        => new(year, month, this);
 
-    public void AddSpending(MonthlySpending spending)
-    {
-        if (spending == null) throw new ArgumentNullException(nameof(spending));
-        _spendings.Add(spending);
-        DefaultBalance += spending.Amount;
-    }
-
-    public bool RemoveSpending(MonthlySpending spending)
-    {
-        if (spending == null) throw new ArgumentNullException(nameof(spending));
-        if (_spendings.Remove(spending))
-        {
-            DefaultBalance -= spending.Amount;
-            return true;
-        }
-        return false;
-    }
     #endregion
 }

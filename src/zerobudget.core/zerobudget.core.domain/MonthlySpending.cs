@@ -16,7 +16,7 @@ public partial class MonthlySpending : AggregateRoot<int>
 
     #region Constructors
     protected MonthlySpending() : base() { }
-    protected MonthlySpending(DateOnly date, string description, decimal amount, string owner, Tag[] tags, int monthlyBucketId) : base()
+    internal MonthlySpending(DateOnly date, string description, decimal amount, string owner, Tag[] tags, int monthlyBucketId) : base()
         => (Date, Description, Amount, Owner, Tags, MonthlyBucketId) = (date, description, amount, owner, tags, monthlyBucketId);
     #endregion
 

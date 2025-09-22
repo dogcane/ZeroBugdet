@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\zerobudget.core.domain\zerobudget.core.domain.csproj" />
+    <ProjectReference Include="..\zerobudget.core.infrastructure\zerobudget.core.infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ECO.Core.Providers.EntityFramework" Version="3.0.0" />
+  </ItemGroup>
+
+</Project>

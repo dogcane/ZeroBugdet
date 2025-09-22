@@ -22,7 +22,7 @@ public partial class Tag : AggregateRoot<int>
     #endregion
 
     #region Methods
-    public void Update(string name)
+    public OperationResult Update(string name)
         => Validate(name)
             .IfSuccess(res => Name = name);
     #endregion
