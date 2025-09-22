@@ -1,0 +1,24 @@
+# Build artifacts
+bin/
+obj/
+*.dll
+*.pdb
+*.exe
+*.cache
+*.deps.json
+
+# IDE files
+.vs/
+.vscode/
+
+# User-specific files
+*.user
+*.suo
+
+# NuGet packages
+packages/
+*.nupkg
+
+# Temporary files
+*.tmp
+*.log
