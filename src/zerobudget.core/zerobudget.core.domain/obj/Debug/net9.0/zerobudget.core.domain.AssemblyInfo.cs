@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("zerobudget.core.domain")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1a27913badc106d7a00c9eb07d7c670a345db6ac")]
 [assembly: System.Reflection.AssemblyProductAttribute("zerobudget.core.domain")]
 [assembly: System.Reflection.AssemblyTitleAttribute("zerobudget.core.domain")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
