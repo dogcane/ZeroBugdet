@@ -1,5 +1,3 @@
-using zerobudget.core.application.DTOs;
-
 namespace zerobudget.core.application.Commands;
 
 public record CreateBucketCommand(
@@ -16,5 +14,9 @@ public record UpdateBucketCommand(
 );
 
 public record DeleteBucketCommand(
+    int Id
+);
+
+public record EnableBucketCommand(
     int Id
 );

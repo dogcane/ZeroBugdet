@@ -8,7 +8,7 @@ This project is a full-stack application with a .NET 9 Web API backend and Angul
 - **Framework**: .NET 9 Web API
 - **Architecture**: Domain-Driven Design with Clean Architecture
 - **ORM**: Entity Framework Core with PostgreSQL
-- **GraphQL**: HotChocolate for GraphQL API
+- **Endpoints**: Wolverine HTTP endpoints for API
 - **Mediator**: Wolverine for CQRS pattern
 - **Validation**: Resulz for result pattern and error handling
 - **Authentication**: ASP.NET Core Identity with JWT
@@ -20,7 +20,7 @@ This project is a full-stack application with a .NET 9 Web API backend and Angul
 - **Language**: TypeScript with strict mode
 - **State Management**: NgRx (for complex state) or RxJS services
 - **UI Components**: Angular Material or PrimeNG
-- **GraphQL Client**: Apollo Angular for GraphQL operations
+- **API Client**: Angular HttpClient for HTTP API operations
 - **Architecture**: Feature modules with lazy loading
 
 ## Code Style and Patterns
@@ -31,6 +31,7 @@ This project is a full-stack application with a .NET 9 Web API backend and Angul
 - Apply **Result pattern** with Resulz for all operations that can fail
 - Use **Repository pattern** with Entity Framework repositories
 - Follow **Clean Architecture** with proper dependency injection
+- Expose HTTP endpoints using Wolverine for all API operations
 
 ### Frontend Patterns
 - Use **OnPush change detection** strategy for components
@@ -38,6 +39,7 @@ This project is a full-stack application with a .NET 9 Web API backend and Angul
 - Use **Reactive forms** for all user input
 - Apply **RxJS operators** for data transformation
 - Implement **standalone components** where appropriate (Angular 19+)
+- Use Angular HttpClient for all API calls
 
 ## Naming Conventions
 - **C# Backend**: PascalCase for public, camelCase for private
@@ -81,10 +83,10 @@ src/zerobudget.app/
    ```csharp
    public async Task<Result<User>> GetUserAsync(int id)
    {
-       var user = await _repository.FindByIdAsync(id);
-       return user is null 
-           ? Result.Failure<User>("User not found")
-           : Result.Success(user);
+     var user = await _repository.FindByIdAsync(id);
+     return user is null 
+       ? Result.Failure<User>("User not found")
+       : Result.Success(user);
    }
    ```
 
@@ -92,7 +94,7 @@ src/zerobudget.app/
    ```csharp
    public class User : AggregateRoot<UserId>
    {
-       // Domain logic here
+     // Domain logic here
    }
    ```
 
@@ -100,10 +102,10 @@ src/zerobudget.app/
    ```csharp
    public class CreateUserHandler
    {
-       public async Task<Result<CreateUserResponse>> Handle(CreateUserCommand command)
-       {
-           // Handler implementation
-       }
+     public async Task<Result<CreateUserResponse>> Handle(CreateUserCommand command)
+     {
+       // Handler implementation
+     }
    }
    ```
 
@@ -111,52 +113,29 @@ src/zerobudget.app/
    ```csharp
    public class ApplicationDbContext : DbContext
    {
-       protected override void OnModelCreating(ModelBuilder builder)
-       {
-           builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
-       }
+     protected override void OnModelCreating(ModelBuilder builder)
+     {
+       builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+     }
    }
    ```
 
-5. **Create HotChocolate GraphQL types** that map to domain entities:
+5. **Expose Wolverine HTTP endpoints** for all API operations:
    ```csharp
-   public class UserType : ObjectType<User>
+   // Example Wolverine HTTP endpoint
+   public static class UserEndpoints
    {
-       protected override void Configure(IObjectTypeDescriptor<User> descriptor)
+     public static void MapUserEndpoints(IEndpointRouteBuilder endpoints)
+     {
+       endpoints.MapGet("/api/users/{id}", async (int id, IMediator mediator) =>
        {
-           descriptor.Field(u => u.Id).Type<NonNullType<IdType>>();
-           descriptor.Field(u => u.Email).Type<NonNullType<StringType>>();
-           descriptor.Field(u => u.CreatedAt).Type<NonNullType<DateTimeType>>();
-       }
-   }
-   ```
-
-6. **Implement GraphQL resolvers** using Wolverine handlers:
-   ```csharp
-   [ExtendObjectType<Query>]
-   public class UserQueries
-   {
-       public async Task<Result<User>> GetUserAsync(
-           int id,
-           [Service] IMediator mediator)
+         return await mediator.SendAsync(new GetUserQuery(id));
+       });
+       endpoints.MapPost("/api/users", async (CreateUserCommand command, IMediator mediator) =>
        {
-           return await mediator.SendAsync(new GetUserQuery(id));
-       }
-   }
-   ```
-
-7. **Create GraphQL mutations** for commands:
-   ```csharp
-   [ExtendObjectType<Mutation>]
-   public class UserMutations
-   {
-       public async Task<Result<User>> CreateUserAsync(
-           CreateUserInput input,
-           [Service] IMediator mediator)
-       {
-           var command = new CreateUserCommand(input.Email, input.Password);
-           return await mediator.SendAsync(command);
-       }
+         return await mediator.SendAsync(command);
+       });
+     }
    }
    ```
 
@@ -199,77 +178,48 @@ src/zerobudget.app/
    });
    ```
 
-5. **Use Apollo Angular for GraphQL operations**:
+5. **Use Angular HttpClient for API operations**:
    ```typescript
-   // Query
-   this.apollo.query<GetUserQuery>({
-     query: GET_USER_QUERY,
-     variables: { id }
-   }).pipe(
-     map(result => result.data.user),
-     takeUntil(this.destroy$)
+   // GET request
+   this.http.get<User>(`/api/users/${id}`).pipe(
+     takeUntil(this.destroy$),
+     catchError(error => this.handleError(error))
    ).subscribe(user => {
      // Handle user data
    });
-   
-   // Mutation
-   this.apollo.mutate<CreateUserMutation>({
-     mutation: CREATE_USER_MUTATION,
-     variables: { input: createUserInput }
-   }).subscribe(result => {
+
+   // POST request
+   this.http.post<User>(`/api/users`, createUserInput).pipe(
+     takeUntil(this.destroy$),
+     catchError(error => this.handleError(error))
+   ).subscribe(result => {
      // Handle mutation result
    });
    ```
 
-6. **Define GraphQL operations with code generation**:
-   ```typescript
-   // Generated types from GraphQL schema
-   export interface GetUserQuery {
-     user: {
-       id: string;
-       email: string;
-       createdAt: string;
-     };
-   }
-   
-   export interface CreateUserMutation {
-     createUser: {
-       id: string;
-       email: string;
-     };
-   }
-   ```
+## API Guidelines
 
-## GraphQL Guidelines
+### Wolverine HTTP Endpoint Implementation
+- Expose all API operations using Wolverine HTTP endpoints
+- Use CQRS pattern with Wolverine commands and queries
+- Return Resulz Result<T> from endpoints and handle errors appropriately
+- Implement authentication using ASP.NET Core Identity and JWT
+- Validate input using data annotations or FluentValidation
 
-### HotChocolate Backend Implementation
-- **Schema First Approach**: Define GraphQL schema using HotChocolate attributes and types
-- **Integration with Wolverine**: Use Wolverine handlers inside GraphQL resolvers
-- **Result Pattern**: Return Resulz Result<T> from resolvers and handle errors appropriately
-- **Authentication**: Implement GraphQL authentication using ASP.NET Core Identity
-- **DataLoader Pattern**: Use HotChocolate DataLoaders to prevent N+1 query problems
+### REST API Design
+- Follow RESTful conventions for endpoints
+- Use appropriate HTTP status codes
+- Implement consistent error response format
+- Add OpenAPI/Swagger documentation
+- Version APIs when breaking changes occur
+- Implement pagination for list endpoints
 
-### GraphQL Schema Design
-- Use meaningful names for types, fields, and operations
-- Implement proper input validation using HotChocolate validators
-- Design mutations to return meaningful response types
-- Use GraphQL subscriptions for real-time features when needed
-- Implement proper error handling with GraphQL error extensions
-
-### Apollo Angular Frontend
-- **Code Generation**: Use GraphQL Code Generator for TypeScript types and operations
-- **Caching**: Configure Apollo Client cache policies appropriately
-- **Error Handling**: Implement global error handling for GraphQL operations
-- **Optimistic Updates**: Use optimistic updates for better UX in mutations
-- **Subscriptions**: Implement GraphQL subscriptions for real-time features
-
-### GraphQL Best Practices
-- Keep resolvers thin - delegate to application services
-- Use DataLoaders to batch database queries
-- Implement proper pagination using cursor-based pagination
-- Use GraphQL fragments to avoid query duplication
-- Implement proper field-level authorization
-- Monitor GraphQL query performance and complexity
+### Angular Frontend API Usage
+- Use Angular HttpClient for all API calls
+- Implement global error handling for HTTP operations
+- Use RxJS operators for data transformation and error handling
+- Implement optimistic UI updates for better UX
+- Use interceptors for authentication and error handling
 
 
 
@@ -317,15 +267,13 @@ src/zerobudget.app/
 - Version APIs when breaking changes occur
 - Implement pagination for list endpoints
 
-### GraphQL API Design
-- Design schema with clear, intuitive field names
-- Use proper GraphQL scalar types (ID, String, Int, Boolean, DateTime)
-- Implement input types for mutations with validation
-- Use unions and interfaces for polymorphic data
-- Design subscriptions for real-time features
-- Implement proper error handling with extensions
-- Use cursor-based pagination for large datasets
-- Consider query complexity analysis and depth limiting
+### API Design
+- Design endpoints with clear, intuitive names
+- Use proper RESTful conventions for HTTP methods
+- Implement input validation for all requests
+- Use DTOs for request and response payloads
+- Implement proper error handling and logging
+- Use pagination for large datasets
 
 ## Performance Guidelines
 - Use async/await consistently

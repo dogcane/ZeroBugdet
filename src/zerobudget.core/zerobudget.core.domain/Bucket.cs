@@ -13,6 +13,7 @@ public partial class Bucket : AggregateRoot<int>
     public string Description { get; protected set; } = string.Empty;
     public decimal DefaultLimit { get; protected set; } = 0;
     public decimal DefaultBalance { get; protected set; } = 0;
+    public bool Enabled { get; private set; } = true;
     #endregion
 
     #region Constructors
@@ -29,11 +30,17 @@ public partial class Bucket : AggregateRoot<int>
 
     #region Methods
     public void Update(string name, string description, decimal defaultLimit)
-        => Validate(name, description, defaultLimit)
+        => Validate(name, description, defaultLimit, Enabled)
             .IfSuccess(res => (Name, Description, DefaultLimit) = (name, description, defaultLimit));
 
     public MonthlyBucket CreateMonthly(short year, short month)
         => new(year, month, this);
+
+    public void Enable()
+        => Enabled = true;
+
+    public void Disable()
+        => Enabled = false;
 
     #endregion
 }

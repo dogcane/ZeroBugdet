@@ -4,54 +4,74 @@ using zerobudget.core.domain;
 
 namespace zerobudget.core.application.Handlers.Queries;
 
-public class BucketQueryHandlers
-{
-    private readonly IBucketRepository _bucketRepository;
+using System.Transactions;
+using Microsoft.Extensions.Logging;
 
-    public BucketQueryHandlers(IBucketRepository bucketRepository)
-    {
-        _bucketRepository = bucketRepository;
-    }
+public class BucketQueryHandlers(IBucketRepository bucketRepository, ILogger<BucketQueryHandlers>? logger = null)
+{
+    private readonly IBucketRepository _bucketRepository = bucketRepository;
+    private readonly ILogger<BucketQueryHandlers>? _logger = logger;
 
     public async Task<BucketDto?> Handle(GetBucketByIdQuery query)
     {
-        var bucket = await _bucketRepository.GetByIdAsync(query.Id);
-        if (bucket == null)
-            return null;
+        using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
+        try
+        {
+            var bucket = await _bucketRepository.LoadAsync(query.Id);
+            if (bucket == null)
+                return null;
 
-        return new BucketDto(
-            bucket.Identity,
-            bucket.Name,
-            bucket.Description,
-            bucket.DefaultLimit,
-            bucket.DefaultBalance
-        );
-    }
-
-    public async Task<IEnumerable<BucketDto>> Handle(GetAllBucketsQuery query)
-    {
-        var buckets = await _bucketRepository.GetAllAsync();
-        return buckets.Select(bucket => new BucketDto(
-            bucket.Identity,
-            bucket.Name,
-            bucket.Description,
-            bucket.DefaultLimit,
-            bucket.DefaultBalance
-        ));
+            scope.Complete();
+            return new BucketDto(
+                bucket.Identity,
+                bucket.Name,
+                bucket.Description,
+                bucket.DefaultLimit,
+                bucket.DefaultBalance,
+                bucket.Enabled
+            );
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "Exception in Handle(GetBucketByIdQuery)");
+            throw;
+        }
     }
 
     public async Task<IEnumerable<BucketDto>> Handle(GetBucketsByNameQuery query)
     {
-        // This would need a custom repository method or filtering implementation
-        var buckets = await _bucketRepository.GetAllAsync();
-        var filteredBuckets = buckets.Where(b => b.Name.Contains(query.Name, StringComparison.OrdinalIgnoreCase));
-        
-        return filteredBuckets.Select(bucket => new BucketDto(
-            bucket.Identity,
-            bucket.Name,
-            bucket.Description,
-            bucket.DefaultLimit,
-            bucket.DefaultBalance
-        ));
+        using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
+        try
+        {
+            var buckets = _bucketRepository.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(query.Name))
+            {
+                buckets = buckets.Where(b => b.Name.Contains(query.Name, StringComparison.OrdinalIgnoreCase));
+            }
+            if (!string.IsNullOrWhiteSpace(query.Description))
+            {
+                buckets = buckets.Where(b => b.Description.Contains(query.Description, StringComparison.OrdinalIgnoreCase));
+            }
+            if (query.Enabled)
+            {
+                buckets = buckets.Where(b => b.Enabled);
+            }
+
+            scope.Complete();
+            return buckets.Select(bucket => new BucketDto(
+                bucket.Identity,
+                bucket.Name,
+                bucket.Description,
+                bucket.DefaultLimit,
+                bucket.DefaultBalance,
+                bucket.Enabled
+            ));
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "Exception in Handle(GetBucketsByNameQuery)");
+            throw;
+        }
     }
 }

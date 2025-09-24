@@ -4,6 +4,4 @@ namespace zerobudget.core.application.Queries;
 
 public record GetBucketByIdQuery(int Id);
 
-public record GetAllBucketsQuery();
-
-public record GetBucketsByNameQuery(string Name);
+public record GetBucketsByNameQuery(string Name, string Description, bool Enabled = true);
