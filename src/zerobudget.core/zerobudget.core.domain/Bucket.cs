@@ -5,9 +5,6 @@ namespace zerobudget.core.domain;
 
 public partial class Bucket : AggregateRoot<int>
 {
-    #region Fields
-    private readonly List<MonthlySpending> _spendings = [];
-    #endregion
     #region  Properties
     public string Name { get; protected set; } = string.Empty;
     public string Description { get; protected set; } = string.Empty;
@@ -33,6 +30,9 @@ public partial class Bucket : AggregateRoot<int>
         => Validate(name, description, defaultLimit, Enabled)
             .IfSuccess(res => (Name, Description, DefaultLimit) = (name, description, defaultLimit));
 
+    public void UpdateDefaultBalance(decimal defaultBalance)
+        => DefaultBalance = defaultBalance;
+
     public MonthlyBucket CreateMonthly(short year, short month)
         => new(year, month, this);
 
@@ -41,6 +41,5 @@ public partial class Bucket : AggregateRoot<int>
 
     public void Disable()
         => Enabled = false;
-
     #endregion
 }

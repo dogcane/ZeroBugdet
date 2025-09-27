@@ -1,3 +1,6 @@
+using System.Transactions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Resulz;
 using zerobudget.core.application.Commands;
 using zerobudget.core.application.DTOs;
@@ -5,69 +8,112 @@ using zerobudget.core.domain;
 
 namespace zerobudget.core.application.Handlers.Commands;
 
-public class MonthlyBucketCommandHandlers
+public class MonthlyBucketCommandHandlers(
+    IMonthlyBucketRepository monthlyBucketRepository,
+    IBucketRepository bucketRepository,
+    ISpendingRepository spendingRepository,
+    IMonthlySpendingRepository monthlySpendingRepository,
+    ILogger<MonthlyBucketCommandHandlers>? logger = null)
 {
-    private readonly IMonthlyBucketRepository _monthlyBucketRepository;
-    private readonly IBucketRepository _bucketRepository;
+    #region Fields
+    private readonly IMonthlyBucketRepository _monthlyBucketRepository = monthlyBucketRepository;
+    private readonly IBucketRepository _bucketRepository = bucketRepository;
+    private readonly ISpendingRepository _spendingRepository = spendingRepository;
+    private readonly IMonthlySpendingRepository _monthlySpendingRepository = monthlySpendingRepository;
+    private readonly ILogger<MonthlyBucketCommandHandlers>? _logger = logger;
+    #endregion
 
-    public MonthlyBucketCommandHandlers(
-        IMonthlyBucketRepository monthlyBucketRepository,
-        IBucketRepository bucketRepository)
+    public async Task<OperationResult<GenerateMonthlyDataResult>> Handle(GenerateMonthlyDataCommand command)
     {
-        _monthlyBucketRepository = monthlyBucketRepository;
-        _bucketRepository = bucketRepository;
-    }
+        using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
 
-    public async Task<OperationResult<MonthlyBucketDto>> Handle(CreateMonthlyBucketCommand command)
-    {
-        var bucket = await _bucketRepository.GetByIdAsync(command.BucketId);
-        if (bucket == null)
-            return OperationResult<MonthlyBucketDto>.MakeFailure("Bucket not found");
+        try
+        {
+            _logger?.LogInformation("Starting monthly data generation for {Year}-{Month}", command.Year, command.Month);
 
-        var monthlyBucket = bucket.CreateMonthly(command.Year, command.Month);
-        await _monthlyBucketRepository.AddAsync(monthlyBucket);
+            // Check if monthly buckets already exist for this period
+            var existingMonthlyBuckets = _monthlyBucketRepository
+                .Any(mb => mb.Year == command.Year && mb.Month == command.Month);
+            if (existingMonthlyBuckets)
+            {
+                return OperationResult.MakeFailure(ErrorMessage.Create("Period", "Monthly data already exists for the specified period"));
+            }
 
-        return OperationResult<MonthlyBucketDto>.MakeSuccess(new MonthlyBucketDto(
-            monthlyBucket.Identity,
-            monthlyBucket.Year,
-            monthlyBucket.Month,
-            monthlyBucket.Balance,
-            monthlyBucket.Description,
-            monthlyBucket.Limit,
-            monthlyBucket.Bucket.Identity
-        ));
-    }
+            // Get all enabled buckets
+            var bucketList = _bucketRepository
+                .Where(b => b.Enabled)
+                .ToList();
 
-    public async Task<OperationResult<MonthlyBucketDto>> Handle(UpdateMonthlyBucketCommand command)
-    {
-        var monthlyBucket = await _monthlyBucketRepository.GetByIdAsync(command.Id);
-        if (monthlyBucket == null)
-            return OperationResult<MonthlyBucketDto>.MakeFailure("Monthly bucket not found");
+            if (bucketList.Count == 0)
+            {
+                _logger?.LogWarning("No enabled buckets found for monthly data generation");
+                return OperationResult.MakeFailure(ErrorMessage.Create("Bucket", "No enabled buckets found"));
+            }
 
-        // Update logic would need to be implemented in the domain model
-        // For now, we'll assume these properties can be updated directly
-        // This may need adjustment based on business rules
-        
-        await _monthlyBucketRepository.UpdateAsync(monthlyBucket);
+            _logger?.LogInformation("Found {Count} enabled buckets", bucketList.Count);
 
-        return OperationResult<MonthlyBucketDto>.MakeSuccess(new MonthlyBucketDto(
-            monthlyBucket.Identity,
-            monthlyBucket.Year,
-            monthlyBucket.Month,
-            monthlyBucket.Balance,
-            monthlyBucket.Description,
-            monthlyBucket.Limit,
-            monthlyBucket.Bucket.Identity
-        ));
-    }
+            // Create monthly buckets from enabled buckets
+            var monthlyBuckets = new List<MonthlyBucket>();
+            foreach (var bucket in bucketList)
+            {
+                var monthlyBucket = bucket.CreateMonthly(command.Year, command.Month);
+                await _monthlyBucketRepository.AddAsync(monthlyBucket);
+                monthlyBuckets.Add(monthlyBucket);
+            }
 
-    public async Task<OperationResult> Handle(DeleteMonthlyBucketCommand command)
-    {
-        var monthlyBucket = await _monthlyBucketRepository.GetByIdAsync(command.Id);
-        if (monthlyBucket == null)
-            return OperationResult.MakeFailure("Monthly bucket not found");
+            _logger?.LogInformation("Created {Count} monthly buckets", monthlyBuckets.Count);
 
-        await _monthlyBucketRepository.DeleteAsync(monthlyBucket);
-        return OperationResult.MakeSuccess();
+            // Generate monthly spendings for each bucket
+            var monthlySpendingAmount = 0m;
+
+            foreach (var monthlyBucket in monthlyBuckets)
+            {
+                // Get all enabled spendings for this bucket within the month
+                var spendingsList = _spendingRepository
+                    .Where(s => s.BucketId == monthlyBucket.Bucket.Identity && s.Enabled)
+                    .ToList();
+
+                _logger?.LogInformation("Found {Count} spendings for bucket {BucketId} in {Year}-{Month}", 
+                    spendingsList.Count, monthlyBucket.Bucket.Identity, command.Year, command.Month);
+
+                // Create monthly spendings from the spendings
+                foreach (var spending in spendingsList)
+                {
+                    var monthlySpendingResult = spending.CreateMonthly(monthlyBucket);
+                    if (monthlySpendingResult.Success && monthlySpendingResult.Value != null)
+                    {
+                        await _monthlySpendingRepository.AddAsync(monthlySpendingResult.Value);
+                        monthlySpendingAmount += monthlySpendingResult.Value.Amount;                        
+                    }
+                    else
+                    {
+                        _logger?.LogWarning("Failed to create monthly spending from spending {SpendingId}: {Errors}", 
+                            spending.Identity, string.Join(", ", monthlySpendingResult.Errors?.Select(e => e.Message) ?? []));
+                    }
+                }
+            }
+
+            _logger?.LogInformation("Created {Count} monthly spendings", totalMonthlySpendingsCreated);
+
+            scope.Complete();
+
+            var result = new GenerateMonthlyDataResult(
+                command.Year,
+                command.Month,
+                monthlyBuckets.Count,
+                totalMonthlySpendingsCreated
+            );
+
+            _logger?.LogInformation("Successfully completed monthly data generation for {Year}-{Month}. " +
+                "Created {MonthlyBuckets} monthly buckets and {MonthlySpendings} monthly spendings",
+                command.Year, command.Month, monthlyBuckets.Count, totalMonthlySpendingsCreated);
+
+            return OperationResult<GenerateMonthlyDataResult>.MakeSuccess(result);
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "Error occurred during monthly data generation for {Year}-{Month}", command.Year, command.Month);
+            return OperationResult<GenerateMonthlyDataResult>.MakeFailure($"An error occurred during monthly data generation: {ex.Message}");
+        }
     }
 }

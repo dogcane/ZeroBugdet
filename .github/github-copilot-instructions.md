@@ -27,6 +27,7 @@ This project is a full-stack application with a .NET 9 Web API backend and Angul
 
 ### Backend Patterns
 - Use **ECO.Core** base classes for entities, aggregates, and value objects
+- Use linq IQueryable over custom query methods in repositories, when possible
 - Implement **CQRS** using Wolverine commands and queries
 - Apply **Result pattern** with Resulz for all operations that can fail
 - Use **Repository pattern** with Entity Framework repositories

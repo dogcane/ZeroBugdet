@@ -8,7 +8,7 @@ public class ZBDbContext(DbContextOptions<ZBDbContext> options) : DbContext(opti
     public DbSet<Bucket> Buckets { get; set; } = null!;
     public DbSet<MonthlyBucket> MonthlyBuckets { get; set; } = null!;
     public DbSet<Spending> Spendings { get; set; } = null!;
-    public DbSet<MonthlySpending> MonthlySpendings { get; set; } = null!;
+    public DbSet<Spending> MonthlySpendings { get; set; } = null!;
     public DbSet<Tag> Tags { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

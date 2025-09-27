@@ -1,0 +1,16 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/src/" />
+  <Folder Name="/src/zerobudget.core/">
+    <Project Path="zerobudget.core.application.tests/zerobudget.core.application.tests.csproj" />
+    <Project Path="zerobudget.core.application/zerobudget.core.application.csproj" />
+    <Project Path="zerobudget.core.domain.tests/zerobudget.core.domain.tests.csproj" />
+    <Project Path="zerobudget.core.domain/zerobudget.core.domain.csproj" />
+    <Project Path="zerobudget.core.infrastructure.data/zerobudget.core.infrastructure.data.csproj" />
+    <Project Path="zerobudget.core.infrastructure/zerobudget.core.infrastructure.csproj" />
+  </Folder>
+</Solution>

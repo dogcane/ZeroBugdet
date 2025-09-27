@@ -7,7 +7,7 @@ public class MonthlySpendingTests
     {
         var bucket = Bucket.Create("Test", "Desc", 100m).Value!;
         var monthlyBucket = bucket.CreateMonthly(2025, 9);
-        var result = MonthlySpending.Create(DateOnly.FromDateTime(DateTime.Now), "desc", 10m, "owner", Array.Empty<Tag>(), monthlyBucket);
+        var result = Spending.Create(DateOnly.FromDateTime(DateTime.Now), "desc", 10m, "owner", Array.Empty<Tag>(), monthlyBucket);
         Assert.True(result.Success);
         Assert.Equal(10m, result.Value!.Amount);
         Assert.Equal("desc", result.Value.Description);
@@ -20,7 +20,7 @@ public class MonthlySpendingTests
     {
         var bucket = Bucket.Create("Test", "Desc", 100m).Value!;
         var monthlyBucket = bucket.CreateMonthly(2025, 9);
-        var spending = MonthlySpending.Create(DateOnly.FromDateTime(DateTime.Now), "desc", 10m, "owner", Array.Empty<Tag>(), monthlyBucket).Value!;
+        var spending = Spending.Create(DateOnly.FromDateTime(DateTime.Now), "desc", 10m, "owner", Array.Empty<Tag>(), monthlyBucket).Value!;
         spending.Update(DateOnly.FromDateTime(DateTime.Now), "newdesc", 20m, "newowner", Array.Empty<Tag>());
         Assert.Equal(20m, spending.Amount);
         Assert.Equal("newdesc", spending.Description);

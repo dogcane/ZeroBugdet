@@ -21,3 +21,7 @@ public record UpdateSpendingCommand(
 public record DeleteSpendingCommand(
     int Id
 );
+
+public record EnableSpendingCommand(
+    int Id
+);

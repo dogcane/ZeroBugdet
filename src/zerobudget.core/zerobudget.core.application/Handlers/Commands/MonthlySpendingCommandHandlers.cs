@@ -35,7 +35,7 @@ public class MonthlySpendingCommandHandlers
                 tags.Add(tag);
         }
 
-        var monthlySpendingResult = MonthlySpending.Create(
+        var monthlySpendingResult = Spending.Create(
             command.Date,
             command.Description,
             command.Amount,

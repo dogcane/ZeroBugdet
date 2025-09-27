@@ -4,5 +4,5 @@ namespace zerobudget.core.domain;
 
 public interface IMonthlySpendingRepository : IRepository<MonthlySpending, int>
 {
-    // Add custom methods for MonthlySpending repository here if needed
+    // Use LINQ queries with the base IRepository.Query() method
 }

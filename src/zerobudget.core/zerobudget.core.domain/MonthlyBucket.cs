@@ -19,7 +19,7 @@ public partial class MonthlyBucket : AggregateRoot<int>
     #endregion
 
     #region Constructors
-    protected MonthlyBucket() : base() {}
+    protected MonthlyBucket() : base() { }
     internal MonthlyBucket(short year, short month, Bucket bucket) : base()
     {
         Year = year;
@@ -28,5 +28,10 @@ public partial class MonthlyBucket : AggregateRoot<int>
         Description = bucket.Description;
         Limit = bucket.DefaultLimit;
     }
+    #endregion
+
+    #region Methods
+    public void UpdateBalance(decimal balance)
+        => Balance = balance;
     #endregion
 }

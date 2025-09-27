@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Wolverine;
 using zerobudget.core.application.Handlers.Commands;
 using zerobudget.core.application.Handlers.Queries;
+using zerobudget.core.application.Middleware;
 
 namespace zerobudget.core.application;
 
@@ -9,8 +10,12 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddZeroBudgetApplication(this IServiceCollection services)
     {
-        // Add Wolverine
-        services.AddWolverine();
+        // Add Wolverine with global exception middleware
+        services.AddWolverine(opts =>
+        {
+            // Add global exception middleware to all message handlers
+            opts.Policies.AddMiddleware(typeof(GlobalExceptionMiddleware));
+        });
 
         // Register command handlers
         services.AddScoped<BucketCommandHandlers>();

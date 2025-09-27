@@ -23,3 +23,10 @@ public record UpdateMonthlyBucketDto(
     decimal Balance,
     decimal Limit
 );
+
+public record GenerateMonthlyDataResult(
+    short Year,
+    short Month,
+    int MonthlyBucketsCreated,
+    int MonthlySpendingsCreated
+);
