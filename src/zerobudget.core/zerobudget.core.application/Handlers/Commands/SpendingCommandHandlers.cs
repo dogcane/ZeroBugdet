@@ -26,24 +26,6 @@ public class SpendingCommandHandlers(
 
     #region Helper Methods
     /// <summary>
-    /// Ensures all tag names exist in the repository, creating new ones if needed.
-    /// This method is called asynchronously during spending creation/update.
-    /// </summary>
-    private async Task<List<Tag>> EnsureTagsExistAsync(int[] tagIds)
-    {
-        var tags = new List<Tag>();
-        
-        foreach (var tagId in tagIds)
-        {
-            var tag = await _tagRepository.LoadAsync(tagId);
-            if (tag != null)
-                tags.Add(tag);
-        }
-        
-        return tags;
-    }
-
-    /// <summary>
     /// Ensures all tag names exist in the repository by name, creating new ones if needed.
     /// This is used when tags are referenced by name rather than ID.
     /// </summary>
@@ -83,8 +65,8 @@ public class SpendingCommandHandlers(
         if (bucket == null)
             return OperationResult.MakeFailure(ErrorMessage.Create("Bucket", "Bucket not found"));
 
-        // Ensure all tags exist, creating new ones if needed
-        var tags = await EnsureTagsExistAsync(command.TagIds);
+        // Ensure all tags exist by name, creating new ones if needed
+        var tags = await EnsureTagsByNameAsync(command.TagNames);
 
         var spendingResult = Spending.Create(
             command.Description,
@@ -118,8 +100,8 @@ public class SpendingCommandHandlers(
         if (spending == null)
             return OperationResult<SpendingDto>.MakeFailure(ErrorMessage.Create("Spending", "Spending not found"));
 
-        // Ensure all tags exist, creating new ones if needed
-        var tags = await EnsureTagsExistAsync(command.TagIds);
+        // Ensure all tags exist by name, creating new ones if needed
+        var tags = await EnsureTagsByNameAsync(command.TagNames);
 
         var updateResult = spending.Update(
             command.Description,

@@ -26,26 +26,27 @@ public class SpendingCommandHandlerTests
         var bucketResult = Bucket.Create("Test Bucket", "Test Description", 1000m);
         var bucket = bucketResult.Value!;
 
-        var tag1Result = Tag.Create("Tag1", "Tag1 Description");
+        var tag1Result = Tag.Create("food", "Food tag");
         var tag1 = tag1Result.Value!;
-        var tag2Result = Tag.Create("Tag2", "Tag2 Description");
+        var tag2Result = Tag.Create("holiday", "Holiday tag");
         var tag2 = tag2Result.Value!;
 
         mockBucketRepository.Setup(r => r.LoadAsync(1))
                            .ReturnsAsync(bucket);
-        mockTagRepository.Setup(r => r.LoadAsync(1))
+        mockTagRepository.Setup(r => r.GetByNameAsync("food"))
                         .ReturnsAsync(tag1);
-        mockTagRepository.Setup(r => r.LoadAsync(2))
+        mockTagRepository.Setup(r => r.GetByNameAsync("holiday"))
                         .ReturnsAsync(tag2);
         mockSpendingRepository.Setup(r => r.AddAsync(It.IsAny<Spending>()))
                              .Returns(Task.CompletedTask);
 
         var command = new CreateSpendingCommand(
+            Date: DateOnly.FromDateTime(DateTime.Now),
             BucketId: 1,
             Description: "Test Spending",
             Amount: 100m,
             Owner: "John",
-            TagIds: new[] { 1, 2 });
+            TagNames: new[] { "food", "holiday" });
 
         // Act
         var result = await handler.Handle(command);
@@ -56,6 +57,62 @@ public class SpendingCommandHandlerTests
         Assert.Equal("Test Spending", result.Value.Description);
         Assert.Equal(100m, result.Value.Amount);
         Assert.Equal(2, result.Value.Tags.Length);
+        Assert.Contains("food", result.Value.Tags);
+        Assert.Contains("holiday", result.Value.Tags);
+        mockSpendingRepository.Verify(r => r.AddAsync(It.IsAny<Spending>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_CreateSpendingCommand_WithNewTag_ShouldCreateTag()
+    {
+        // Arrange
+        var mockSpendingRepository = new Mock<ISpendingRepository>();
+        var mockBucketRepository = new Mock<IBucketRepository>();
+        var mockTagRepository = new Mock<ITagRepository>();
+        var mockMonthlySpendingRepository = new Mock<IMonthlySpendingRepository>();
+
+        var handler = new SpendingCommandHandlers(
+            mockSpendingRepository.Object,
+            mockBucketRepository.Object,
+            mockTagRepository.Object,
+            mockMonthlySpendingRepository.Object);
+
+        var bucketResult = Bucket.Create("Test Bucket", "Test Description", 1000m);
+        var bucket = bucketResult.Value!;
+
+        var existingTagResult = Tag.Create("food", "Food tag");
+        var existingTag = existingTagResult.Value!;
+
+        mockBucketRepository.Setup(r => r.LoadAsync(1))
+                           .ReturnsAsync(bucket);
+        mockTagRepository.Setup(r => r.GetByNameAsync("food"))
+                        .ReturnsAsync(existingTag);
+        mockTagRepository.Setup(r => r.GetByNameAsync("cinema"))
+                        .ReturnsAsync((Tag?)null); // New tag doesn't exist
+        mockTagRepository.Setup(r => r.AddAsync(It.IsAny<Tag>()))
+                        .Returns(Task.CompletedTask);
+        mockSpendingRepository.Setup(r => r.AddAsync(It.IsAny<Spending>()))
+                             .Returns(Task.CompletedTask);
+
+        var command = new CreateSpendingCommand(
+            Date: DateOnly.FromDateTime(DateTime.Now),
+            BucketId: 1,
+            Description: "Movie night",
+            Amount: 50m,
+            Owner: "John",
+            TagNames: new[] { "food", "cinema" }); // "cinema" is new
+
+        // Act
+        var result = await handler.Handle(command);
+
+        // Assert
+        Assert.True(result.Success);
+        Assert.NotNull(result.Value);
+        Assert.Equal(2, result.Value.Tags.Length);
+        Assert.Contains("food", result.Value.Tags);
+        Assert.Contains("cinema", result.Value.Tags);
+        // Verify that a new tag was added
+        mockTagRepository.Verify(r => r.AddAsync(It.Is<Tag>(t => t.Name == "cinema")), Times.Once);
         mockSpendingRepository.Verify(r => r.AddAsync(It.IsAny<Spending>()), Times.Once);
     }
 
@@ -78,11 +135,12 @@ public class SpendingCommandHandlerTests
                            .ReturnsAsync((Bucket?)null);
 
         var command = new CreateSpendingCommand(
+            Date: DateOnly.FromDateTime(DateTime.Now),
             BucketId: 1,
             Description: "Test Spending",
             Amount: 100m,
             Owner: "John",
-            TagIds: new[] { 1, 2 });
+            TagNames: new[] { "food" });
 
         // Act
         var result = await handler.Handle(command);
@@ -113,22 +171,23 @@ public class SpendingCommandHandlerTests
         var spendingResult = Spending.Create("Original", 50m, "John", new Tag[0], bucket);
         var spending = spendingResult.Value!;
 
-        var tag1Result = Tag.Create("Tag1", "Tag1 Description");
+        var tag1Result = Tag.Create("food", "Food tag");
         var tag1 = tag1Result.Value!;
 
         mockSpendingRepository.Setup(r => r.LoadAsync(1))
                              .ReturnsAsync(spending);
-        mockTagRepository.Setup(r => r.LoadAsync(1))
+        mockTagRepository.Setup(r => r.GetByNameAsync("food"))
                         .ReturnsAsync(tag1);
         mockSpendingRepository.Setup(r => r.UpdateAsync(It.IsAny<Spending>()))
                              .Returns(Task.CompletedTask);
 
         var command = new UpdateSpendingCommand(
             Id: 1,
+            Date: DateOnly.FromDateTime(DateTime.Now),
             Description: "Updated Spending",
             Amount: 150m,
             Owner: "Jane",
-            TagIds: new[] { 1 });
+            TagNames: new[] { "food" });
 
         // Act
         var result = await handler.Handle(command);
@@ -139,6 +198,7 @@ public class SpendingCommandHandlerTests
         Assert.Equal("Updated Spending", result.Value.Description);
         Assert.Equal(150m, result.Value.Amount);
         Assert.Equal("Jane", result.Value.Owner);
+        Assert.Contains("food", result.Value.Tags);
         mockSpendingRepository.Verify(r => r.UpdateAsync(It.IsAny<Spending>()), Times.Once);
     }
 
@@ -162,10 +222,11 @@ public class SpendingCommandHandlerTests
 
         var command = new UpdateSpendingCommand(
             Id: 1,
+            Date: DateOnly.FromDateTime(DateTime.Now),
             Description: "Updated Spending",
             Amount: 150m,
             Owner: "Jane",
-            TagIds: new[] { 1 });
+            TagNames: new[] { "food" });
 
         // Act
         var result = await handler.Handle(command);
@@ -174,54 +235,5 @@ public class SpendingCommandHandlerTests
         Assert.False(result.Success);
         Assert.Contains("Spending not found", result.ErrorMessages.First());
         mockSpendingRepository.Verify(r => r.UpdateAsync(It.IsAny<Spending>()), Times.Never);
-    }
-
-    [Fact]
-    public async Task Handle_CreateSpendingCommand_WithSomeNonExistentTags_ShouldOnlyIncludeExistingTags()
-    {
-        // Arrange
-        var mockSpendingRepository = new Mock<ISpendingRepository>();
-        var mockBucketRepository = new Mock<IBucketRepository>();
-        var mockTagRepository = new Mock<ITagRepository>();
-        var mockMonthlySpendingRepository = new Mock<IMonthlySpendingRepository>();
-
-        var handler = new SpendingCommandHandlers(
-            mockSpendingRepository.Object,
-            mockBucketRepository.Object,
-            mockTagRepository.Object,
-            mockMonthlySpendingRepository.Object);
-
-        var bucketResult = Bucket.Create("Test Bucket", "Test Description", 1000m);
-        var bucket = bucketResult.Value!;
-
-        var tag1Result = Tag.Create("Tag1", "Tag1 Description");
-        var tag1 = tag1Result.Value!;
-
-        mockBucketRepository.Setup(r => r.LoadAsync(1))
-                           .ReturnsAsync(bucket);
-        mockTagRepository.Setup(r => r.LoadAsync(1))
-                        .ReturnsAsync(tag1);
-        mockTagRepository.Setup(r => r.LoadAsync(999))
-                        .ReturnsAsync((Tag?)null); // Non-existent tag
-        mockSpendingRepository.Setup(r => r.AddAsync(It.IsAny<Spending>()))
-                             .Returns(Task.CompletedTask);
-
-        var command = new CreateSpendingCommand(
-            BucketId: 1,
-            Description: "Test Spending",
-            Amount: 100m,
-            Owner: "John",
-            TagIds: new[] { 1, 999 });
-
-        // Act
-        var result = await handler.Handle(command);
-
-        // Assert
-        Assert.True(result.Success);
-        Assert.NotNull(result.Value);
-        // Only Tag1 should be included, Tag 999 is ignored
-        Assert.Equal(1, result.Value.Tags.Length);
-        Assert.Equal("Tag1", result.Value.Tags[0]);
-        mockSpendingRepository.Verify(r => r.AddAsync(It.IsAny<Spending>()), Times.Once);
     }
 }
