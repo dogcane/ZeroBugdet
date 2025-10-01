@@ -6,7 +6,7 @@ public record CreateMonthlySpendingCommand(
     string Description,
     decimal Amount,
     string Owner,
-    int[] TagIds
+    string[] TagNames
 );
 
 public record UpdateMonthlySpendingCommand(
@@ -15,7 +15,7 @@ public record UpdateMonthlySpendingCommand(
     string Description,
     decimal Amount,
     string Owner,
-    int[] TagIds
+    string[] TagNames
 );
 
 public record DeleteMonthlySpendingCommand(

@@ -28,6 +28,10 @@ public partial class Tag : AggregateRoot<int>
     #region Methods
     public OperationResult Update(string name, string description)
         => Validate(name, description)
-            .IfSuccess(res => Name = name);
+            .IfSuccess(res => 
+            {
+                Name = name;
+                Description = description;
+            });
     #endregion
 }

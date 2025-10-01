@@ -7,7 +7,7 @@ public record MonthlySpendingDto(
     string Description,
     decimal Amount,
     string Owner,
-    int[] TagIds
+    string[] Tags
 );
 
 public record CreateMonthlySpendingDto(
@@ -16,7 +16,7 @@ public record CreateMonthlySpendingDto(
     string Description,
     decimal Amount,
     string Owner,
-    int[] TagIds
+    string[] Tags
 );
 
 public record UpdateMonthlySpendingDto(
@@ -25,5 +25,5 @@ public record UpdateMonthlySpendingDto(
     string Description,
     decimal Amount,
     string Owner,
-    int[] TagIds
+    string[] Tags
 );

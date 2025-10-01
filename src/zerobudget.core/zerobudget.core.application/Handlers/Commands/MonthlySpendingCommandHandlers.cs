@@ -21,19 +21,47 @@ public class MonthlySpendingCommandHandlers
         _tagRepository = tagRepository;
     }
 
+    #region Helper Methods
+    /// <summary>
+    /// Ensures all tag names exist in the repository by name, creating new ones if needed.
+    /// This is used when tags are referenced by name rather than ID.
+    /// </summary>
+    private async Task<List<Tag>> EnsureTagsByNameAsync(string[] tagNames)
+    {
+        var tags = new List<Tag>();
+        
+        foreach (var tagName in tagNames)
+        {
+            var tag = await _tagRepository.GetByNameAsync(tagName);
+            if (tag == null)
+            {
+                // Create new tag if it doesn't exist
+                var tagResult = Tag.Create(tagName, $"Auto-created tag: {tagName}");
+                if (tagResult.Success)
+                {
+                    tag = tagResult.Value!;
+                    await _tagRepository.AddAsync(tag);
+                    tags.Add(tag);
+                }
+            }
+            else
+            {
+                tags.Add(tag);
+            }
+        }
+        
+        return tags;
+    }
+    #endregion
+
     public async Task<OperationResult<MonthlySpendingDto>> Handle(CreateMonthlySpendingCommand command)
     {
         var monthlyBucket = await _monthlyBucketRepository.GetByIdAsync(command.MonthlyBucketId);
         if (monthlyBucket == null)
             return OperationResult<MonthlySpendingDto>.MakeFailure("Monthly bucket not found");
 
-        var tags = new List<Tag>();
-        foreach (var tagId in command.TagIds)
-        {
-            var tag = await _tagRepository.GetByIdAsync(tagId);
-            if (tag != null)
-                tags.Add(tag);
-        }
+        // Ensure all tags exist by name, creating new ones if needed
+        var tags = await EnsureTagsByNameAsync(command.TagNames);
 
         var monthlySpendingResult = Spending.Create(
             command.Date,
@@ -56,7 +84,7 @@ public class MonthlySpendingCommandHandlers
             monthlySpending.Description,
             monthlySpending.Amount,
             monthlySpending.Owner,
-            monthlySpending.Tags.Select(t => t.Identity).ToArray()
+            monthlySpending.Tags
         ));
     }
 
@@ -66,13 +94,8 @@ public class MonthlySpendingCommandHandlers
         if (monthlySpending == null)
             return OperationResult<MonthlySpendingDto>.MakeFailure("Monthly spending not found");
 
-        var tags = new List<Tag>();
-        foreach (var tagId in command.TagIds)
-        {
-            var tag = await _tagRepository.GetByIdAsync(tagId);
-            if (tag != null)
-                tags.Add(tag);
-        }
+        // Ensure all tags exist by name, creating new ones if needed
+        var tags = await EnsureTagsByNameAsync(command.TagNames);
 
         monthlySpending.Update(
             command.Date,
@@ -90,7 +113,7 @@ public class MonthlySpendingCommandHandlers
             monthlySpending.Description,
             monthlySpending.Amount,
             monthlySpending.Owner,
-            monthlySpending.Tags.Select(t => t.Identity).ToArray()
+            monthlySpending.Tags
         ));
     }
 

@@ -16,7 +16,7 @@ public class TagCommandHandlers
 
     public async Task<OperationResult<TagDto>> Handle(CreateTagCommand command)
     {
-        var tagResult = Tag.Create(command.Name);
+        var tagResult = Tag.Create(command.Name, command.Description);
         if (!tagResult.IsSuccess)
             return OperationResult<TagDto>.MakeFailure(tagResult.Errors);
 
@@ -35,7 +35,7 @@ public class TagCommandHandlers
         if (tag == null)
             return OperationResult<TagDto>.MakeFailure("Tag not found");
 
-        var updateResult = tag.Update(command.Name);
+        var updateResult = tag.Update(command.Name, command.Description);
         if (!updateResult.IsSuccess)
             return OperationResult<TagDto>.MakeFailure(updateResult.Errors);
 
