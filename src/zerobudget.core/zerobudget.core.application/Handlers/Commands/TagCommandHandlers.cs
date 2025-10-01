@@ -5,19 +5,14 @@ using zerobudget.core.domain;
 
 namespace zerobudget.core.application.Handlers.Commands;
 
-public class TagCommandHandlers
+public class TagCommandHandlers(ITagRepository tagRepository)
 {
-    private readonly ITagRepository _tagRepository;
-
-    public TagCommandHandlers(ITagRepository tagRepository)
-    {
-        _tagRepository = tagRepository;
-    }
+    private readonly ITagRepository _tagRepository = tagRepository;
 
     public async Task<OperationResult<TagDto>> Handle(CreateTagCommand command)
     {
         var tagResult = Tag.Create(command.Name, command.Description);
-        if (!tagResult.IsSuccess)
+        if (!tagResult.Success)
             return OperationResult<TagDto>.MakeFailure(tagResult.Errors);
 
         var tag = tagResult.Value!;
@@ -31,12 +26,12 @@ public class TagCommandHandlers
 
     public async Task<OperationResult<TagDto>> Handle(UpdateTagCommand command)
     {
-        var tag = await _tagRepository.GetByIdAsync(command.Id);
+        var tag = await _tagRepository.LoadAsync(command.Id);
         if (tag == null)
-            return OperationResult<TagDto>.MakeFailure("Tag not found");
+            return OperationResult<TagDto>.MakeFailure(ErrorMessage.Create("TAG", "Tag not found"));
 
         var updateResult = tag.Update(command.Name, command.Description);
-        if (!updateResult.IsSuccess)
+        if (!updateResult.Success)
             return OperationResult<TagDto>.MakeFailure(updateResult.Errors);
 
         await _tagRepository.UpdateAsync(tag);
@@ -49,11 +44,11 @@ public class TagCommandHandlers
 
     public async Task<OperationResult> Handle(DeleteTagCommand command)
     {
-        var tag = await _tagRepository.GetByIdAsync(command.Id);
+        var tag = await _tagRepository.LoadAsync(command.Id);
         if (tag == null)
-            return OperationResult.MakeFailure("Tag not found");
+            return OperationResult.MakeFailure(ErrorMessage.Create("TAG", "Tag not found"));
 
-        await _tagRepository.DeleteAsync(tag);
+        await _tagRepository.RemoveAsync(tag);
         return OperationResult.MakeSuccess();
     }
 }

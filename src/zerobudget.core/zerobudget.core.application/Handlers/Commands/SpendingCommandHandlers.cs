@@ -39,7 +39,7 @@ public class SpendingCommandHandlers(
             if (tag == null)
             {
                 // Create new tag if it doesn't exist
-                var tagResult = Tag.Create(tagName, $"Auto-created tag: {tagName}");
+                var tagResult = Tag.Create(tagName);
                 if (tagResult.Success)
                 {
                     tag = tagResult.Value!;

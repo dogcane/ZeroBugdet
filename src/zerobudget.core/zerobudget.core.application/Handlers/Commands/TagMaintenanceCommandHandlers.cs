@@ -8,18 +8,12 @@ namespace zerobudget.core.application.Handlers.Commands;
 /// <summary>
 /// Handler for tag maintenance operations such as cleaning up unused tags.
 /// </summary>
-public class TagMaintenanceCommandHandlers
+public class TagMaintenanceCommandHandlers(
+    ITagRepository tagRepository,
+    ILogger<TagMaintenanceCommandHandlers> logger)
 {
-    private readonly ITagRepository _tagRepository;
-    private readonly ILogger<TagMaintenanceCommandHandlers> _logger;
-
-    public TagMaintenanceCommandHandlers(
-        ITagRepository tagRepository,
-        ILogger<TagMaintenanceCommandHandlers> logger)
-    {
-        _tagRepository = tagRepository;
-        _logger = logger;
-    }
+    private readonly ITagRepository _tagRepository = tagRepository;
+    private readonly ILogger<TagMaintenanceCommandHandlers> _logger = logger;
 
     /// <summary>
     /// Handles the cleanup of unused tags.
@@ -40,7 +34,7 @@ public class TagMaintenanceCommandHandlers
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error during tag cleanup");
-            return OperationResult<int>.MakeFailure($"Error during tag cleanup: {ex.Message}");
+            return OperationResult<int>.MakeFailure(ErrorMessage.Create("TAG", $"Error during tag cleanup: {ex.Message}"));
         }
     }
 }

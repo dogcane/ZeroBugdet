@@ -15,7 +15,7 @@ public class MonthlyBucketQueryHandlers
 
     public async Task<MonthlyBucketDto?> Handle(GetMonthlyBucketByIdQuery query)
     {
-        var monthlyBucket = await _monthlyBucketRepository.GetByIdAsync(query.Id);
+        var monthlyBucket = await _monthlyBucketRepository.LoadAsync(query.Id);
         if (monthlyBucket == null)
             return null;
 

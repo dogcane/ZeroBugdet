@@ -1,9 +1,10 @@
 using ECO.Data;
 using ECO.Providers.EntityFramework;
+using zerobudget.core.domain;
 
 namespace zerobudget.core.infrastructure.data;
 
-public class MonthlySpendingEFRepository(IDataContext dataContext) : EntityFrameworkRepository<zerobudget.core.domain.Spending, int>(dataContext), zerobudget.core.domain.IMonthlySpendingRepository
+public class MonthlySpendingEFRepository(IDataContext dataContext) : EntityFrameworkRepository<MonthlySpending, int>(dataContext), IMonthlySpendingRepository
 {
     // Use LINQ queries with Query() method from base class
 }

@@ -7,14 +7,9 @@ namespace zerobudget.core.application.Middleware;
 /// <summary>
 /// Wolverine middleware to handle exceptions across all message handlers
 /// </summary>
-public class GlobalExceptionMiddleware
+public class GlobalExceptionMiddleware(ILogger<GlobalExceptionMiddleware> logger = null)
 {
-    private readonly ILogger<GlobalExceptionMiddleware> _logger;
-
-    public GlobalExceptionMiddleware(ILogger<GlobalExceptionMiddleware> logger = null)
-    {
-        _logger = logger;
-    }
+    private readonly ILogger<GlobalExceptionMiddleware> _logger = logger;
 
     /// <summary>
     /// Generic middleware method that handles exceptions for any handler
@@ -46,7 +41,7 @@ public class GlobalExceptionMiddleware
             if (typeof(T) == typeof(OperationResult))
             {
                 // For OperationResult, create a failure result
-                return (T)(object)OperationResult.MakeFailure($"An unexpected error occurred while processing {messageType}: {ex.Message}");
+                return (T)(object)OperationResult.MakeFailure(ErrorMessage.Create("Global", $"An unexpected error occurred while processing {messageType}: {ex.Message}"));
             }
 
             if (typeof(T).IsClass && Nullable.GetUnderlyingType(typeof(T)) == null)
