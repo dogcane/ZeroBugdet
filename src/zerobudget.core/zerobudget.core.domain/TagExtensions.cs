@@ -4,14 +4,14 @@ namespace zerobudget.core.domain;
 
 public static class TagExtensions
 {
-    public static string[] ToTagNames(this Tag[] tags)
+    public static string[] ToTagNames(this IEnumerable<Tag> tags)
         => [.. tags
             .Select(t => t.Name.ToLowerInvariant())
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(t => t, StringComparer.OrdinalIgnoreCase)
         ];
-        
-    public static string[] NormalizeTagNames(this string[] tagNames)
+
+    public static string[] NormalizeTagNames(this IEnumerable<string> tagNames)
         => [.. tagNames
             .Where(tn => !string.IsNullOrWhiteSpace(tn))
             .Select(tn => tn.Trim().ToLowerInvariant())

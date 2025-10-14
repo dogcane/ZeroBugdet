@@ -1,3 +1,4 @@
+using JasperFx.Core.Reflection;
 using zerobudget.core.application.DTOs;
 using zerobudget.core.application.Queries;
 using zerobudget.core.domain;
@@ -15,7 +16,7 @@ public class MonthlySpendingQueryHandlers
 
     public async Task<MonthlySpendingDto?> Handle(GetMonthlySpendingByIdQuery query)
     {
-        var monthlySpending = await _monthlySpendingRepository.GetByIdAsync(query.Id);
+        var monthlySpending = await _monthlySpendingRepository.LoadAsync(query.Id);
         if (monthlySpending == null)
             return null;
 
@@ -26,69 +27,69 @@ public class MonthlySpendingQueryHandlers
             monthlySpending.Description,
             monthlySpending.Amount,
             monthlySpending.Owner,
-            monthlySpending.Tags.Select(t => t.Identity).ToArray()
+            monthlySpending.Tags
         );
     }
 
     public async Task<IEnumerable<MonthlySpendingDto>> Handle(GetAllMonthlySpendingsQuery query)
     {
-        var monthlySpendings = await _monthlySpendingRepository.GetAllAsync();
-        return monthlySpendings.Select(monthlySpending => new MonthlySpendingDto(
+        var monthlySpendings = _monthlySpendingRepository.AsQueryable();
+        return await Task.FromResult(monthlySpendings.Select(monthlySpending => new MonthlySpendingDto(
             monthlySpending.Identity,
             monthlySpending.Date,
             monthlySpending.MonthlyBucketId,
             monthlySpending.Description,
             monthlySpending.Amount,
             monthlySpending.Owner,
-            monthlySpending.Tags.Select(t => t.Identity).ToArray()
-        ));
+            monthlySpending.Tags
+        )));
     }
 
     public async Task<IEnumerable<MonthlySpendingDto>> Handle(GetMonthlySpendingsByMonthlyBucketIdQuery query)
     {
-        var monthlySpendings = await _monthlySpendingRepository.GetAllAsync();
+        var monthlySpendings =  _monthlySpendingRepository.AsQueryable();
         var filteredSpendings = monthlySpendings.Where(ms => ms.MonthlyBucketId == query.MonthlyBucketId);
-        
-        return filteredSpendings.Select(monthlySpending => new MonthlySpendingDto(
+
+        return await Task.FromResult(filteredSpendings.Select(monthlySpending => new MonthlySpendingDto(
             monthlySpending.Identity,
             monthlySpending.Date,
             monthlySpending.MonthlyBucketId,
             monthlySpending.Description,
             monthlySpending.Amount,
             monthlySpending.Owner,
-            monthlySpending.Tags.Select(t => t.Identity).ToArray()
-        ));
+            monthlySpending.Tags
+        )));
     }
 
     public async Task<IEnumerable<MonthlySpendingDto>> Handle(GetMonthlySpendingsByDateRangeQuery query)
     {
-        var monthlySpendings = await _monthlySpendingRepository.GetAllAsync();
+        var monthlySpendings = _monthlySpendingRepository.AsQueryable();
         var filteredSpendings = monthlySpendings.Where(ms => ms.Date >= query.StartDate && ms.Date <= query.EndDate);
-        
-        return filteredSpendings.Select(monthlySpending => new MonthlySpendingDto(
+
+        return await Task.FromResult(filteredSpendings.Select(monthlySpending => new MonthlySpendingDto(
             monthlySpending.Identity,
             monthlySpending.Date,
             monthlySpending.MonthlyBucketId,
             monthlySpending.Description,
             monthlySpending.Amount,
             monthlySpending.Owner,
-            monthlySpending.Tags.Select(t => t.Identity).ToArray()
-        ));
+            monthlySpending.Tags
+        )));
     }
 
     public async Task<IEnumerable<MonthlySpendingDto>> Handle(GetMonthlySpendingsByOwnerQuery query)
     {
-        var monthlySpendings = await _monthlySpendingRepository.GetAllAsync();
+        var monthlySpendings = _monthlySpendingRepository.AsQueryable();
         var filteredSpendings = monthlySpendings.Where(ms => ms.Owner.Equals(query.Owner, StringComparison.OrdinalIgnoreCase));
-        
-        return filteredSpendings.Select(monthlySpending => new MonthlySpendingDto(
+
+        return await Task.FromResult(filteredSpendings.Select(monthlySpending => new MonthlySpendingDto(
             monthlySpending.Identity,
             monthlySpending.Date,
             monthlySpending.MonthlyBucketId,
             monthlySpending.Description,
             monthlySpending.Amount,
             monthlySpending.Owner,
-            monthlySpending.Tags.Select(t => t.Identity).ToArray()
-        ));
+            monthlySpending.Tags
+        )));
     }
 }

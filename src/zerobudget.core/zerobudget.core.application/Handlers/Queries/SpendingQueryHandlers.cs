@@ -15,7 +15,7 @@ public class SpendingQueryHandlers
 
     public async Task<SpendingDto?> Handle(GetSpendingByIdQuery query)
     {
-        var spending = await _spendingRepository.GetByIdAsync(query.Id);
+        var spending = await _spendingRepository.LoadAsync(query.Id);
         if (spending == null)
             return null;
 

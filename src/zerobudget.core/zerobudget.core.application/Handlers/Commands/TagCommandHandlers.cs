@@ -11,30 +11,12 @@ public class TagCommandHandlers(ITagRepository tagRepository)
 
     public async Task<OperationResult<TagDto>> Handle(CreateTagCommand command)
     {
-        var tagResult = Tag.Create(command.Name, command.Description);
+        var tagResult = Tag.Create(command.Name);
         if (!tagResult.Success)
             return OperationResult<TagDto>.MakeFailure(tagResult.Errors);
 
         var tag = tagResult.Value!;
         await _tagRepository.AddAsync(tag);
-
-        return OperationResult<TagDto>.MakeSuccess(new TagDto(
-            tag.Identity,
-            tag.Name
-        ));
-    }
-
-    public async Task<OperationResult<TagDto>> Handle(UpdateTagCommand command)
-    {
-        var tag = await _tagRepository.LoadAsync(command.Id);
-        if (tag == null)
-            return OperationResult<TagDto>.MakeFailure(ErrorMessage.Create("TAG", "Tag not found"));
-
-        var updateResult = tag.Update(command.Name, command.Description);
-        if (!updateResult.Success)
-            return OperationResult<TagDto>.MakeFailure(updateResult.Errors);
-
-        await _tagRepository.UpdateAsync(tag);
 
         return OperationResult<TagDto>.MakeSuccess(new TagDto(
             tag.Identity,

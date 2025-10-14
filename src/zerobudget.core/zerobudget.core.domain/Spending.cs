@@ -31,8 +31,8 @@ public partial class Spending : AggregateRoot<int>
         => Validate(description, amount, owner, tags, Enabled)
             .IfSuccess(res => (Description, Amount, Owner, Tags) = (description, amount, owner, tags.ToTagNames()));
 
-    public OperationResult<MonthlySpending> CreateMonthly(MonthlyBucket monthlyBucket)
-        => MonthlySpending.Create(new DateOnly(monthlyBucket.Year, monthlyBucket.Month, 1), Description, Amount, Owner, Tags, monthlyBucket);
+    public MonthlySpending CreateMonthly(MonthlyBucket monthlyBucket)
+        => new(new DateOnly(monthlyBucket.Year, monthlyBucket.Month, 1), Description, Amount, Owner, Tags, monthlyBucket.Identity);
 
     public void Enable()
         => Enabled = true;

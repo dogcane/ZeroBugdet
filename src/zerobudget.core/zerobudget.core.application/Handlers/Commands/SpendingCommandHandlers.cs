@@ -14,47 +14,14 @@ namespace zerobudget.core.application.Handlers.Commands;
 public class SpendingCommandHandlers(
     ISpendingRepository spendingRepository,
     IBucketRepository bucketRepository,
-    ITagRepository tagRepository,
+    ITagService tagService,
     IMonthlySpendingRepository monthlySpendingRepository)
 {
     #region Fields
     private readonly ISpendingRepository _spendingRepository = spendingRepository;
     private readonly IBucketRepository _bucketRepository = bucketRepository;
-    private readonly ITagRepository _tagRepository = tagRepository;
+    private readonly ITagService _tagService = tagService;
     private readonly IMonthlySpendingRepository _monthlySpendingRepository = monthlySpendingRepository;
-    #endregion
-
-    #region Helper Methods
-    /// <summary>
-    /// Ensures all tag names exist in the repository by name, creating new ones if needed.
-    /// This is used when tags are referenced by name rather than ID.
-    /// </summary>
-    private async Task<List<Tag>> EnsureTagsByNameAsync(string[] tagNames)
-    {
-        var tags = new List<Tag>();
-        
-        foreach (var tagName in tagNames)
-        {
-            var tag = await _tagRepository.GetByNameAsync(tagName);
-            if (tag == null)
-            {
-                // Create new tag if it doesn't exist
-                var tagResult = Tag.Create(tagName);
-                if (tagResult.Success)
-                {
-                    tag = tagResult.Value!;
-                    await _tagRepository.AddAsync(tag);
-                    tags.Add(tag);
-                }
-            }
-            else
-            {
-                tags.Add(tag);
-            }
-        }
-        
-        return tags;
-    }
     #endregion
 
     public async Task<OperationResult<SpendingDto>> Handle(CreateSpendingCommand command)
@@ -65,8 +32,8 @@ public class SpendingCommandHandlers(
         if (bucket == null)
             return OperationResult.MakeFailure(ErrorMessage.Create("Bucket", "Bucket not found"));
 
-        // Ensure all tags exist by name, creating new ones if needed
-        var tags = await EnsureTagsByNameAsync(command.TagNames);
+    // Ensure all tags exist by name, creating new ones if needed
+    var tags = await _tagService.EnsureTagsByNameAsync(command.TagNames);
 
         var spendingResult = Spending.Create(
             command.Description,
@@ -100,8 +67,8 @@ public class SpendingCommandHandlers(
         if (spending == null)
             return OperationResult<SpendingDto>.MakeFailure(ErrorMessage.Create("Spending", "Spending not found"));
 
-        // Ensure all tags exist by name, creating new ones if needed
-        var tags = await EnsureTagsByNameAsync(command.TagNames);
+    // Ensure all tags exist by name, creating new ones if needed
+    var tags = await _tagService.EnsureTagsByNameAsync(command.TagNames);
 
         var updateResult = spending.Update(
             command.Description,

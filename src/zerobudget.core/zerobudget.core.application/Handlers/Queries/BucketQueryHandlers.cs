@@ -51,13 +51,13 @@ public class BucketQueryHandlers(IBucketRepository bucketRepository, ILogger<Buc
         }
 
         scope.Complete();
-        return buckets.Select(bucket => new BucketDto(
+        return await Task.FromResult(buckets.Select(bucket => new BucketDto(
             bucket.Identity,
             bucket.Name,
             bucket.Description,
             bucket.DefaultLimit,
             bucket.DefaultBalance,
             bucket.Enabled
-        ));
+        )));
     }
 }

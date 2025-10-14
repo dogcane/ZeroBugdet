@@ -12,10 +12,6 @@ public partial class MonthlyBucket : AggregateRoot<int>
     public Bucket Bucket { get; protected set; } = null!;
     public string Description { get; protected set; } = string.Empty;
     public decimal Limit { get; protected set; } = 0;
-
-    #endregion
-
-    #region Methods
     #endregion
 
     #region Constructors

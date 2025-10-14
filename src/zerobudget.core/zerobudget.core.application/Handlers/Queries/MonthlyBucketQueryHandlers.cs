@@ -4,14 +4,9 @@ using zerobudget.core.domain;
 
 namespace zerobudget.core.application.Handlers.Queries;
 
-public class MonthlyBucketQueryHandlers
+public class MonthlyBucketQueryHandlers(IMonthlyBucketRepository monthlyBucketRepository)
 {
-    private readonly IMonthlyBucketRepository _monthlyBucketRepository;
-
-    public MonthlyBucketQueryHandlers(IMonthlyBucketRepository monthlyBucketRepository)
-    {
-        _monthlyBucketRepository = monthlyBucketRepository;
-    }
+    private readonly IMonthlyBucketRepository _monthlyBucketRepository = monthlyBucketRepository;
 
     public async Task<MonthlyBucketDto?> Handle(GetMonthlyBucketByIdQuery query)
     {
@@ -32,8 +27,8 @@ public class MonthlyBucketQueryHandlers
 
     public async Task<IEnumerable<MonthlyBucketDto>> Handle(GetAllMonthlyBucketsQuery query)
     {
-        var monthlyBuckets = await _monthlyBucketRepository.GetAllAsync();
-        return monthlyBuckets.Select(monthlyBucket => new MonthlyBucketDto(
+        var monthlyBuckets = _monthlyBucketRepository.AsQueryable();
+        return await Task.FromResult(monthlyBuckets.Select(monthlyBucket => new MonthlyBucketDto(
             monthlyBucket.Identity,
             monthlyBucket.Year,
             monthlyBucket.Month,
@@ -41,15 +36,15 @@ public class MonthlyBucketQueryHandlers
             monthlyBucket.Description,
             monthlyBucket.Limit,
             monthlyBucket.Bucket.Identity
-        ));
+        )));
     }
 
     public async Task<IEnumerable<MonthlyBucketDto>> Handle(GetMonthlyBucketsByYearMonthQuery query)
     {
-        var monthlyBuckets = await _monthlyBucketRepository.GetAllAsync();
+        var monthlyBuckets = _monthlyBucketRepository.AsQueryable();
         var filteredBuckets = monthlyBuckets.Where(mb => mb.Year == query.Year && mb.Month == query.Month);
-        
-        return filteredBuckets.Select(monthlyBucket => new MonthlyBucketDto(
+
+        return await Task.FromResult(filteredBuckets.Select(monthlyBucket => new MonthlyBucketDto(
             monthlyBucket.Identity,
             monthlyBucket.Year,
             monthlyBucket.Month,
@@ -57,15 +52,15 @@ public class MonthlyBucketQueryHandlers
             monthlyBucket.Description,
             monthlyBucket.Limit,
             monthlyBucket.Bucket.Identity
-        ));
+        )));
     }
 
     public async Task<IEnumerable<MonthlyBucketDto>> Handle(GetMonthlyBucketsByBucketIdQuery query)
     {
-        var monthlyBuckets = await _monthlyBucketRepository.GetAllAsync();
+        var monthlyBuckets = _monthlyBucketRepository.AsQueryable();
         var filteredBuckets = monthlyBuckets.Where(mb => mb.Bucket.Identity == query.BucketId);
         
-        return filteredBuckets.Select(monthlyBucket => new MonthlyBucketDto(
+        return await Task.FromResult(filteredBuckets.Select(monthlyBucket => new MonthlyBucketDto(
             monthlyBucket.Identity,
             monthlyBucket.Year,
             monthlyBucket.Month,
@@ -73,6 +68,6 @@ public class MonthlyBucketQueryHandlers
             monthlyBucket.Description,
             monthlyBucket.Limit,
             monthlyBucket.Bucket.Identity
-        ));
+        )));
     }
 }
