@@ -7,9 +7,9 @@ namespace zerobudget.core.application.Middleware;
 /// <summary>
 /// Wolverine middleware to handle exceptions across all message handlers
 /// </summary>
-public class GlobalExceptionMiddleware(ILogger<GlobalExceptionMiddleware> logger = null)
+public class GlobalExceptionMiddleware(ILogger<GlobalExceptionMiddleware>? logger = null)
 {
-    private readonly ILogger<GlobalExceptionMiddleware> _logger = logger;
+    private readonly ILogger<GlobalExceptionMiddleware>? _logger = logger;
 
     /// <summary>
     /// Generic middleware method that handles exceptions for any handler

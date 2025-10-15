@@ -1,94 +1,42 @@
 using zerobudget.core.application.DTOs;
 using zerobudget.core.application.Queries;
 using zerobudget.core.domain;
+using zerobudget.core.application.Mappers;
+using Microsoft.Extensions.Logging;
 
 namespace zerobudget.core.application.Handlers.Queries;
 
-public class SpendingQueryHandlers
+public class SpendingQueryHandlers(ISpendingRepository spendingRepository, ILogger<SpendingQueryHandlers>? logger = null)
 {
-    private readonly ISpendingRepository _spendingRepository;
-
-    public SpendingQueryHandlers(ISpendingRepository spendingRepository)
-    {
-        _spendingRepository = spendingRepository;
-    }
+    private readonly ISpendingRepository _spendingRepository = spendingRepository;
+    private readonly ILogger<SpendingQueryHandlers>? _logger = logger;
+    private readonly SpendingMapper _mapper = new();
 
     public async Task<SpendingDto?> Handle(GetSpendingByIdQuery query)
     {
         var spending = await _spendingRepository.LoadAsync(query.Id);
         if (spending == null)
             return null;
-
-        return new SpendingDto(
-            spending.Identity,
-            spending.Date,
-            spending.BucketId,
-            spending.Description,
-            spending.Amount,
-            spending.Owner,
-            spending.Tags.Select(t => t.Identity).ToArray()
-        );
+        return _mapper.ToDto(spending);
     }
 
     public async Task<IEnumerable<SpendingDto>> Handle(GetAllSpendingsQuery query)
     {
-        var spendings = await _spendingRepository.GetAllAsync();
-        return spendings.Select(spending => new SpendingDto(
-            spending.Identity,
-            spending.Date,
-            spending.BucketId,
-            spending.Description,
-            spending.Amount,
-            spending.Owner,
-            spending.Tags.Select(t => t.Identity).ToArray()
-        ));
+        var spendings = _spendingRepository.AsQueryable();
+        return await Task.FromResult(spendings.Select(_mapper.ToDto));
     }
 
     public async Task<IEnumerable<SpendingDto>> Handle(GetSpendingsByBucketIdQuery query)
     {
-        var spendings = await _spendingRepository.GetAllAsync();
+        var spendings = _spendingRepository.AsQueryable();
         var filteredSpendings = spendings.Where(s => s.BucketId == query.BucketId);
-        
-        return filteredSpendings.Select(spending => new SpendingDto(
-            spending.Identity,
-            spending.Date,
-            spending.BucketId,
-            spending.Description,
-            spending.Amount,
-            spending.Owner,
-            spending.Tags.Select(t => t.Identity).ToArray()
-        ));
-    }
-
-    public async Task<IEnumerable<SpendingDto>> Handle(GetSpendingsByDateRangeQuery query)
-    {
-        var spendings = await _spendingRepository.GetAllAsync();
-        var filteredSpendings = spendings.Where(s => s.Date >= query.StartDate && s.Date <= query.EndDate);
-        
-        return filteredSpendings.Select(spending => new SpendingDto(
-            spending.Identity,
-            spending.Date,
-            spending.BucketId,
-            spending.Description,
-            spending.Amount,
-            spending.Owner,
-            spending.Tags.Select(t => t.Identity).ToArray()
-        ));
+        return await Task.FromResult(filteredSpendings.Select(_mapper.ToDto));
     }
 
     public async Task<IEnumerable<SpendingDto>> Handle(GetSpendingsByOwnerQuery query)
     {
-        var spendings = await _spendingRepository.GetAllAsync();
+        var spendings = _spendingRepository.AsQueryable();
         var filteredSpendings = spendings.Where(s => s.Owner.Equals(query.Owner, StringComparison.OrdinalIgnoreCase));
-        
-        return filteredSpendings.Select(spending => new SpendingDto(
-            spending.Identity,
-            spending.Date,
-            spending.BucketId,
-            spending.Description,
-            spending.Amount,
-            spending.Owner,
-            spending.Tags.Select(t => t.Identity).ToArray()
-        ));
+        return await Task.FromResult(filteredSpendings.Select(_mapper.ToDto));
     }
 }

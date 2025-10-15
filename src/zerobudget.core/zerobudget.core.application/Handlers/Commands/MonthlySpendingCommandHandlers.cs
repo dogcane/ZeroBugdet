@@ -2,6 +2,7 @@ using Resulz;
 using zerobudget.core.application.Commands;
 using zerobudget.core.application.DTOs;
 using zerobudget.core.domain;
+using zerobudget.core.application.Mappers;
 
 namespace zerobudget.core.application.Handlers.Commands;
 
@@ -13,6 +14,7 @@ public class MonthlySpendingCommandHandlers(
     private readonly IMonthlySpendingRepository _monthlySpendingRepository = monthlySpendingRepository;
     private readonly IMonthlyBucketRepository _monthlyBucketRepository = monthlyBucketRepository;
     private readonly ITagService _tagService = tagService;
+    private readonly MonthlySpendingMapper _mapper = new MonthlySpendingMapper();
 
 
     public async Task<OperationResult<MonthlySpendingDto>> Handle(CreateMonthlySpendingCommand command)
@@ -38,15 +40,7 @@ public class MonthlySpendingCommandHandlers(
         var monthlySpending = monthlySpendingResult.Value!;
         await _monthlySpendingRepository.AddAsync(monthlySpending);
 
-        return OperationResult<MonthlySpendingDto>.MakeSuccess(new MonthlySpendingDto(
-            monthlySpending.Identity,
-            monthlySpending.Date,
-            monthlySpending.MonthlyBucketId,
-            monthlySpending.Description,
-            monthlySpending.Amount,
-            monthlySpending.Owner,
-            monthlySpending.Tags
-        ));
+        return OperationResult<MonthlySpendingDto>.MakeSuccess(_mapper.ToDto(monthlySpending));
     }
 
     public async Task<OperationResult<MonthlySpendingDto>> Handle(UpdateMonthlySpendingCommand command)
@@ -67,15 +61,7 @@ public class MonthlySpendingCommandHandlers(
 
         await _monthlySpendingRepository.UpdateAsync(monthlySpending);
 
-        return OperationResult<MonthlySpendingDto>.MakeSuccess(new MonthlySpendingDto(
-            monthlySpending.Identity,
-            monthlySpending.Date,
-            monthlySpending.MonthlyBucketId,
-            monthlySpending.Description,
-            monthlySpending.Amount,
-            monthlySpending.Owner,
-            monthlySpending.Tags
-        ));
+        return OperationResult<MonthlySpendingDto>.MakeSuccess(_mapper.ToDto(monthlySpending));
     }
 
     public async Task<OperationResult> Handle(DeleteMonthlySpendingCommand command)

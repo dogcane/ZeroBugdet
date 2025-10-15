@@ -6,5 +6,6 @@ public record SpendingDto(
     string Description,
     decimal Amount,
     string Owner,
-    string[] Tags
+    string[] Tags,
+    bool Enabled
 );

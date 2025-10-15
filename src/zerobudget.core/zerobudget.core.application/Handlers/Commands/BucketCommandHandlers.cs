@@ -5,6 +5,7 @@ using Resulz;
 using zerobudget.core.application.Commands;
 using zerobudget.core.application.DTOs;
 using zerobudget.core.domain;
+using zerobudget.core.application.Mappers;
 
 namespace zerobudget.core.application.Handlers.Commands;
 
@@ -14,6 +15,7 @@ public class BucketCommandHandlers(IBucketRepository bucketRepository, IMonthlyB
     private readonly IBucketRepository _bucketRepository = bucketRepository;
     private readonly IMonthlyBucketRepository _monthlyBucketRepository = monthlyBucketRepository;
     private readonly ILogger<BucketCommandHandlers>? _logger = logger;
+    private readonly BucketMapper _mapper = new BucketMapper();
     #endregion
 
     public async Task<OperationResult<BucketDto>> Handle(CreateBucketCommand command)
@@ -30,14 +32,7 @@ public class BucketCommandHandlers(IBucketRepository bucketRepository, IMonthlyB
         await _bucketRepository.AddAsync(bucket);
 
         scope.Complete();
-        return OperationResult<BucketDto>.MakeSuccess(new BucketDto(
-            bucket.Identity,
-            bucket.Name,
-            bucket.Description,
-            bucket.DefaultLimit,
-            bucket.DefaultBalance,
-            bucket.Enabled
-        ));
+        return OperationResult<BucketDto>.MakeSuccess(_mapper.ToDto(bucket));
     }
 
 
@@ -55,14 +50,7 @@ public class BucketCommandHandlers(IBucketRepository bucketRepository, IMonthlyB
         await _bucketRepository.UpdateAsync(bucket);
 
         scope.Complete();
-        return OperationResult<BucketDto>.MakeSuccess(new BucketDto(
-            bucket.Identity,
-            bucket.Name,
-            bucket.Description,
-            bucket.DefaultLimit,
-            bucket.DefaultBalance,
-            bucket.Enabled
-        ));
+        return OperationResult<BucketDto>.MakeSuccess(_mapper.ToDto(bucket));
     }
 
     public async Task<OperationResult> Handle(DeleteBucketCommand command)

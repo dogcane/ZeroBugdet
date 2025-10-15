@@ -2,12 +2,14 @@ using Resulz;
 using zerobudget.core.application.Commands;
 using zerobudget.core.application.DTOs;
 using zerobudget.core.domain;
+using zerobudget.core.application.Mappers;
 
 namespace zerobudget.core.application.Handlers.Commands;
 
 public class TagCommandHandlers(ITagRepository tagRepository)
 {
     private readonly ITagRepository _tagRepository = tagRepository;
+    private readonly TagMapper _mapper = new TagMapper();
 
     public async Task<OperationResult<TagDto>> Handle(CreateTagCommand command)
     {
@@ -18,10 +20,7 @@ public class TagCommandHandlers(ITagRepository tagRepository)
         var tag = tagResult.Value!;
         await _tagRepository.AddAsync(tag);
 
-        return OperationResult<TagDto>.MakeSuccess(new TagDto(
-            tag.Identity,
-            tag.Name
-        ));
+        return OperationResult<TagDto>.MakeSuccess(_mapper.ToDto(tag));
     }
 
     public async Task<OperationResult> Handle(DeleteTagCommand command)

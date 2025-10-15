@@ -3,6 +3,7 @@ using Resulz;
 using zerobudget.core.application.Commands;
 using zerobudget.core.application.DTOs;
 using zerobudget.core.domain;
+using zerobudget.core.application.Mappers;
 
 namespace zerobudget.core.application.Handlers.Commands;
 
@@ -22,6 +23,7 @@ public class SpendingCommandHandlers(
     private readonly IBucketRepository _bucketRepository = bucketRepository;
     private readonly ITagService _tagService = tagService;
     private readonly IMonthlySpendingRepository _monthlySpendingRepository = monthlySpendingRepository;
+    private readonly SpendingMapper _mapper = new SpendingMapper();
     #endregion
 
     public async Task<OperationResult<SpendingDto>> Handle(CreateSpendingCommand command)
@@ -49,14 +51,7 @@ public class SpendingCommandHandlers(
         await _spendingRepository.AddAsync(spending);
 
         scope.Complete();
-        return OperationResult<SpendingDto>.MakeSuccess(new SpendingDto(
-            spending.Identity,
-            spending.BucketId,
-            spending.Description,
-            spending.Amount,
-            spending.Owner,
-            spending.Tags
-        ));
+        return OperationResult<SpendingDto>.MakeSuccess(_mapper.ToDto(spending));
     }
 
     public async Task<OperationResult<SpendingDto>> Handle(UpdateSpendingCommand command)
@@ -82,14 +77,7 @@ public class SpendingCommandHandlers(
         await _spendingRepository.UpdateAsync(spending);
 
         scope.Complete();
-        return OperationResult<SpendingDto>.MakeSuccess(new SpendingDto(
-            spending.Identity,
-            spending.BucketId,
-            spending.Description,
-            spending.Amount,
-            spending.Owner,
-            spending.Tags
-        ));
+        return OperationResult<SpendingDto>.MakeSuccess(_mapper.ToDto(spending));
     }
 
     public async Task<OperationResult> Handle(DeleteSpendingCommand command)
