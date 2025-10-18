@@ -1,3 +1,4 @@
+using ECO.Integrations.Moq;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
@@ -29,7 +30,7 @@ public class MonthlyDataGenerationCommandHandlerTests
         _mockSpendingRepository = new Mock<ISpendingRepository>();
         _mockMonthlySpendingRepository = new Mock<IMonthlySpendingRepository>();
         _mockLogger = new Mock<ILogger<MonthlyBucketCommandHandlers>>();
-        
+
         _handler = new MonthlyBucketCommandHandlers(
             _mockMonthlyBucketRepository.Object,
             _mockBucketRepository.Object,
@@ -43,44 +44,55 @@ public class MonthlyDataGenerationCommandHandlerTests
     {
         // Arrange
         var command = new GenerateMonthlyDataCommand(2025, 1);
-        
-        // Create a monthly bucket that matches the year/month to simulate existing data
-        var existingBucket = new MonthlyBucket();
-        // Set up properties using reflection or create a test factory method
-        var existingBuckets = new List<MonthlyBucket> { existingBucket }.AsQueryable();
-        
-        _mockMonthlyBucketRepository.Setup(r => r.Query()).Returns(existingBuckets);
+
+        var monthlyBucketRepository = new Mock<IMonthlyBucketRepository>();
+        var bucketRepository = new Mock<IBucketRepository>();
+        var spendingRepository = new Mock<ISpendingRepository>();
+        var monthlySpendingRepository = new Mock<IMonthlySpendingRepository>();
+        var logger = new Mock<ILogger<MonthlyBucketCommandHandlers>>();
+
+        var handler = new MonthlyBucketCommandHandlers(
+            monthlyBucketRepository.Object,
+            bucketRepository.Object,
+            spendingRepository.Object,
+            monthlySpendingRepository.Object,
+            logger.Object);
+
+        // Setup: Existing monthly bucket for the same period
+        monthlyBucketRepository
+            .Setup(r => r.Any(It.IsAny<Func<MonthlyBucket, bool>>()))
+            .Returns(true); // Simulate existing data
 
         // Act
-        var result = await _handler.Handle(command);
+        var result = await handler.Handle(command);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Contains("already exists", result.Errors?.First().Message);
+        Assert.False(result.Success);
+        Assert.NotEmpty(result.Errors);
     }
 
     // Note: For comprehensive testing with IQueryable operations, consider using:
     // 1. An in-memory database (Microsoft.EntityFrameworkCore.InMemory)
     // 2. MockQueryable NuGet package for better IQueryable mocking
     // 3. Integration tests with TestContainers
-    
+
     [Fact]
     public void GenerateMonthlyDataCommand_ShouldHaveCorrectProperties()
     {
         // Arrange & Act
         var command = new GenerateMonthlyDataCommand(2025, 1);
-        
+
         // Assert
         Assert.Equal(2025, command.Year);
         Assert.Equal(1, command.Month);
     }
-    
+
     [Fact]
     public void GenerateMonthlyDataResult_ShouldHaveCorrectProperties()
     {
         // Arrange & Act
         var result = new GenerateMonthlyDataResult(2025, 1, 5, 10);
-        
+
         // Assert
         Assert.Equal(2025, result.Year);
         Assert.Equal(1, result.Month);

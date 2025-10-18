@@ -1,3 +1,4 @@
+using ECO.Integrations.Moq;
 using Moq;
 using Xunit;
 using zerobudget.core.application.Handlers.Queries;
@@ -12,15 +13,15 @@ public class BucketQueryHandlerTests
     public async Task Handle_GetBucketByIdQuery_ShouldReturnBucketDto()
     {
         // Arrange
-        var mockRepository = new Mock<IBucketRepository>();
-        var handler = new BucketQueryHandlers(mockRepository.Object);
+        var bucketRepository = new Mock<IBucketRepository>();
+        var handler = new BucketQueryHandlers(bucketRepository.Object);
         var bucketResult = Bucket.Create("Test Bucket", "Test Description", 1000m);
         var bucket = bucketResult.Value!;
-        
+
         var query = new GetBucketByIdQuery(1);
 
-        mockRepository.Setup(r => r.GetByIdAsync(1))
-                     .ReturnsAsync(bucket);
+        bucketRepository
+            .SetupRepository<IBucketRepository, Bucket, int>([bucket]);
 
         // Act
         var result = await handler.Handle(query);
@@ -36,12 +37,12 @@ public class BucketQueryHandlerTests
     public async Task Handle_GetBucketByIdQuery_WithNonExistentBucket_ShouldReturnNull()
     {
         // Arrange
-        var mockRepository = new Mock<IBucketRepository>();
-        var handler = new BucketQueryHandlers(mockRepository.Object);
+        var bucketRepository = new Mock<IBucketRepository>();
+        var handler = new BucketQueryHandlers(bucketRepository.Object);
         var query = new GetBucketByIdQuery(999);
 
-        mockRepository.Setup(r => r.GetByIdAsync(999))
-                     .ReturnsAsync((Bucket?)null);
+        bucketRepository
+            .SetupRepository<IBucketRepository, Bucket, int>([]);
 
         // Act
         var result = await handler.Handle(query);
@@ -51,20 +52,20 @@ public class BucketQueryHandlerTests
     }
 
     [Fact]
-    public async Task Handle_GetAllBucketsQuery_ShouldReturnAllBuckets()
+    public async Task Handle_GetBucketsByNameQuery_ShouldReturnBucketsWithMatchingName()
     {
         // Arrange
-        var mockRepository = new Mock<IBucketRepository>();
-        var handler = new BucketQueryHandlers(mockRepository.Object);
-        
+        var bucketRepository = new Mock<IBucketRepository>();
+        var handler = new BucketQueryHandlers(bucketRepository.Object);
+
         var bucket1Result = Bucket.Create("Bucket 1", "Description 1", 1000m);
         var bucket2Result = Bucket.Create("Bucket 2", "Description 2", 2000m);
         var buckets = new[] { bucket1Result.Value!, bucket2Result.Value! };
-        
-        var query = new GetAllBucketsQuery();
 
-        mockRepository.Setup(r => r.GetAllAsync())
-                     .ReturnsAsync(buckets);
+        var query = new GetBucketsByNameQuery("Bucket", "", true);
+
+        bucketRepository
+            .SetupRepository<IBucketRepository, Bucket, int>(buckets);
 
         // Act
         var result = await handler.Handle(query);

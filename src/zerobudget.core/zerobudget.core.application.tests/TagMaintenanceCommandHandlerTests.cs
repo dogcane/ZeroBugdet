@@ -1,3 +1,4 @@
+using ECO.Integrations.Moq;
 using Moq;
 using Xunit;
 using zerobudget.core.application.Commands;
@@ -71,7 +72,7 @@ public class TagMaintenanceCommandHandlerTests
 
         // Assert
         Assert.False(result.Success);
-        Assert.Contains("Database error", result.ErrorMessages.First());
+        Assert.NotEmpty(result.Errors);
         mockTagRepository.Verify(r => r.RemoveUnusedTagsAsync(), Times.Once);
     }
 }

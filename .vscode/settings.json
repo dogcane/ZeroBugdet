@@ -1,1 +1,95 @@
-{}
+{
+  // =============================================
+  // EDITOR SETTINGS
+  // =============================================
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "ms-dotnettools.csharp",
+  "editor.rulers": [
+    80,
+    120
+  ],
+  "editor.insertSpaces": true,
+  "editor.tabSize": 2,
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  // =============================================
+  // FILE ASSOCIATIONS
+  // =============================================
+  "[csharp]": {
+    "editor.defaultFormatter": "ms-dotnettools.csharp",
+    "editor.tabSize": 4,
+    "editor.formatOnSave": true
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features",
+    "editor.formatOnSave": true
+  },
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features",
+    "editor.formatOnSave": true
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features",
+    "editor.formatOnSave": true
+  },
+  "[html]": {
+    "editor.defaultFormatter": "vscode.html-language-features",
+    "editor.formatOnSave": true
+  },
+  "[scss]": {
+    "editor.defaultFormatter": "vscode.css-language-features",
+    "editor.formatOnSave": true
+  },
+  "[css]": {
+    "editor.defaultFormatter": "vscode.css-language-features",
+    "editor.formatOnSave": true
+  },
+  // =============================================
+  // .NET SPECIFIC SETTINGS
+  // =============================================
+  "omnisharp.enableEditorConfigSupport": true,
+  "omnisharp.enableRoslynAnalyzers": true,
+  "omnisharp.analyzeOpenDocumentsOnly": false,
+  "dotnet.defaultSolutionOrProject": "src/zerobudget.core/ZeroBugdet.slnx",
+  // =============================================
+  // ANGULAR/TYPESCRIPT SETTINGS
+  // =============================================
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "angular.enable-strict-mode-prompt": false,
+  // =============================================
+  // SEARCH SETTINGS
+  // =============================================
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/*.o": true,
+    "**/*.a": true,
+    "bin/": true,
+    "obj/": true,
+    ".git": true,
+    "dist/": true
+  },
+  "files.exclude": {
+    "**/node_modules": true,
+    "bin/": true,
+    "obj/": true,
+    "dist/": true,
+    ".vs/": true
+  },
+  // =============================================
+  // TESTING
+  // =============================================
+  "testing.automaticallyOpenPeekView": "failureInVisibleDocument",
+  // =============================================
+  // LINTING
+  // =============================================
+  "eslint.enable": true,
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "dotnet.defaultSolution": "src/zerobudget.core/ZeroBugdet.slnx"
+}

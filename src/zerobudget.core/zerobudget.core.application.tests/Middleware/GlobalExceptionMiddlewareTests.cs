@@ -41,7 +41,7 @@ public class GlobalExceptionMiddlewareTests
 
         // Assert
         Assert.Equal(expectedResult, result);
-        Assert.True(result.IsSuccess);
+        Assert.True(result.Success);
         Assert.Equal("test result", result.Value);
     }
 
@@ -56,10 +56,12 @@ public class GlobalExceptionMiddlewareTests
         var result = await _middleware.Before(_mockContext.Object, handler);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Contains("An unexpected error occurred while processing TestCommand", result.Errors.First().Message);
-        Assert.Contains("Test exception", result.Errors.First().Message);
-        
+        Assert.False(result.Success);
+        Assert.NotEmpty(result.Errors);
+        var errorString = result.Errors.First().ToString();
+        Assert.Contains("An unexpected error occurred while processing TestCommand", errorString);
+        Assert.Contains("Test exception", errorString);
+
         // Verify logging
         _mockLogger.Verify(
             x => x.Log(
@@ -82,9 +84,11 @@ public class GlobalExceptionMiddlewareTests
         var result = await _middleware.Before(_mockContext.Object, handler);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Contains("An unexpected error occurred while processing TestCommand", result.Errors.First().Message);
-        Assert.Contains("Test exception", result.Errors.First().Message);
+        Assert.False(result.Success);
+        Assert.NotEmpty(result.Errors);
+        var errorString = result.Errors.First().ToString();
+        Assert.Contains("An unexpected error occurred while processing TestCommand", errorString);
+        Assert.Contains("Test exception", errorString);
     }
 
     [Fact]
@@ -99,7 +103,7 @@ public class GlobalExceptionMiddlewareTests
 
         // Assert
         Assert.Null(result);
-        
+
         // Verify logging
         _mockLogger.Verify(
             x => x.Log(
@@ -136,7 +140,7 @@ public class GlobalExceptionMiddlewareTests
         // Act & Assert
         var thrownException = await Assert.ThrowsAsync<ApplicationException>(
             () => _middleware.Before(_mockContext.Object, handler));
-            
+
         Assert.Contains("An unexpected error occurred while processing TestCommand", thrownException.Message);
         Assert.Contains("Test exception", thrownException.Message);
         Assert.Equal(expectedException, thrownException.InnerException);
