@@ -3,20 +3,20 @@ using Resulz;
 
 namespace zerobudget.core.domain;
 
-public partial class Spending : AggregateRoot<int>
+public sealed partial class Spending : AggregateRoot<int>, IEquatable<Spending>
 {
     #region Properties
-    public int BucketId { get; protected set; }
-    public string Description { get; protected set; } = string.Empty;
-    public decimal Amount { get; protected set; }
-    public string Owner { get; protected set; } = string.Empty;
-    public string[] Tags { get; protected set; } = [];
+    public int BucketId { get; private set; }
+    public string Description { get; private set; } = string.Empty;
+    public decimal Amount { get; private set; }
+    public string Owner { get; private set; } = string.Empty;
+    public string[] Tags { get; private set; } = [];
     public bool Enabled { get; private set; } = true;
     #endregion
 
     #region Constructors
-    protected Spending() : base() { }
-    protected Spending(string description, decimal amount, string owner, Tag[] tags, int bucketId) : base()
+    private Spending() : base() { }
+    private Spending(string description, decimal amount, string owner, Tag[] tags, int bucketId) : base()
         => (Description, Amount, Owner, Tags, BucketId) = (description, amount, owner, tags.ToTagNames(), bucketId);
     #endregion
 
@@ -47,6 +47,14 @@ public partial class Spending : AggregateRoot<int>
         => $"{Description} : {Amount} ({Owner})";
 
     public override bool Equals(object? obj)
-        => obj is Spending other && GetHashCode() == other.GetHashCode();
+        => obj is Spending other && Equals(other);
+
+    public bool Equals(Spending? other)
+    {
+        if (other is null) return false;
+        return Description == other.Description &&
+               Amount == other.Amount &&
+               Owner == other.Owner;
+    }
     #endregion
 }

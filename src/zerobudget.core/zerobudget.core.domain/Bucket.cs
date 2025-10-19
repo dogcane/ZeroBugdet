@@ -3,19 +3,19 @@ using Resulz;
 
 namespace zerobudget.core.domain;
 
-public partial class Bucket : AggregateRoot<int>
+public sealed partial class Bucket : AggregateRoot<int>
 {
     #region  Properties
-    public string Name { get; protected set; } = string.Empty;
-    public string Description { get; protected set; } = string.Empty;
-    public decimal DefaultLimit { get; protected set; } = 0;
-    public decimal DefaultBalance { get; protected set; } = 0;
+    public string Name { get; private set; } = string.Empty;
+    public string Description { get; private set; } = string.Empty;
+    public decimal DefaultLimit { get; private set; } = 0;
+    public decimal DefaultBalance { get; private set; } = 0;
     public bool Enabled { get; private set; } = true;
     #endregion
 
     #region Constructors
-    protected Bucket() : base() { }
-    protected Bucket(string name, string description, decimal defaultLimit) : base()
+    private Bucket() : base() { }
+    private Bucket(string name, string description, decimal defaultLimit) : base()
         => (Name, Description, DefaultLimit) = (name, description, defaultLimit);
     #endregion
 

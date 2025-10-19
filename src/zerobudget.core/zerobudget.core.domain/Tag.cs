@@ -3,15 +3,15 @@ using Resulz;
 
 namespace zerobudget.core.domain;
 
-public partial class Tag : AggregateRoot<int>
+public sealed partial class Tag : AggregateRoot<int>
 {
     #region Properties
-    public string Name { get; protected set; } = string.Empty;
+    public string Name { get; private set; } = string.Empty;
     #endregion
 
     #region Constructors
-    protected Tag() : base() { }
-    protected Tag(string name) : base()
+    private Tag() : base() { }
+    private Tag(string name) : base()
         => Name = name.ToLowerInvariant();
     #endregion
 
