@@ -14,7 +14,7 @@ public static class ServiceCollectionExtensions
         services.AddWolverine(opts =>
         {
             // Add global exception middleware to all message handlers
-            opts.Policies.AddMiddleware(typeof(GlobalExceptionMiddleware));
+            opts.Policies.AddMiddleware<GlobalExceptionMiddleware>();
         });
 
         // Register command handlers

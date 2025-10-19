@@ -37,7 +37,7 @@ public class GlobalExceptionMiddlewareTests
         Func<Task<OperationResult<string>>> handler = () => Task.FromResult(expectedResult);
 
         // Act
-        var result = await _middleware.Before(_mockContext.Object, handler);
+        var result = await _middleware.BeforeAsync(_mockContext.Object, handler);
 
         // Assert
         Assert.Equal(expectedResult, result);
@@ -53,7 +53,7 @@ public class GlobalExceptionMiddlewareTests
         Func<Task<OperationResult<string>>> handler = () => throw expectedException;
 
         // Act
-        var result = await _middleware.Before(_mockContext.Object, handler);
+        var result = await _middleware.BeforeAsync(_mockContext.Object, handler);
 
         // Assert
         Assert.False(result.Success);
@@ -81,7 +81,7 @@ public class GlobalExceptionMiddlewareTests
         Func<Task<OperationResult>> handler = () => throw expectedException;
 
         // Act
-        var result = await _middleware.Before(_mockContext.Object, handler);
+        var result = await _middleware.BeforeAsync(_mockContext.Object, handler);
 
         // Assert
         Assert.False(result.Success);
@@ -99,7 +99,7 @@ public class GlobalExceptionMiddlewareTests
         Func<Task<string?>> handler = () => throw expectedException;
 
         // Act
-        var result = await _middleware.Before(_mockContext.Object, handler);
+        var result = await _middleware.BeforeAsync(_mockContext.Object, handler);
 
         // Assert
         Assert.Null(result);
@@ -123,7 +123,7 @@ public class GlobalExceptionMiddlewareTests
         Func<Task<IEnumerable<string>>> handler = () => throw expectedException;
 
         // Act
-        var result = await _middleware.Before(_mockContext.Object, handler);
+        var result = await _middleware.BeforeAsync(_mockContext.Object, handler);
 
         // Assert
         Assert.NotNull(result);
@@ -139,7 +139,7 @@ public class GlobalExceptionMiddlewareTests
 
         // Act & Assert
         var thrownException = await Assert.ThrowsAsync<ApplicationException>(
-            () => _middleware.Before(_mockContext.Object, handler));
+            () => _middleware.BeforeAsync(_mockContext.Object, handler));
 
         Assert.Contains("An unexpected error occurred while processing TestCommand", thrownException.Message);
         Assert.Contains("Test exception", thrownException.Message);

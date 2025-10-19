@@ -26,44 +26,69 @@ public class GlobalExceptionMiddleware(ILogger<GlobalExceptionMiddleware>? logge
             var messageType = context.Envelope?.Message?.GetType().Name ?? "Unknown";
             _logger?.LogError(ex, "Unhandled exception in handler for message type: {MessageType}", messageType);
 
-            // Handle different return types appropriately
-            if (typeof(T).IsGenericType && typeof(T).GetGenericTypeDefinition() == typeof(OperationResult<>))
-            {
-                // For OperationResult<TResult>, create a failure result
-                var resultType = typeof(T).GetGenericArguments()[0];
-                var makeFailureMethod = typeof(OperationResult<>).MakeGenericType(resultType)
-                    .GetMethod("MakeFailure", new[] { typeof(string) });
-                    
-                return (T)makeFailureMethod!.Invoke(null, 
-                    new object[] { $"An unexpected error occurred while processing {messageType}: {ex.Message}" })!;
-            }
-            
-            if (typeof(T) == typeof(OperationResult))
-            {
-                // For OperationResult, create a failure result
-                return (T)(object)OperationResult.MakeFailure(ErrorMessage.Create("Global", $"An unexpected error occurred while processing {messageType}: {ex.Message}"));
-            }
-
-            if (typeof(T).IsClass && Nullable.GetUnderlyingType(typeof(T)) == null)
-            {
-                // For reference types (DTOs, etc.), return null if possible
-                if (typeof(T).IsGenericType && typeof(T).GetGenericTypeDefinition() == typeof(IEnumerable<>))
-                {
-                    // For IEnumerable<T>, return empty collection
-                    var elementType = typeof(T).GetGenericArguments()[0];
-                    var emptyMethod = typeof(Enumerable).GetMethod("Empty")!.MakeGenericMethod(elementType);
-                    return (T)emptyMethod.Invoke(null, null)!;
-                }
-
-                // For nullable reference types, return null
-                if (!typeof(T).IsValueType)
-                {
-                    return default(T)!;
-                }
-            }
-
-            // For value types and other cases, re-throw with a more descriptive error
-            throw new ApplicationException($"An unexpected error occurred while processing {messageType}: {ex.Message}", ex);
+            return HandleExceptionForType<T>(ex, messageType);
         }
+    }
+
+    private T HandleExceptionForType<T>(Exception ex, string messageType)
+    {
+        if (IsGenericOperationResult<T>())
+        {
+            return CreateGenericOperationResultFailure<T>(ex, messageType);
+        }
+
+        if (typeof(T) == typeof(OperationResult))
+        {
+            return CreateOperationResultFailure<T>(ex, messageType);
+        }
+
+        return HandleReferenceOrValueType<T>(ex, messageType);
+    }
+
+    private static bool IsGenericOperationResult<T>()
+    {
+        return typeof(T).IsGenericType && typeof(T).GetGenericTypeDefinition() == typeof(OperationResult<>);
+    }
+
+    private static T CreateGenericOperationResultFailure<T>(Exception ex, string messageType)
+    {
+        var resultType = typeof(T).GetGenericArguments()[0];
+        var makeFailureMethod = typeof(OperationResult<>).MakeGenericType(resultType)
+            .GetMethod("MakeFailure", new[] { typeof(string) });
+
+        return (T)makeFailureMethod!.Invoke(null,
+            [$"An unexpected error occurred while processing {messageType}: {ex.Message}"])!;
+    }
+
+    private static T CreateOperationResultFailure<T>(Exception ex, string messageType)
+    {
+        return (T)(object)OperationResult.MakeFailure(ErrorMessage.Create("Global", $"An unexpected error occurred while processing {messageType}: {ex.Message}"));
+    }
+
+    private static T HandleReferenceOrValueType<T>(Exception ex, string messageType)
+    {
+        if (typeof(T).IsClass && Nullable.GetUnderlyingType(typeof(T)) == null)
+        {
+            return HandleReferenceType<T>();
+        }
+
+        throw new InvalidOperationException($"An unexpected error occurred while processing {messageType}: {ex.Message}", ex);
+    }
+
+    private static T HandleReferenceType<T>()
+    {
+        if (typeof(T).IsGenericType && typeof(T).GetGenericTypeDefinition() == typeof(IEnumerable<>))
+        {
+            var elementType = typeof(T).GetGenericArguments()[0];
+            var emptyMethod = typeof(Enumerable).GetMethod("Empty")!.MakeGenericMethod(elementType);
+            return (T)emptyMethod.Invoke(null, null)!;
+        }
+
+        if (!typeof(T).IsValueType)
+        {
+            return default(T)!;
+        }
+
+        return default(T)!;
     }
 }
