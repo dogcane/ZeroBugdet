@@ -1,0 +1,220 @@
+@webapiHostAddress = http://localhost:5143
+@bucketId = 1
+@spendingId = 1
+@tagId = 1
+@monthlyBucketId = 1
+@monthlySpendingId = 1
+
+# ================================
+# BUCKET CONTROLLER
+# ================================
+
+### Get Bucket by ID
+GET {{webapiHostAddress}}/api/bucket/{{bucketId}}
+Accept: application/json
+
+### Get Buckets by Name (with query parameters)
+GET {{webapiHostAddress}}/api/bucket?name=Groceries&description=Food&enabled=true
+Accept: application/json
+
+### Create new Bucket
+POST {{webapiHostAddress}}/api/bucket
+Content-Type: application/json
+
+{
+  "name": "Groceries",
+  "description": "Monthly grocery expenses",
+  "defaultLimit": 500.00
+}
+
+### Update Bucket
+PUT {{webapiHostAddress}}/api/bucket/{{bucketId}}
+Content-Type: application/json
+
+{
+  "name": "Updated Groceries",
+  "description": "Updated monthly grocery expenses",
+  "defaultLimit": 600.00
+}
+
+### Delete Bucket
+DELETE {{webapiHostAddress}}/api/bucket/{{bucketId}}
+
+### Enable Bucket
+PATCH {{webapiHostAddress}}/api/bucket/{{bucketId}}/enable
+
+# ================================
+# SPENDING CONTROLLER
+# ================================
+
+### Get Spending by ID
+GET {{webapiHostAddress}}/api/spending/{{spendingId}}
+Accept: application/json
+
+### Get All Spendings
+GET {{webapiHostAddress}}/api/spending
+Accept: application/json
+
+### Get Spendings by Bucket ID
+GET {{webapiHostAddress}}/api/spending/bucket/{{bucketId}}
+Accept: application/json
+
+### Get Spendings by Owner
+GET {{webapiHostAddress}}/api/spending/owner/john.doe
+Accept: application/json
+
+### Create new Spending
+POST {{webapiHostAddress}}/api/spending
+Content-Type: application/json
+
+{
+  "date": "2025-10-21",
+  "description": "Supermarket shopping",
+  "amount": 85.50,
+  "owner": "john.doe",
+  "bucketId": {{bucketId}},
+  "tagNames": ["food", "grocery"]
+}
+
+### Update Spending
+PUT {{webapiHostAddress}}/api/spending/{{spendingId}}
+Content-Type: application/json
+
+{
+  "date": "2025-10-21",
+  "description": "Updated supermarket shopping",
+  "amount": 90.00,
+  "owner": "john.doe",
+  "tagNames": ["food", "grocery", "organic"]
+}
+
+### Delete Spending
+DELETE {{webapiHostAddress}}/api/spending/{{spendingId}}
+
+### Enable Spending
+PATCH {{webapiHostAddress}}/api/spending/{{spendingId}}/enable
+
+# ================================
+# TAG CONTROLLER
+# ================================
+
+### Get Tag by ID
+GET {{webapiHostAddress}}/api/tag/{{tagId}}
+Accept: application/json
+
+### Get All Tags
+GET {{webapiHostAddress}}/api/tag
+Accept: application/json
+
+### Search Tags by Name
+GET {{webapiHostAddress}}/api/tag/search?name=food
+Accept: application/json
+
+### Create new Tag
+POST {{webapiHostAddress}}/api/tag
+Content-Type: application/json
+
+{
+  "name": "transportation",
+  "color": "#FF5733"
+}
+
+### Delete Tag
+DELETE {{webapiHostAddress}}/api/tag/{{tagId}}
+
+### Cleanup Unused Tags
+POST {{webapiHostAddress}}/api/tag/cleanup
+
+# ================================
+# MONTHLY BUCKET CONTROLLER
+# ================================
+
+### Get Monthly Bucket by ID
+GET {{webapiHostAddress}}/api/monthlybucket/{{monthlyBucketId}}
+Accept: application/json
+
+### Get All Monthly Buckets
+GET {{webapiHostAddress}}/api/monthlybucket
+Accept: application/json
+
+### Get Monthly Buckets by Year/Month
+GET {{webapiHostAddress}}/api/monthlybucket/year/2025/month/10
+Accept: application/json
+
+### Get Monthly Buckets by Bucket ID
+GET {{webapiHostAddress}}/api/monthlybucket/bucket/{{bucketId}}
+Accept: application/json
+
+### Generate Monthly Data
+POST {{webapiHostAddress}}/api/monthlybucket/generate
+Content-Type: application/json
+
+{
+  "year": 2025,
+  "month": 11
+}
+
+# ================================
+# MONTHLY SPENDING CONTROLLER
+# ================================
+
+### Get Monthly Spending by ID
+GET {{webapiHostAddress}}/api/monthlyspending/{{monthlySpendingId}}
+Accept: application/json
+
+### Get All Monthly Spendings
+GET {{webapiHostAddress}}/api/monthlyspending
+Accept: application/json
+
+### Get Monthly Spendings by Monthly Bucket ID
+GET {{webapiHostAddress}}/api/monthlyspending/monthly-bucket/{{monthlyBucketId}}
+Accept: application/json
+
+### Get Monthly Spendings by Date Range
+GET {{webapiHostAddress}}/api/monthlyspending/date-range?startDate=2025-10-01&endDate=2025-10-31
+Accept: application/json
+
+### Get Monthly Spendings by Owner
+GET {{webapiHostAddress}}/api/monthlyspending/owner/john.doe
+Accept: application/json
+
+### Create new Monthly Spending
+POST {{webapiHostAddress}}/api/monthlyspending
+Content-Type: application/json
+
+{
+  "date": "2025-10-21",
+  "description": "Monthly utility payment",
+  "amount": 120.00,
+  "owner": "john.doe",
+  "monthlyBucketId": {{monthlyBucketId}},
+  "tagNames": ["utilities", "monthly"]
+}
+
+### Update Monthly Spending
+PUT {{webapiHostAddress}}/api/monthlyspending/{{monthlySpendingId}}
+Content-Type: application/json
+
+{
+  "date": "2025-10-21",
+  "description": "Updated monthly utility payment",
+  "amount": 125.00,
+  "owner": "john.doe",
+  "tagNames": ["utilities", "monthly", "electricity"]
+}
+
+### Delete Monthly Spending
+DELETE {{webapiHostAddress}}/api/monthlyspending/{{monthlySpendingId}}
+
+# ================================
+# OPENAPI / SCALAR ENDPOINTS
+# ================================
+
+### Get OpenAPI JSON Documentation
+GET {{webapiHostAddress}}/openapi/v1.json
+Accept: application/json
+
+### Open Scalar API Documentation UI
+# Open in browser: {{webapiHostAddress}}/scalar/v1
+
+###
