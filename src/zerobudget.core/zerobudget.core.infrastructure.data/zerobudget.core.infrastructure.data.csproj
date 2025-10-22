@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <PackageReference Include="ECO.Core.Providers.EntityFramework" Version="3.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.10" />
   </ItemGroup>
 
 </Project>

@@ -4,6 +4,34 @@
 @tagId = 1
 @monthlyBucketId = 1
 @monthlySpendingId = 1
+@token =
+
+# ================================
+# ACCOUNT CONTROLLER (AUTHENTICATION)
+# ================================
+
+### Register new user
+POST {{webapiHostAddress}}/api/account/register
+Content-Type: application/json
+
+{
+  "email": "testuser@example.com",
+  "password": "TestPass123",
+  "confirmPassword": "TestPass123"
+}
+
+### Login and get JWT token
+POST {{webapiHostAddress}}/api/account/login
+Content-Type: application/json
+
+{
+  "email": "testuser@example.com",
+  "password": "TestPass123"
+}
+
+### Logout (requires token)
+POST {{webapiHostAddress}}/api/account/logout
+Authorization: Bearer {{token}}
 
 # ================================
 # BUCKET CONTROLLER
@@ -12,10 +40,12 @@
 ### Get Bucket by ID
 GET {{webapiHostAddress}}/api/bucket/{{bucketId}}
 Accept: application/json
+Authorization: Bearer {{token}}
 
 ### Get Buckets by Name (with query parameters)
 GET {{webapiHostAddress}}/api/bucket?name=Groceries&description=Food&enabled=true
 Accept: application/json
+Authorization: Bearer {{token}}
 
 ### Create new Bucket
 POST {{webapiHostAddress}}/api/bucket

@@ -1,4 +1,5 @@
 using System.Transactions;
+using Microsoft.Extensions.Logging;
 using Resulz;
 using zerobudget.core.application.Commands;
 using zerobudget.core.application.DTOs;
@@ -7,35 +8,27 @@ using zerobudget.core.application.Mappers;
 
 namespace zerobudget.core.application.Handlers.Commands;
 
-/// <summary>
-/// Command handlers for Spending operations.
-/// These handlers are now protected by the GlobalExceptionMiddleware,
-/// so unhandled exceptions will be automatically caught and converted to OperationResult failures.
-/// </summary>
-public class SpendingCommandHandlers(
+public class CreateSpendingCommandHandler(
     ISpendingRepository spendingRepository,
     IBucketRepository bucketRepository,
     ITagService tagService,
-    IMonthlySpendingRepository monthlySpendingRepository)
+    ILogger<CreateSpendingCommandHandler>? logger = null)
 {
-    #region Fields
     private readonly ISpendingRepository _spendingRepository = spendingRepository;
     private readonly IBucketRepository _bucketRepository = bucketRepository;
     private readonly ITagService _tagService = tagService;
-    private readonly IMonthlySpendingRepository _monthlySpendingRepository = monthlySpendingRepository;
+    private readonly ILogger<CreateSpendingCommandHandler>? _logger = logger;
     private readonly SpendingMapper _mapper = new SpendingMapper();
-    #endregion
 
-    public async Task<OperationResult<SpendingDto>> Handle(CreateSpendingCommand command)
+    public async Task<SpendingDto> Handle(CreateSpendingCommand command)
     {
         using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
 
         var bucket = await _bucketRepository.LoadAsync(command.BucketId);
         if (bucket == null)
-            return OperationResult.MakeFailure(ErrorMessage.Create("Bucket", "Bucket not found"));
+            throw new InvalidOperationException("Bucket not found");
 
-    // Ensure all tags exist by name, creating new ones if needed
-    var tags = await _tagService.EnsureTagsByNameAsync(command.TagNames);
+        var tags = await _tagService.EnsureTagsByNameAsync(command.TagNames);
 
         var spendingResult = Spending.Create(
             command.Description,
@@ -45,25 +38,35 @@ public class SpendingCommandHandlers(
             bucket);
 
         if (!spendingResult.Success)
-            return OperationResult<SpendingDto>.MakeFailure(spendingResult.Errors);
+            throw new InvalidOperationException(string.Join(", ", spendingResult.Errors.Select(e => e.Description)));
 
         var spending = spendingResult.Value!;
         await _spendingRepository.AddAsync(spending);
 
         scope.Complete();
-        return OperationResult<SpendingDto>.MakeSuccess(_mapper.ToDto(spending));
+        return _mapper.ToDto(spending);
     }
+}
 
-    public async Task<OperationResult<SpendingDto>> Handle(UpdateSpendingCommand command)
+public class UpdateSpendingCommandHandler(
+    ISpendingRepository spendingRepository,
+    ITagService tagService,
+    ILogger<UpdateSpendingCommandHandler>? logger = null)
+{
+    private readonly ISpendingRepository _spendingRepository = spendingRepository;
+    private readonly ITagService _tagService = tagService;
+    private readonly ILogger<UpdateSpendingCommandHandler>? _logger = logger;
+    private readonly SpendingMapper _mapper = new SpendingMapper();
+
+    public async Task<SpendingDto> Handle(UpdateSpendingCommand command)
     {
         using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
-        
+
         var spending = await _spendingRepository.LoadAsync(command.Id);
         if (spending == null)
-            return OperationResult<SpendingDto>.MakeFailure(ErrorMessage.Create("Spending", "Spending not found"));
+            throw new InvalidOperationException("Spending not found");
 
-    // Ensure all tags exist by name, creating new ones if needed
-    var tags = await _tagService.EnsureTagsByNameAsync(command.TagNames);
+        var tags = await _tagService.EnsureTagsByNameAsync(command.TagNames);
 
         var updateResult = spending.Update(
             command.Description,
@@ -72,24 +75,33 @@ public class SpendingCommandHandlers(
             [.. tags]);
 
         if (!updateResult.Success)
-            return OperationResult<SpendingDto>.MakeFailure(updateResult.Errors);
+            throw new InvalidOperationException(string.Join(", ", updateResult.Errors.Select(e => e.Description)));
 
         await _spendingRepository.UpdateAsync(spending);
 
         scope.Complete();
-        return OperationResult<SpendingDto>.MakeSuccess(_mapper.ToDto(spending));
+        return _mapper.ToDto(spending);
     }
+}
 
-    public async Task<OperationResult> Handle(DeleteSpendingCommand command)
+public class DeleteSpendingCommandHandler(
+    ISpendingRepository spendingRepository,
+    IMonthlySpendingRepository monthlySpendingRepository,
+    ILogger<DeleteSpendingCommandHandler>? logger = null)
+{
+    private readonly ISpendingRepository _spendingRepository = spendingRepository;
+    private readonly IMonthlySpendingRepository _monthlySpendingRepository = monthlySpendingRepository;
+    private readonly ILogger<DeleteSpendingCommandHandler>? _logger = logger;
+
+    public async Task Handle(DeleteSpendingCommand command)
     {
         using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
 
         var spending = await _spendingRepository.LoadAsync(command.Id);
         if (spending == null)
-            return OperationResult.MakeFailure(ErrorMessage.Create("Spending", "Spending not found"));
+            throw new InvalidOperationException("Spending not found");
 
-        // Check if there are related MonthlySpending records based on matching criteria
-        var hasRelatedMonthlySpendings = _monthlySpendingRepository.Any(ms => 
+        var hasRelatedMonthlySpendings = _monthlySpendingRepository.Any(ms =>
             ms.Description == spending.Description &&
             ms.Amount == spending.Amount &&
             ms.Owner == spending.Owner);
@@ -105,20 +117,29 @@ public class SpendingCommandHandlers(
         }
 
         scope.Complete();
-        return OperationResult.MakeSuccess();
     }
+}
 
-    public async Task<OperationResult> Handle(EnableSpendingCommand command)
+public class EnableSpendingCommandHandler(
+    ISpendingRepository spendingRepository,
+    ILogger<EnableSpendingCommandHandler>? logger = null)
+{
+    private readonly ISpendingRepository _spendingRepository = spendingRepository;
+    private readonly ILogger<EnableSpendingCommandHandler>? _logger = logger;
+    private readonly SpendingMapper _mapper = new SpendingMapper();
+
+    public async Task<SpendingDto> Handle(EnableSpendingCommand command)
     {
         using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
 
         var spending = await _spendingRepository.LoadAsync(command.Id);
         if (spending == null)
-            return OperationResult.MakeFailure(ErrorMessage.Create("Spending", "Spending not found"));
+            throw new InvalidOperationException("Spending not found");
 
         spending.Enable();
         await _spendingRepository.UpdateAsync(spending);
+
         scope.Complete();
-        return OperationResult.MakeSuccess();
+        return _mapper.ToDto(spending);
     }
 }

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Wolverine;
 using zerobudget.core.application.Handlers.Commands;
 using zerobudget.core.application.Handlers.Queries;
+using zerobudget.core.application.Queries;
 using zerobudget.core.application.Middleware;
 using zerobudget.core.domain;
 using zerobudget.core.infrastructure.data;
@@ -23,13 +24,6 @@ public static class ServiceCollectionExtensions
             opt.DbContextOptions.UseInMemoryDatabase("ZeroBudgetInMemoryDb"));
         });
 
-        // Add Wolverine with global exception middleware
-        services.AddWolverine(opts =>
-        {
-            // Add global exception middleware to all message handlers
-            opts.Policies.AddMiddleware<GlobalExceptionMiddleware>();
-        });
-
         // Register repository implementations
         services.AddScoped<IBucketRepository, BucketEFRepository>();
         services.AddScoped<IMonthlyBucketRepository, MonthlyBucketEFRepository>();
@@ -40,19 +34,53 @@ public static class ServiceCollectionExtensions
         // Register domain services
         services.AddScoped<ITagService, TagService>();
 
-        // Register command handlers
-        services.AddScoped<BucketCommandHandlers>();
-        services.AddScoped<MonthlyBucketCommandHandlers>();
-        services.AddScoped<TagCommandHandlers>();
-        services.AddScoped<SpendingCommandHandlers>();
-        services.AddScoped<MonthlySpendingCommandHandlers>();
+        // Register command and query handlers (split into individual classes for Wolverine)
+        // Query Handlers
+        services.AddScoped<GetBucketByIdQueryHandler>();
+        services.AddScoped<GetBucketsByNameQueryHandler>();
+        services.AddScoped<GetMonthlyBucketByIdQueryHandler>();
+        services.AddScoped<GetAllMonthlyBucketsQueryHandler>();
+        services.AddScoped<GetMonthlyBucketsByYearMonthQueryHandler>();
+        services.AddScoped<GetMonthlyBucketsByBucketIdQueryHandler>();
+        services.AddScoped<GetTagByIdQueryHandler>();
+        services.AddScoped<GetAllTagsQueryHandler>();
+        services.AddScoped<GetTagsByNameQueryHandler>();
+        services.AddScoped<GetSpendingByIdQueryHandler>();
+        services.AddScoped<GetAllSpendingsQueryHandler>();
+        services.AddScoped<GetSpendingsByBucketIdQueryHandler>();
+        services.AddScoped<GetSpendingsByOwnerQueryHandler>();
+        services.AddScoped<GetMonthlySpendingByIdQueryHandler>();
+        services.AddScoped<GetAllMonthlySpendingsQueryHandler>();
+        services.AddScoped<GetMonthlySpendingsByMonthlyBucketIdQueryHandler>();
+        services.AddScoped<GetMonthlySpendingsByDateRangeQueryHandler>();
+        services.AddScoped<GetMonthlySpendingsByOwnerQueryHandler>();
 
-        // Register query handlers
-        services.AddScoped<BucketQueryHandlers>();
-        services.AddScoped<MonthlyBucketQueryHandlers>();
-        services.AddScoped<TagQueryHandlers>();
-        services.AddScoped<SpendingQueryHandlers>();
-        services.AddScoped<MonthlySpendingQueryHandlers>();
+        // Command Handlers
+        services.AddScoped<CreateBucketCommandHandler>();
+        services.AddScoped<UpdateBucketCommandHandler>();
+        services.AddScoped<DeleteBucketCommandHandler>();
+        services.AddScoped<EnableBucketCommandHandler>();
+        services.AddScoped<GenerateMonthlyDataCommandHandler>();
+        services.AddScoped<CreateTagCommandHandler>();
+        services.AddScoped<DeleteTagCommandHandler>();
+        services.AddScoped<CleanupUnusedTagsCommandHandler>();
+        services.AddScoped<CreateSpendingCommandHandler>();
+        services.AddScoped<UpdateSpendingCommandHandler>();
+        services.AddScoped<DeleteSpendingCommandHandler>();
+        services.AddScoped<EnableSpendingCommandHandler>();
+        services.AddScoped<CreateMonthlySpendingCommandHandler>();
+        services.AddScoped<UpdateMonthlySpendingCommandHandler>();
+        services.AddScoped<DeleteMonthlySpendingCommandHandler>();
+
+        // Add Wolverine with discovery
+        services.AddWolverine(opts =>
+        {
+            // Enable discovery in the application assembly
+            opts.Discovery.IncludeAssembly(typeof(GetBucketByIdQueryHandler).Assembly);
+
+            // TODO: Re-enable exception middleware after fixing Wolverine compatibility
+            // opts.Policies.AddMiddleware<GlobalExceptionMiddleware>();
+        });
 
         return services;
     }

@@ -18,57 +18,55 @@ public class MonthlyDataGenerationCommandHandlerTests
 {
     private readonly Mock<IMonthlyBucketRepository> _mockMonthlyBucketRepository;
     private readonly Mock<IBucketRepository> _mockBucketRepository;
-    private readonly Mock<ISpendingRepository> _mockSpendingRepository;
-    private readonly Mock<IMonthlySpendingRepository> _mockMonthlySpendingRepository;
-    private readonly Mock<ILogger<MonthlyBucketCommandHandlers>> _mockLogger;
-    private readonly MonthlyBucketCommandHandlers _handler;
+    private readonly Mock<ILogger<GenerateMonthlyDataCommandHandler>> _mockLogger;
+    private readonly GenerateMonthlyDataCommandHandler _handler;
 
     public MonthlyDataGenerationCommandHandlerTests()
     {
         _mockMonthlyBucketRepository = new Mock<IMonthlyBucketRepository>();
         _mockBucketRepository = new Mock<IBucketRepository>();
-        _mockSpendingRepository = new Mock<ISpendingRepository>();
-        _mockMonthlySpendingRepository = new Mock<IMonthlySpendingRepository>();
-        _mockLogger = new Mock<ILogger<MonthlyBucketCommandHandlers>>();
+        _mockLogger = new Mock<ILogger<GenerateMonthlyDataCommandHandler>>();
 
-        _handler = new MonthlyBucketCommandHandlers(
+        _handler = new GenerateMonthlyDataCommandHandler(
             _mockMonthlyBucketRepository.Object,
             _mockBucketRepository.Object,
-            _mockSpendingRepository.Object,
-            _mockMonthlySpendingRepository.Object,
             _mockLogger.Object);
     }
 
     [Fact]
-    public async Task Handle_GenerateMonthlyDataCommand_ShouldFailWhenDataAlreadyExists()
+    public async Task Handle_GenerateMonthlyDataCommand_ShouldReturnTrueWhenSuccessful()
     {
         // Arrange
         var command = new GenerateMonthlyDataCommand(2025, 1);
 
         var monthlyBucketRepository = new Mock<IMonthlyBucketRepository>();
         var bucketRepository = new Mock<IBucketRepository>();
-        var spendingRepository = new Mock<ISpendingRepository>();
-        var monthlySpendingRepository = new Mock<IMonthlySpendingRepository>();
-        var logger = new Mock<ILogger<MonthlyBucketCommandHandlers>>();
+        var logger = new Mock<ILogger<GenerateMonthlyDataCommandHandler>>();
 
-        var handler = new MonthlyBucketCommandHandlers(
+        var handler = new GenerateMonthlyDataCommandHandler(
             monthlyBucketRepository.Object,
             bucketRepository.Object,
-            spendingRepository.Object,
-            monthlySpendingRepository.Object,
             logger.Object);
 
-        // Setup: Existing monthly bucket for the same period
+        // Setup: Create test buckets
+        var bucket1 = Bucket.Create("Bucket1", "Description1", 1000m).Value!;
+        var bucket2 = Bucket.Create("Bucket2", "Description2", 2000m).Value!;
+        var buckets = new[] { bucket1, bucket2 };
+
+        bucketRepository
+            .Setup(r => r.AsQueryable())
+            .Returns(buckets.AsQueryable());
+
         monthlyBucketRepository
-            .Setup(r => r.Any(It.IsAny<Func<MonthlyBucket, bool>>()))
-            .Returns(true); // Simulate existing data
+            .Setup(r => r.AddAsync(It.IsAny<MonthlyBucket>()))
+            .Returns(Task.CompletedTask);
 
         // Act
         var result = await handler.Handle(command);
 
         // Assert
-        Assert.False(result.Success);
-        Assert.NotEmpty(result.Errors);
+        Assert.True(result);
+        monthlyBucketRepository.Verify(r => r.AddAsync(It.IsAny<MonthlyBucket>()), Times.Exactly(2));
     }
 
     // Note: For comprehensive testing with IQueryable operations, consider using:

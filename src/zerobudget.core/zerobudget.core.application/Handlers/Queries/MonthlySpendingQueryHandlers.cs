@@ -7,11 +7,11 @@ using Microsoft.Extensions.Logging;
 
 namespace zerobudget.core.application.Handlers.Queries;
 
-public class MonthlySpendingQueryHandlers(IMonthlySpendingRepository monthlySpendingRepository, ILogger<MonthlySpendingQueryHandlers>? logger = null)
+public class GetMonthlySpendingByIdQueryHandler(IMonthlySpendingRepository monthlySpendingRepository, ILogger<GetMonthlySpendingByIdQueryHandler>? logger = null)
 {
     private readonly IMonthlySpendingRepository _monthlySpendingRepository = monthlySpendingRepository;
-    private readonly ILogger<MonthlySpendingQueryHandlers>? _logger = logger;
-    private readonly MonthlySpendingMapper _mapper = new();    
+    private readonly ILogger<GetMonthlySpendingByIdQueryHandler>? _logger = logger;
+    private readonly MonthlySpendingMapper _mapper = new();
 
     public async Task<MonthlySpendingDto?> Handle(GetMonthlySpendingByIdQuery query)
     {
@@ -20,19 +20,40 @@ public class MonthlySpendingQueryHandlers(IMonthlySpendingRepository monthlySpen
             return null;
         return _mapper.ToDto(monthlySpending);
     }
+}
+
+public class GetAllMonthlySpendingsQueryHandler(IMonthlySpendingRepository monthlySpendingRepository, ILogger<GetAllMonthlySpendingsQueryHandler>? logger = null)
+{
+    private readonly IMonthlySpendingRepository _monthlySpendingRepository = monthlySpendingRepository;
+    private readonly ILogger<GetAllMonthlySpendingsQueryHandler>? _logger = logger;
+    private readonly MonthlySpendingMapper _mapper = new();
 
     public async Task<IEnumerable<MonthlySpendingDto>> Handle(GetAllMonthlySpendingsQuery query)
     {
         var monthlySpendings = _monthlySpendingRepository.AsQueryable();
         return await Task.FromResult(monthlySpendings.Select(_mapper.ToDto));
     }
+}
+
+public class GetMonthlySpendingsByMonthlyBucketIdQueryHandler(IMonthlySpendingRepository monthlySpendingRepository, ILogger<GetMonthlySpendingsByMonthlyBucketIdQueryHandler>? logger = null)
+{
+    private readonly IMonthlySpendingRepository _monthlySpendingRepository = monthlySpendingRepository;
+    private readonly ILogger<GetMonthlySpendingsByMonthlyBucketIdQueryHandler>? _logger = logger;
+    private readonly MonthlySpendingMapper _mapper = new();
 
     public async Task<IEnumerable<MonthlySpendingDto>> Handle(GetMonthlySpendingsByMonthlyBucketIdQuery query)
     {
-        var monthlySpendings =  _monthlySpendingRepository.AsQueryable();
+        var monthlySpendings = _monthlySpendingRepository.AsQueryable();
         var filteredSpendings = monthlySpendings.Where(ms => ms.MonthlyBucketId == query.MonthlyBucketId);
         return await Task.FromResult(filteredSpendings.Select(_mapper.ToDto));
     }
+}
+
+public class GetMonthlySpendingsByDateRangeQueryHandler(IMonthlySpendingRepository monthlySpendingRepository, ILogger<GetMonthlySpendingsByDateRangeQueryHandler>? logger = null)
+{
+    private readonly IMonthlySpendingRepository _monthlySpendingRepository = monthlySpendingRepository;
+    private readonly ILogger<GetMonthlySpendingsByDateRangeQueryHandler>? _logger = logger;
+    private readonly MonthlySpendingMapper _mapper = new();
 
     public async Task<IEnumerable<MonthlySpendingDto>> Handle(GetMonthlySpendingsByDateRangeQuery query)
     {
@@ -40,6 +61,13 @@ public class MonthlySpendingQueryHandlers(IMonthlySpendingRepository monthlySpen
         var filteredSpendings = monthlySpendings.Where(ms => ms.Date >= query.StartDate && ms.Date <= query.EndDate);
         return await Task.FromResult(filteredSpendings.Select(_mapper.ToDto));
     }
+}
+
+public class GetMonthlySpendingsByOwnerQueryHandler(IMonthlySpendingRepository monthlySpendingRepository, ILogger<GetMonthlySpendingsByOwnerQueryHandler>? logger = null)
+{
+    private readonly IMonthlySpendingRepository _monthlySpendingRepository = monthlySpendingRepository;
+    private readonly ILogger<GetMonthlySpendingsByOwnerQueryHandler>? _logger = logger;
+    private readonly MonthlySpendingMapper _mapper = new();
 
     public async Task<IEnumerable<MonthlySpendingDto>> Handle(GetMonthlySpendingsByOwnerQuery query)
     {

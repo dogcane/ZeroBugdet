@@ -14,82 +14,72 @@ public class TagCommandHandlerTests
     {
         // Arrange
         var tagRepository = new Mock<ITagRepository>();
-        var handler = new TagCommandHandlers(tagRepository.Object);
+        var handler = new CreateTagCommandHandler(tagRepository.Object);
         var command = new CreateTagCommand("TestTag");
-        
+
         tagRepository.Setup(r => r.AddAsync(It.IsAny<Tag>()))
                      .Returns(Task.CompletedTask);
-        
+
         // Act
         var result = await handler.Handle(command);
-        
+
         // Assert
-        Assert.True(result.Success);
-        Assert.NotNull(result.Value);
-        Assert.Equal("testtag", result.Value.Name);
+        Assert.NotNull(result);
+        Assert.Equal("testtag", result.Name);
         tagRepository.Verify(r => r.AddAsync(It.IsAny<Tag>()), Times.Once);
     }
-    
+
     [Fact]
-    public async Task Handle_CreateTagCommand_WithEmptyName_ShouldReturnFailure()
+    public async Task Handle_CreateTagCommand_WithEmptyName_ShouldThrowException()
     {
         // Arrange
         var tagRepository = new Mock<ITagRepository>();
-        var handler = new TagCommandHandlers(tagRepository.Object);
+        var handler = new CreateTagCommandHandler(tagRepository.Object);
         var command = new CreateTagCommand("");
-        
-        // Act
-        var result = await handler.Handle(command);
-        
-        // Assert
-        Assert.False(result.Success);
-        Assert.NotEmpty(result.Errors);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(() => handler.Handle(command));
         tagRepository.Verify(r => r.AddAsync(It.IsAny<Tag>()), Times.Never);
     }
-    
+
     [Fact]
     public async Task Handle_DeleteTagCommand_ShouldDeleteExistingTag()
     {
         // Arrange
         var tagRepository = new Mock<ITagRepository>();
-        var handler = new TagCommandHandlers(tagRepository.Object);
+        var handler = new DeleteTagCommandHandler(tagRepository.Object);
         var tagResult = Tag.Create("TestTag");
         var tag = tagResult.Value!;
-        
+
         var command = new DeleteTagCommand(1);
-        
+
         tagRepository
             .Setup(r => r.LoadAsync(It.IsAny<int>()))
             .ReturnsAsync(tag);
         tagRepository.Setup(r => r.RemoveAsync(It.IsAny<Tag>()))
                      .Returns(Task.CompletedTask);
-        
+
         // Act
-        var result = await handler.Handle(command);
-        
+        await handler.Handle(command);
+
         // Assert
-        Assert.True(result.Success);
         tagRepository.Verify(r => r.RemoveAsync(It.IsAny<Tag>()), Times.Once);
     }
-    
+
     [Fact]
-    public async Task Handle_DeleteTagCommand_WithNonExistentTag_ShouldReturnFailure()
+    public async Task Handle_DeleteTagCommand_WithNonExistentTag_ShouldThrowException()
     {
         // Arrange
         var tagRepository = new Mock<ITagRepository>();
-        var handler = new TagCommandHandlers(tagRepository.Object);
+        var handler = new DeleteTagCommandHandler(tagRepository.Object);
         var command = new DeleteTagCommand(999);
-        
+
         tagRepository
             .Setup(r => r.LoadAsync(It.IsAny<int>()))
             .ReturnsAsync((Tag?)null);
-        
-        // Act
-        var result = await handler.Handle(command);
-        
-        // Assert
-        Assert.False(result.Success);
-        Assert.NotEmpty(result.Errors);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(() => handler.Handle(command));
         tagRepository.Verify(r => r.RemoveAsync(It.IsAny<Tag>()), Times.Never);
     }
 }

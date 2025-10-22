@@ -16,13 +16,11 @@ public class SpendingCommandHandlerTests
         var spendingRepository = new Mock<ISpendingRepository>();
         var bucketRepository = new Mock<IBucketRepository>();
         var tagService = new Mock<ITagService>();
-        var monthlySpendingRepository = new Mock<IMonthlySpendingRepository>();
 
-        var handler = new SpendingCommandHandlers(
+        var handler = new CreateSpendingCommandHandler(
             spendingRepository.Object,
             bucketRepository.Object,
-            tagService.Object,
-            monthlySpendingRepository.Object);
+            tagService.Object);
 
         var bucketResult = Bucket.Create("Test Bucket", "Test Description", 1000m);
         var bucket = bucketResult.Value!;
@@ -53,13 +51,12 @@ public class SpendingCommandHandlerTests
         var result = await handler.Handle(command);
 
         // Assert
-        Assert.True(result.Success);
-        Assert.NotNull(result.Value);
-        Assert.Equal("Test Spending", result.Value.Description);
-        Assert.Equal(100m, result.Value.Amount);
-        Assert.Equal(2, result.Value.Tags.Length);
-        Assert.Contains("food", result.Value.Tags);
-        Assert.Contains("holiday", result.Value.Tags);
+        Assert.NotNull(result);
+        Assert.Equal("Test Spending", result.Description);
+        Assert.Equal(100m, result.Amount);
+        Assert.Equal(2, result.Tags.Length);
+        Assert.Contains("food", result.Tags);
+        Assert.Contains("holiday", result.Tags);
         spendingRepository.Verify(r => r.AddAsync(It.IsAny<Spending>()), Times.Once);
     }
 
@@ -70,13 +67,11 @@ public class SpendingCommandHandlerTests
         var spendingRepository = new Mock<ISpendingRepository>();
         var bucketRepository = new Mock<IBucketRepository>();
         var tagService = new Mock<ITagService>();
-        var monthlySpendingRepository = new Mock<IMonthlySpendingRepository>();
 
-        var handler = new SpendingCommandHandlers(
+        var handler = new CreateSpendingCommandHandler(
             spendingRepository.Object,
             bucketRepository.Object,
-            tagService.Object,
-            monthlySpendingRepository.Object);
+            tagService.Object);
 
         var bucketResult = Bucket.Create("Test Bucket", "Test Description", 1000m);
         var bucket = bucketResult.Value!;
@@ -107,11 +102,10 @@ public class SpendingCommandHandlerTests
         var result = await handler.Handle(command);
 
         // Assert
-        Assert.True(result.Success);
-        Assert.NotNull(result.Value);
-        Assert.Equal(2, result.Value.Tags.Length);
-        Assert.Contains("food", result.Value.Tags);
-        Assert.Contains("cinema", result.Value.Tags);
+        Assert.NotNull(result);
+        Assert.Equal(2, result.Tags.Length);
+        Assert.Contains("food", result.Tags);
+        Assert.Contains("cinema", result.Tags);
         spendingRepository.Verify(r => r.AddAsync(It.IsAny<Spending>()), Times.Once);
     }
 
@@ -122,13 +116,11 @@ public class SpendingCommandHandlerTests
         var spendingRepository = new Mock<ISpendingRepository>();
         var bucketRepository = new Mock<IBucketRepository>();
         var tagService = new Mock<ITagService>();
-        var monthlySpendingRepository = new Mock<IMonthlySpendingRepository>();
 
-        var handler = new SpendingCommandHandlers(
+        var handler = new CreateSpendingCommandHandler(
             spendingRepository.Object,
             bucketRepository.Object,
-            tagService.Object,
-            monthlySpendingRepository.Object);
+            tagService.Object);
 
         bucketRepository
             .SetupRepository<IBucketRepository, Bucket, int>([]);
@@ -141,12 +133,8 @@ public class SpendingCommandHandlerTests
             Owner: "John",
             TagNames: new[] { "food" });
 
-        // Act
-        var result = await handler.Handle(command);
-
-        // Assert
-        Assert.False(result.Success);
-        Assert.NotEmpty(result.Errors);
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(() => handler.Handle(command));
         spendingRepository.Verify(r => r.AddAsync(It.IsAny<Spending>()), Times.Never);
     }
 
@@ -155,15 +143,11 @@ public class SpendingCommandHandlerTests
     {
         // Arrange
         var spendingRepository = new Mock<ISpendingRepository>();
-        var bucketRepository = new Mock<IBucketRepository>();
         var tagService = new Mock<ITagService>();
-        var monthlySpendingRepository = new Mock<IMonthlySpendingRepository>();
 
-        var handler = new SpendingCommandHandlers(
+        var handler = new UpdateSpendingCommandHandler(
             spendingRepository.Object,
-            bucketRepository.Object,
-            tagService.Object,
-            monthlySpendingRepository.Object);
+            tagService.Object);
 
         var bucketResult = Bucket.Create("Test Bucket", "Test Description", 1000m);
         var bucket = bucketResult.Value!;
@@ -194,12 +178,11 @@ public class SpendingCommandHandlerTests
         var result = await handler.Handle(command);
 
         // Assert
-        Assert.True(result.Success);
-        Assert.NotNull(result.Value);
-        Assert.Equal("Updated Spending", result.Value.Description);
-        Assert.Equal(150m, result.Value.Amount);
-        Assert.Equal("Jane", result.Value.Owner);
-        Assert.Contains("food", result.Value.Tags);
+        Assert.NotNull(result);
+        Assert.Equal("Updated Spending", result.Description);
+        Assert.Equal(150m, result.Amount);
+        Assert.Equal("Jane", result.Owner);
+        Assert.Contains("food", result.Tags);
         spendingRepository.Verify(r => r.UpdateAsync(It.IsAny<Spending>()), Times.Once);
     }
 
@@ -208,15 +191,11 @@ public class SpendingCommandHandlerTests
     {
         // Arrange
         var spendingRepository = new Mock<ISpendingRepository>();
-        var bucketRepository = new Mock<IBucketRepository>();
         var tagService = new Mock<ITagService>();
-        var monthlySpendingRepository = new Mock<IMonthlySpendingRepository>();
 
-        var handler = new SpendingCommandHandlers(
+        var handler = new UpdateSpendingCommandHandler(
             spendingRepository.Object,
-            bucketRepository.Object,
-            tagService.Object,
-            monthlySpendingRepository.Object);
+            tagService.Object);
 
         spendingRepository
             .SetupRepository<ISpendingRepository, Spending, int>([]);
@@ -229,12 +208,8 @@ public class SpendingCommandHandlerTests
             Owner: "Jane",
             TagNames: new[] { "food" });
 
-        // Act
-        var result = await handler.Handle(command);
-
-        // Assert
-        Assert.False(result.Success);
-        Assert.NotEmpty(result.Errors);
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(() => handler.Handle(command));
         spendingRepository.Verify(r => r.UpdateAsync(It.IsAny<Spending>()), Times.Never);
     }
 }

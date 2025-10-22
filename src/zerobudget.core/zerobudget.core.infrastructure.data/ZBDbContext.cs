@@ -3,7 +3,7 @@ using zerobudget.core.domain;
 
 namespace zerobudget.core.infrastructure.data;
 
-public class ZBDbContext(DbContextOptions<ZBDbContext> options) : DbContext(options)
+public class ZBDbContext(DbContextOptions options) : DbContext(options)
 {
     public DbSet<Bucket> Buckets { get; set; } = null!;
     public DbSet<MonthlyBucket> MonthlyBuckets { get; set; } = null!;

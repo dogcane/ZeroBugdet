@@ -2,16 +2,19 @@ using zerobudget.core.application.DTOs;
 using zerobudget.core.application.Queries;
 using zerobudget.core.domain;
 using zerobudget.core.application.Mappers;
-
-namespace zerobudget.core.application.Handlers.Queries;
-
 using System.Transactions;
 using Microsoft.Extensions.Logging;
 
-public class BucketQueryHandlers(IBucketRepository bucketRepository, ILogger<BucketQueryHandlers>? logger = null)
+namespace zerobudget.core.application.Handlers.Queries;
+
+/// <summary>
+/// Handler for GetBucketByIdQuery
+/// Each handler class has only ONE Handle method for Wolverine compatibility
+/// </summary>
+public class GetBucketByIdQueryHandler(IBucketRepository bucketRepository, ILogger<GetBucketByIdQueryHandler>? logger = null)
 {
     private readonly IBucketRepository _bucketRepository = bucketRepository;
-    private readonly ILogger<BucketQueryHandlers>? _logger = logger;
+    private readonly ILogger<GetBucketByIdQueryHandler>? _logger = logger;
     private readonly BucketMapper _mapper = new();
 
     public async Task<BucketDto?> Handle(GetBucketByIdQuery query)
@@ -23,6 +26,16 @@ public class BucketQueryHandlers(IBucketRepository bucketRepository, ILogger<Buc
         scope.Complete();
         return _mapper.ToDto(bucket);
     }
+}
+
+/// <summary>
+/// Handler for GetBucketsByNameQuery
+/// </summary>
+public class GetBucketsByNameQueryHandler(IBucketRepository bucketRepository, ILogger<GetBucketsByNameQueryHandler>? logger = null)
+{
+    private readonly IBucketRepository _bucketRepository = bucketRepository;
+    private readonly ILogger<GetBucketsByNameQueryHandler>? _logger = logger;
+    private readonly BucketMapper _mapper = new();
 
     public async Task<IEnumerable<BucketDto>> Handle(GetBucketsByNameQuery query)
     {

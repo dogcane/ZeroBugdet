@@ -14,7 +14,7 @@ public class BucketQueryHandlerTests
     {
         // Arrange
         var bucketRepository = new Mock<IBucketRepository>();
-        var handler = new BucketQueryHandlers(bucketRepository.Object);
+        var handler = new GetBucketByIdQueryHandler(bucketRepository.Object);
         var bucketResult = Bucket.Create("Test Bucket", "Test Description", 1000m);
         var bucket = bucketResult.Value!;
 
@@ -38,7 +38,7 @@ public class BucketQueryHandlerTests
     {
         // Arrange
         var bucketRepository = new Mock<IBucketRepository>();
-        var handler = new BucketQueryHandlers(bucketRepository.Object);
+        var handler = new GetBucketByIdQueryHandler(bucketRepository.Object);
         var query = new GetBucketByIdQuery(999);
 
         bucketRepository
@@ -56,7 +56,7 @@ public class BucketQueryHandlerTests
     {
         // Arrange
         var bucketRepository = new Mock<IBucketRepository>();
-        var handler = new BucketQueryHandlers(bucketRepository.Object);
+        var handler = new GetBucketsByNameQueryHandler(bucketRepository.Object);
 
         var bucket1Result = Bucket.Create("Bucket 1", "Description 1", 1000m);
         var bucket2Result = Bucket.Create("Bucket 2", "Description 2", 2000m);
