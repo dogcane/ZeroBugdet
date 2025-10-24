@@ -65,9 +65,7 @@ public class SpendingQueryHandlerTests
         var spending1 = Spending.Create("Spending1", 100m, "Owner1", Array.Empty<Tag>(), bucket).Value!;
         var spending2 = Spending.Create("Spending2", 200m, "Owner2", Array.Empty<Tag>(), bucket).Value!;
 
-        spendingRepository
-            .Setup(r => r.AsQueryable())
-            .Returns(new[] { spending1, spending2 }.AsQueryable());
+        spendingRepository.SetupAsQueryable<ISpendingRepository, Spending, int>(new[] { spending1, spending2 });
 
         var query = new GetAllSpendingsQuery();
 
@@ -91,9 +89,7 @@ public class SpendingQueryHandlerTests
         var spending1 = Spending.Create("Spending1", 100m, "Owner", Array.Empty<Tag>(), bucket1).Value!;
         var spending2 = Spending.Create("Spending2", 200m, "Owner", Array.Empty<Tag>(), bucket2).Value!;
 
-        spendingRepository
-            .Setup(r => r.AsQueryable())
-            .Returns(new[] { spending1, spending2 }.AsQueryable());
+        spendingRepository.SetupAsQueryable<ISpendingRepository, Spending, int>(new[] { spending1, spending2 });
 
         var query = new GetSpendingsByBucketIdQuery(bucket1.Identity);
 
@@ -117,9 +113,7 @@ public class SpendingQueryHandlerTests
         var spending1 = Spending.Create("Spending1", 100m, "Owner1", Array.Empty<Tag>(), bucket).Value!;
         var spending2 = Spending.Create("Spending2", 200m, "Owner2", Array.Empty<Tag>(), bucket).Value!;
 
-        spendingRepository
-            .Setup(r => r.AsQueryable())
-            .Returns(new[] { spending1, spending2 }.AsQueryable());
+        spendingRepository.SetupAsQueryable<ISpendingRepository, Spending, int>(new[] { spending1, spending2 });
 
         var query = new GetSpendingsByOwnerQuery("Owner1");
 

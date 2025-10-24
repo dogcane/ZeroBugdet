@@ -44,7 +44,8 @@ public class BucketCommandHandlerTests
 
         var command = new UpdateBucketCommand(1, "Updated Bucket", "Updated Description", 1500m);
         bucketRepository
-            .SetupRepository<IBucketRepository, Bucket, int>([bucket]);
+            .Setup(r => r.LoadAsync(It.IsAny<int>()))
+            .Returns(new ValueTask<Bucket?>(bucket));
         bucketRepository
             .Setup(r => r.UpdateAsync(It.IsAny<Bucket>()))
             .Returns(Task.CompletedTask);
@@ -73,10 +74,13 @@ public class BucketCommandHandlerTests
         var command = new DeleteBucketCommand(1);
 
         bucketRepository
-            .SetupRepository<IBucketRepository, Bucket, int>([bucket]);
-        monthlyBucketRepository
-            .Setup(r => r.Any(It.IsAny<Func<MonthlyBucket, bool>>()))
-            .Returns(false);
+            .Setup(r => r.LoadAsync(It.IsAny<int>()))
+            .Returns(new ValueTask<Bucket?>(bucket));
+        
+        // Setup monthlyBucketRepository as IQueryable with empty data
+        // This will make Any() return false
+        monthlyBucketRepository.SetupAsQueryable<IMonthlyBucketRepository, MonthlyBucket, int>(Array.Empty<MonthlyBucket>());
+        
         bucketRepository.Setup(r => r.RemoveAsync(It.IsAny<Bucket>()))
                      .Returns(Task.CompletedTask);
 
@@ -96,7 +100,8 @@ public class BucketCommandHandlerTests
         var command = new UpdateBucketCommand(999, "Test", "Test Description", 1000m);
 
         bucketRepository
-            .SetupRepository<IBucketRepository, Bucket, int>([]);
+            .Setup(r => r.LoadAsync(It.IsAny<int>()))
+            .Returns(new ValueTask<Bucket?>(null as Bucket));
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(() => handler.Handle(command));

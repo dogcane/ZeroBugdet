@@ -53,9 +53,7 @@ public class MonthlyDataGenerationCommandHandlerTests
         var bucket2 = Bucket.Create("Bucket2", "Description2", 2000m).Value!;
         var buckets = new[] { bucket1, bucket2 };
 
-        bucketRepository
-            .Setup(r => r.AsQueryable())
-            .Returns(buckets.AsQueryable());
+        bucketRepository.SetupAsQueryable<IBucketRepository, Bucket, int>(buckets);
 
         monthlyBucketRepository
             .Setup(r => r.AddAsync(It.IsAny<MonthlyBucket>()))

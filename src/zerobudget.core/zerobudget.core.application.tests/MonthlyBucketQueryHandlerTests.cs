@@ -67,9 +67,7 @@ public class MonthlyBucketQueryHandlerTests
         var monthlyBucket1 = bucket1.CreateMonthly(2024, 10);
         var monthlyBucket2 = bucket2.CreateMonthly(2024, 10);
 
-        monthlyBucketRepository
-            .Setup(r => r.AsQueryable())
-            .Returns(new[] { monthlyBucket1, monthlyBucket2 }.AsQueryable());
+        monthlyBucketRepository.SetupAsQueryable<IMonthlyBucketRepository, MonthlyBucket, int>(new[] { monthlyBucket1, monthlyBucket2 });
 
         var query = new GetAllMonthlyBucketsQuery();
 
@@ -93,9 +91,7 @@ public class MonthlyBucketQueryHandlerTests
         var monthlyBucket1 = bucket1.CreateMonthly(2024, 10);
         var monthlyBucket2 = bucket2.CreateMonthly(2024, 11);
 
-        monthlyBucketRepository
-            .Setup(r => r.AsQueryable())
-            .Returns(new[] { monthlyBucket1, monthlyBucket2 }.AsQueryable());
+        monthlyBucketRepository.SetupAsQueryable<IMonthlyBucketRepository, MonthlyBucket, int>(new[] { monthlyBucket1, monthlyBucket2 });
 
         var query = new GetMonthlyBucketsByYearMonthQuery(2024, 10);
 
@@ -120,9 +116,7 @@ public class MonthlyBucketQueryHandlerTests
         var monthlyBucket1 = bucket1.CreateMonthly(2024, 10);
         var monthlyBucket2 = bucket2.CreateMonthly(2024, 10);
 
-        monthlyBucketRepository
-            .Setup(r => r.AsQueryable())
-            .Returns(new[] { monthlyBucket1, monthlyBucket2 }.AsQueryable());
+        monthlyBucketRepository.SetupAsQueryable<IMonthlyBucketRepository, MonthlyBucket, int>(new[] { monthlyBucket1, monthlyBucket2 });
 
         var query = new GetMonthlyBucketsByBucketIdQuery(bucket1.Identity);
 

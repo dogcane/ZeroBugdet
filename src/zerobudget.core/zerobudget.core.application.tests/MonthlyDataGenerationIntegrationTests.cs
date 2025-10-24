@@ -29,8 +29,7 @@ public class MonthlyDataGenerationIntegrationTests
         var bucket1 = Bucket.Create("Test Bucket 1", "Description 1", 1000m).Value!;
         var bucket2 = Bucket.Create("Test Bucket 2", "Description 2", 2000m).Value!;
 
-        mockBucketRepository.Setup(r => r.AsQueryable())
-            .Returns(new[] { bucket1, bucket2 }.AsQueryable());
+        mockBucketRepository.SetupAsQueryable<IBucketRepository, Bucket, int>(new[] { bucket1, bucket2 });
 
         // Setup spendings
         var spending1 = Spending.Create(
@@ -47,11 +46,9 @@ public class MonthlyDataGenerationIntegrationTests
             Array.Empty<Tag>(),
             bucket2).Value!;
 
-        mockSpendingRepository.Setup(r => r.AsQueryable())
-            .Returns(new[] { spending1, spending2 }.AsQueryable());
+        mockSpendingRepository.SetupAsQueryable<ISpendingRepository, Spending, int>(new[] { spending1, spending2 });
 
-        mockMonthlyBucketRepository.Setup(r => r.AsQueryable())
-            .Returns(Enumerable.Empty<MonthlyBucket>().AsQueryable());
+        mockMonthlyBucketRepository.SetupAsQueryable<IMonthlyBucketRepository, MonthlyBucket, int>(Enumerable.Empty<MonthlyBucket>());
 
         var command = new GenerateMonthlyDataCommand(2025, 1);
 
@@ -79,14 +76,11 @@ public class MonthlyDataGenerationIntegrationTests
         var bucket = Bucket.Create("Test Bucket", "Description", 1000m).Value!;
         var monthlyBucket = bucket.CreateMonthly(2025, 1);
 
-        mockBucketRepository.Setup(r => r.AsQueryable())
-            .Returns(new[] { bucket }.AsQueryable());
+        mockBucketRepository.SetupAsQueryable<IBucketRepository, Bucket, int>(new[] { bucket });
 
-        mockMonthlyBucketRepository.Setup(r => r.AsQueryable())
-            .Returns(new[] { monthlyBucket }.AsQueryable());
+        mockMonthlyBucketRepository.SetupAsQueryable<IMonthlyBucketRepository, MonthlyBucket, int>(new[] { monthlyBucket });
 
-        mockSpendingRepository.Setup(r => r.AsQueryable())
-            .Returns(Enumerable.Empty<Spending>().AsQueryable());
+        mockSpendingRepository.SetupAsQueryable<ISpendingRepository, Spending, int>(Enumerable.Empty<Spending>());
 
         var command = new GenerateMonthlyDataCommand(2025, 1);
 

@@ -21,7 +21,8 @@ public class BucketQueryHandlerTests
         var query = new GetBucketByIdQuery(1);
 
         bucketRepository
-            .SetupRepository<IBucketRepository, Bucket, int>([bucket]);
+            .Setup(r => r.LoadAsync(It.IsAny<int>()))
+            .Returns(new ValueTask<Bucket?>(bucket));
 
         // Act
         var result = await handler.Handle(query);
@@ -42,7 +43,8 @@ public class BucketQueryHandlerTests
         var query = new GetBucketByIdQuery(999);
 
         bucketRepository
-            .SetupRepository<IBucketRepository, Bucket, int>([]);
+            .Setup(r => r.LoadAsync(It.IsAny<int>()))
+            .Returns(new ValueTask<Bucket?>(null as Bucket));
 
         // Act
         var result = await handler.Handle(query);
@@ -64,8 +66,8 @@ public class BucketQueryHandlerTests
 
         var query = new GetBucketsByNameQuery("Bucket", "", true);
 
-        bucketRepository
-            .SetupRepository<IBucketRepository, Bucket, int>(buckets);
+        // Setup the repository to act as IQueryable
+        bucketRepository.SetupAsQueryable<IBucketRepository, Bucket, int>(buckets);
 
         // Act
         var result = await handler.Handle(query);
