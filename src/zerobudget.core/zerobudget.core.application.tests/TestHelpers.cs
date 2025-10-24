@@ -38,23 +38,39 @@ public static class TestHelpers
         where TKey : IEquatable<TKey>
     {
         var identityProperty = typeof(TEntity).GetProperty("Identity", BindingFlags.Public | BindingFlags.Instance);
-        if (identityProperty == null || !identityProperty.CanWrite)
+        if (identityProperty == null)
         {
-            // Try to find a private setter
-            var backingField = typeof(TEntity).GetField("<Identity>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance);
-            if (backingField != null)
-            {
-                backingField.SetValue(entity, identity);
-            }
-            else
-            {
-                throw new InvalidOperationException($"Cannot set Identity on {typeof(TEntity).Name}");
-            }
+            throw new InvalidOperationException($"Identity property not found on {typeof(TEntity).Name}");
         }
-        else
+
+        // Check if property has a public setter
+        if (identityProperty.CanWrite && identityProperty.SetMethod?.IsPublic == true)
         {
             identityProperty.SetValue(entity, identity);
+            return entity;
         }
-        return entity;
+
+        // Try to find the backing field by searching all fields including inherited ones
+        Type? currentType = typeof(TEntity);
+        FieldInfo? backingField = null;
+        
+        while (currentType != null && backingField == null)
+        {
+            backingField = currentType
+                .GetFields(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                .FirstOrDefault(f => 
+                    f.Name.Contains("Identity", StringComparison.OrdinalIgnoreCase) || 
+                    f.Name.Contains("<Identity>", StringComparison.Ordinal));
+            
+            currentType = currentType.BaseType;
+        }
+
+        if (backingField != null)
+        {
+            backingField.SetValue(entity, identity);
+            return entity;
+        }
+
+        throw new InvalidOperationException($"Cannot set Identity on {typeof(TEntity).Name}. No public setter or accessible backing field found.");
     }
 }
