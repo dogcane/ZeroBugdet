@@ -111,8 +111,8 @@ public class MonthlyBucketQueryHandlerTests
         var monthlyBucketRepository = new Mock<IMonthlyBucketRepository>();
         var handler = new GetMonthlyBucketsByBucketIdQueryHandler(monthlyBucketRepository.Object);
 
-        var bucket1 = Bucket.Create("Test1", "Description1", 1000m).Value!;
-        var bucket2 = Bucket.Create("Test2", "Description2", 2000m).Value!;
+        var bucket1 = Bucket.Create("Test1", "Description1", 1000m).Value!.WithIdentity<Bucket, int>(1);
+        var bucket2 = Bucket.Create("Test2", "Description2", 2000m).Value!.WithIdentity<Bucket, int>(2);
         var monthlyBucket1 = bucket1.CreateMonthly(2024, 10);
         var monthlyBucket2 = bucket2.CreateMonthly(2024, 10);
 

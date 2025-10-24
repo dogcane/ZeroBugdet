@@ -84,8 +84,8 @@ public class SpendingQueryHandlerTests
         var spendingRepository = new Mock<ISpendingRepository>();
         var handler = new GetSpendingsByBucketIdQueryHandler(spendingRepository.Object);
 
-        var bucket1 = Bucket.Create("Test1", "Description1", 1000m).Value!;
-        var bucket2 = Bucket.Create("Test2", "Description2", 2000m).Value!;
+        var bucket1 = Bucket.Create("Test1", "Description1", 1000m).Value!.WithIdentity<Bucket, int>(1);
+        var bucket2 = Bucket.Create("Test2", "Description2", 2000m).Value!.WithIdentity<Bucket, int>(2);
         var spending1 = Spending.Create("Spending1", 100m, "Owner", Array.Empty<Tag>(), bucket1).Value!;
         var spending2 = Spending.Create("Spending2", 200m, "Owner", Array.Empty<Tag>(), bucket2).Value!;
 
