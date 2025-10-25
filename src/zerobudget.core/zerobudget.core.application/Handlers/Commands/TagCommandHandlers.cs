@@ -47,9 +47,9 @@ public class CleanupUnusedTagsCommandHandler(ITagService tagService, ILogger<Cle
     private readonly ITagService _tagService = tagService;
     private readonly ILogger<CleanupUnusedTagsCommandHandler>? _logger = logger;
 
-    public async Task<OperationResult<int>> Handle(CleanupUnusedTagsCommand command)
+    public Task<OperationResult<int>> Handle(CleanupUnusedTagsCommand command)
     {
-        return await Task.FromResult(OperationResult<int>.MakeSuccess(0));
-        //return await _tagService.CleanupUnusedTagsAsync();
+        // Note: This is a placeholder implementation. The actual implementation is in TagMaintenanceCommandHandlers.cs
+        return Task.FromResult(OperationResult<int>.MakeSuccess(0));
     }
 }
