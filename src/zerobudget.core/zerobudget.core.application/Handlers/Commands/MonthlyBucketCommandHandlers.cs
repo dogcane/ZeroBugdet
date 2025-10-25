@@ -17,7 +17,7 @@ public class GenerateMonthlyDataCommandHandler(
     private readonly IBucketRepository _bucketRepository = bucketRepository;
     private readonly ILogger<GenerateMonthlyDataCommandHandler>? _logger = logger;
 
-    public async Task<bool> Handle(GenerateMonthlyDataCommand command)
+    public async Task<OperationResult<bool>> Handle(GenerateMonthlyDataCommand command)
     {
         using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
 
@@ -28,13 +28,13 @@ public class GenerateMonthlyDataCommandHandler(
             var monthlyBucketResult = bucket.CreateMonthly(command.Year, command.Month);
             if (!monthlyBucketResult.Success)
             {
-                throw new InvalidOperationException($"Failed to create monthly bucket: {string.Join(", ", monthlyBucketResult.Errors.Select(e => e.Description))}");
+                return OperationResult<bool>.MakeFailure(monthlyBucketResult.Errors);
             }
 
             await _monthlyBucketRepository.AddAsync(monthlyBucketResult.Value!);
         }
 
         scope.Complete();
-        return true;
+        return OperationResult<bool>.MakeSuccess(true);
     }
 }
