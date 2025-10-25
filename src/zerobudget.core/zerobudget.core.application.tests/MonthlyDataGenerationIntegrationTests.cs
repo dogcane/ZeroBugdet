@@ -59,7 +59,7 @@ public class MonthlyDataGenerationIntegrationTests
 
         // Setup existing monthly data
         var bucket = Bucket.Create("Test Bucket", "Description", 1000m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2025, 1);
+        var monthlyBucket = bucket.CreateMonthly(2025, 1).Value!;
 
         mockBucketRepository.Setup(r => r.AsQueryable())
             .Returns(new[] { bucket }.AsQueryable());

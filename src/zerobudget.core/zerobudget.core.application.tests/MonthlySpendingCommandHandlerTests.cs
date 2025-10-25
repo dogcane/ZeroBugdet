@@ -23,7 +23,7 @@ public class MonthlySpendingCommandHandlerTests
             tagService.Object);
 
         var bucket = Bucket.Create("Test", "Description", 1000m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2024, 10);
+        var monthlyBucket = bucket.CreateMonthly(2024, 10).Value!;
 
         monthlyBucketRepository
             .SetupRepository<IMonthlyBucketRepository, MonthlyBucket, int>([monthlyBucket]);
@@ -89,9 +89,9 @@ public class MonthlySpendingCommandHandlerTests
             tagService.Object);
 
         var bucket = Bucket.Create("Test", "Description", 1000m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2024, 10);
+        var monthlyBucket = bucket.CreateMonthly(2024, 10).Value!;
         var spending = Spending.Create("Original", 50m, "Owner", Array.Empty<Tag>(), bucket).Value!;
-        var monthlySpending = spending.CreateMonthly(monthlyBucket);
+        var monthlySpending = spending.CreateMonthly(monthlyBucket).Value!;
 
         monthlySpendingRepository
             .SetupRepository<IMonthlySpendingRepository, MonthlySpending, int>([monthlySpending]);
@@ -131,9 +131,9 @@ public class MonthlySpendingCommandHandlerTests
             monthlySpendingRepository.Object);
 
         var bucket = Bucket.Create("Test", "Description", 1000m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2024, 10);
+        var monthlyBucket = bucket.CreateMonthly(2024, 10).Value!;
         var spending = Spending.Create("Test", 100m, "Owner", Array.Empty<Tag>(), bucket).Value!;
-        var monthlySpending = spending.CreateMonthly(monthlyBucket);
+        var monthlySpending = spending.CreateMonthly(monthlyBucket).Value!;
 
         monthlySpendingRepository
             .SetupRepository<IMonthlySpendingRepository, MonthlySpending, int>([monthlySpending]);

@@ -108,7 +108,7 @@ public class DtoMapperTests
         // Arrange
         var mapper = new MonthlyBucketMapper();
         var bucket = Bucket.Create("Test Bucket", "Test Description", 1000m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2024, 10);
+        var monthlyBucket = bucket.CreateMonthly(2024, 10).Value!;
         
         // Act
         var dto = mapper.ToDto(monthlyBucket);
@@ -129,7 +129,7 @@ public class DtoMapperTests
         // Arrange
         var mapper = new MonthlyBucketMapper();
         var bucket = Bucket.Create("Test Bucket", "Test Description", 1000m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2024, 10);
+        var monthlyBucket = bucket.CreateMonthly(2024, 10).Value!;
         
         // Act
         var dto = mapper.ToDto(monthlyBucket);
@@ -147,11 +147,11 @@ public class DtoMapperTests
         // Arrange
         var mapper = new MonthlySpendingMapper();
         var bucket = Bucket.Create("Test", "Description", 1000m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2024, 10);
+        var monthlyBucket = bucket.CreateMonthly(2024, 10).Value!;
         var tag1 = Tag.Create("Tag1").Value!;
         var tag2 = Tag.Create("Tag2").Value!;
         var spending = Spending.Create("Test Spending", 100m, "Owner", new[] { tag1, tag2 }, bucket).Value!;
-        var monthlySpending = spending.CreateMonthly(monthlyBucket);
+        var monthlySpending = spending.CreateMonthly(monthlyBucket).Value!;
         
         // Act
         var dto = mapper.ToDto(monthlySpending);
@@ -174,9 +174,9 @@ public class DtoMapperTests
         // Arrange
         var mapper = new MonthlySpendingMapper();
         var bucket = Bucket.Create("Test", "Description", 1000m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2024, 10);
+        var monthlyBucket = bucket.CreateMonthly(2024, 10).Value!;
         var spending = Spending.Create("Test Spending", 100m, "Owner", Array.Empty<Tag>(), bucket).Value!;
-        var monthlySpending = spending.CreateMonthly(monthlyBucket);
+        var monthlySpending = spending.CreateMonthly(monthlyBucket).Value!;
         
         // Act
         var dto = mapper.ToDto(monthlySpending);
