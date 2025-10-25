@@ -1,3 +1,4 @@
+using ECO.Data;
 using ECO.Integrations.Moq;
 using Moq;
 using Xunit;

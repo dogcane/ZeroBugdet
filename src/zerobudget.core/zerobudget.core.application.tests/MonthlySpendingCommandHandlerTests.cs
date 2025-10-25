@@ -1,4 +1,5 @@
 using ECO.Data;
+using ECO.Integrations.Moq;
 using Moq;
 using Xunit;
 using zerobudget.core.application.Commands;
@@ -25,15 +26,11 @@ public class MonthlySpendingCommandHandlerTests
         var monthlyBucket = bucket.CreateMonthly(2024, 10);
 
         monthlyBucketRepository
-            .Setup(r => r.LoadAsync(It.IsAny<int>()))
-            .ReturnsAsync(monthlyBucket);
+            .SetupRepository<IMonthlyBucketRepository, MonthlyBucket, int>([monthlyBucket]);
 
         tagService
             .Setup(s => s.EnsureTagsByNameAsync(It.IsAny<string[]>()))
-            .ReturnsAsync(new List<Tag>());
-
-        monthlySpendingRepository.Setup(r => r.AddAsync(It.IsAny<MonthlySpending>()))
-                                  .Returns(Task.CompletedTask);
+            .ReturnsAsync([]);
 
         var command = new CreateMonthlySpendingCommand(
             new DateOnly(2024, 10, 15),
@@ -41,7 +38,7 @@ public class MonthlySpendingCommandHandlerTests
             "Test Spending",
             100m,
             "Owner",
-            Array.Empty<string>());
+            []);
 
         // Act
         var result = await handler.Handle(command);
@@ -66,8 +63,7 @@ public class MonthlySpendingCommandHandlerTests
             tagService.Object);
 
         monthlyBucketRepository
-            .Setup(r => r.LoadAsync(It.IsAny<int>()))
-            .ReturnsAsync((MonthlyBucket?)null);
+            .SetupRepository<IMonthlyBucketRepository, MonthlyBucket, int>([]);
 
         var command = new CreateMonthlySpendingCommand(
             new DateOnly(2024, 10, 15),
@@ -98,8 +94,7 @@ public class MonthlySpendingCommandHandlerTests
         var monthlySpending = spending.CreateMonthly(monthlyBucket);
 
         monthlySpendingRepository
-            .Setup(r => r.LoadAsync(It.IsAny<int>()))
-            .ReturnsAsync(monthlySpending);
+            .SetupRepository<IMonthlySpendingRepository, MonthlySpending, int>([monthlySpending]);
 
         tagService
             .Setup(s => s.EnsureTagsByNameAsync(It.IsAny<string[]>()))
@@ -141,8 +136,7 @@ public class MonthlySpendingCommandHandlerTests
         var monthlySpending = spending.CreateMonthly(monthlyBucket);
 
         monthlySpendingRepository
-            .Setup(r => r.LoadAsync(It.IsAny<int>()))
-            .ReturnsAsync(monthlySpending);
+            .SetupRepository<IMonthlySpendingRepository, MonthlySpending, int>([monthlySpending]);
 
         monthlySpendingRepository.Setup(r => r.RemoveAsync(It.IsAny<MonthlySpending>()))
                                   .Returns(Task.CompletedTask);
@@ -165,8 +159,7 @@ public class MonthlySpendingCommandHandlerTests
             monthlySpendingRepository.Object);
 
         monthlySpendingRepository
-            .Setup(r => r.LoadAsync(It.IsAny<int>()))
-            .ReturnsAsync((MonthlySpending?)null);
+            .SetupRepository<IMonthlySpendingRepository, MonthlySpending, int>([]);
 
         var command = new DeleteMonthlySpendingCommand(999);
 

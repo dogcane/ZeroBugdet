@@ -1,4 +1,5 @@
 using ECO.Data;
+using ECO.Integrations.Moq;
 using Moq;
 using Xunit;
 using zerobudget.core.application.Handlers.Queries;
@@ -22,8 +23,7 @@ public class MonthlySpendingQueryHandlerTests
         var monthlySpending = spending.CreateMonthly(monthlyBucket);
 
         monthlySpendingRepository
-            .Setup(r => r.LoadAsync(It.IsAny<int>()))
-            .ReturnsAsync(monthlySpending);
+            .SetupRepository<IMonthlySpendingRepository, MonthlySpending, int>([monthlySpending]);
 
         var query = new GetMonthlySpendingByIdQuery(1);
 
@@ -44,8 +44,7 @@ public class MonthlySpendingQueryHandlerTests
         var handler = new GetMonthlySpendingByIdQueryHandler(monthlySpendingRepository.Object);
 
         monthlySpendingRepository
-            .Setup(r => r.LoadAsync(It.IsAny<int>()))
-            .ReturnsAsync((MonthlySpending?)null);
+            .SetupRepository<IMonthlySpendingRepository, MonthlySpending, int>([]);
 
         var query = new GetMonthlySpendingByIdQuery(999);
 

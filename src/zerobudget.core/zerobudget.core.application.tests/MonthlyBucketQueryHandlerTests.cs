@@ -21,8 +21,7 @@ public class MonthlyBucketQueryHandlerTests
         var monthlyBucket = bucket.CreateMonthly(2024, 10);
 
         monthlyBucketRepository
-            .Setup(r => r.LoadAsync(It.IsAny<int>()))
-            .ReturnsAsync(monthlyBucket);
+            .SetupRepository<IMonthlyBucketRepository, MonthlyBucket, int>([monthlyBucket]);
 
         var query = new GetMonthlyBucketByIdQuery(1);
 
@@ -43,8 +42,7 @@ public class MonthlyBucketQueryHandlerTests
         var handler = new GetMonthlyBucketByIdQueryHandler(monthlyBucketRepository.Object);
 
         monthlyBucketRepository
-            .Setup(r => r.LoadAsync(It.IsAny<int>()))
-            .ReturnsAsync((MonthlyBucket?)null);
+            .SetupRepository<IMonthlyBucketRepository, MonthlyBucket, int>([]);
 
         var query = new GetMonthlyBucketByIdQuery(999);
 

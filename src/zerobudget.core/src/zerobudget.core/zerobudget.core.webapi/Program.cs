@@ -114,7 +114,7 @@ if (app.Environment.IsDevelopment())
             .WithTitle("ZeroBudget API Documentation")
             .WithTheme(ScalarTheme.Purple)
             .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient)
-            .WithDarkMode(true);
+            .EnableDarkMode();
     });
 }
 
