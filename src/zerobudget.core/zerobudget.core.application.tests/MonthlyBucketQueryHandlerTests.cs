@@ -18,11 +18,10 @@ public class MonthlyBucketQueryHandlerTests
         var handler = new GetMonthlyBucketByIdQueryHandler(monthlyBucketRepository.Object);
 
         var bucket = Bucket.Create("Test", "Description", 1000m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2024, 10);
+        var monthlyBucket = bucket.CreateMonthly(2024, 10).Value!;
 
         monthlyBucketRepository
-            .Setup(r => r.LoadAsync(It.IsAny<int>()))
-            .ReturnsAsync(monthlyBucket);
+            .SetupRepository<IMonthlyBucketRepository, MonthlyBucket, int>([monthlyBucket]);
 
         var query = new GetMonthlyBucketByIdQuery(1);
 
@@ -43,8 +42,7 @@ public class MonthlyBucketQueryHandlerTests
         var handler = new GetMonthlyBucketByIdQueryHandler(monthlyBucketRepository.Object);
 
         monthlyBucketRepository
-            .Setup(r => r.LoadAsync(It.IsAny<int>()))
-            .ReturnsAsync((MonthlyBucket?)null);
+            .SetupRepository<IMonthlyBucketRepository, MonthlyBucket, int>([]);
 
         var query = new GetMonthlyBucketByIdQuery(999);
 
@@ -64,8 +62,8 @@ public class MonthlyBucketQueryHandlerTests
 
         var bucket1 = Bucket.Create("Test1", "Description1", 1000m).Value!;
         var bucket2 = Bucket.Create("Test2", "Description2", 2000m).Value!;
-        var monthlyBucket1 = bucket1.CreateMonthly(2024, 10);
-        var monthlyBucket2 = bucket2.CreateMonthly(2024, 10);
+        var monthlyBucket1 = bucket1.CreateMonthly(2024, 10).Value!;
+        var monthlyBucket2 = bucket2.CreateMonthly(2024, 10).Value!;
 
         monthlyBucketRepository
             .Setup(r => r.AsQueryable())
@@ -90,8 +88,8 @@ public class MonthlyBucketQueryHandlerTests
 
         var bucket1 = Bucket.Create("Test1", "Description1", 1000m).Value!;
         var bucket2 = Bucket.Create("Test2", "Description2", 2000m).Value!;
-        var monthlyBucket1 = bucket1.CreateMonthly(2024, 10);
-        var monthlyBucket2 = bucket2.CreateMonthly(2024, 11);
+        var monthlyBucket1 = bucket1.CreateMonthly(2024, 10).Value!;
+        var monthlyBucket2 = bucket2.CreateMonthly(2024, 11).Value!;
 
         monthlyBucketRepository
             .Setup(r => r.AsQueryable())
@@ -117,8 +115,8 @@ public class MonthlyBucketQueryHandlerTests
 
         var bucket1 = Bucket.Create("Test1", "Description1", 1000m).Value!;
         var bucket2 = Bucket.Create("Test2", "Description2", 2000m).Value!;
-        var monthlyBucket1 = bucket1.CreateMonthly(2024, 10);
-        var monthlyBucket2 = bucket2.CreateMonthly(2024, 10);
+        var monthlyBucket1 = bucket1.CreateMonthly(2024, 10).Value!;
+        var monthlyBucket2 = bucket2.CreateMonthly(2024, 10).Value!;
 
         monthlyBucketRepository
             .Setup(r => r.AsQueryable())

@@ -1,4 +1,5 @@
 using ECO.Data;
+using ECO.Integrations.Moq;
 using Moq;
 using Xunit;
 using zerobudget.core.application.Commands;
@@ -54,8 +55,7 @@ public class TagCommandHandlerTests
         var command = new DeleteTagCommand(1);
 
         tagRepository
-            .Setup(r => r.LoadAsync(It.IsAny<int>()))
-            .ReturnsAsync(tag);
+            .SetupRepository<ITagRepository, Tag, int>([tag]);
         tagRepository.Setup(r => r.RemoveAsync(It.IsAny<Tag>()))
                      .Returns(Task.CompletedTask);
 
@@ -75,8 +75,7 @@ public class TagCommandHandlerTests
         var command = new DeleteTagCommand(999);
 
         tagRepository
-            .Setup(r => r.LoadAsync(It.IsAny<int>()))
-            .ReturnsAsync((Tag?)null);
+            .SetupRepository<ITagRepository, Tag, int>([]);
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(() => handler.Handle(command));

@@ -31,14 +31,17 @@ public sealed partial class Spending : AggregateRoot<int>, IEquatable<Spending>
         => Validate(description, amount, owner, tags, Enabled)
             .IfSuccess(res => (Description, Amount, Owner, Tags) = (description, amount, owner, tags.ToTagNames()));
 
-    public MonthlySpending CreateMonthly(MonthlyBucket monthlyBucket)
-        => new(new DateOnly(monthlyBucket.Year, monthlyBucket.Month, 1), Description, Amount, Owner, Tags, monthlyBucket.Identity);
+    public OperationResult<MonthlySpending> CreateMonthly(MonthlyBucket monthlyBucket)
+        => ValidateMonthlySpendingCreation(monthlyBucket)
+            .IfSuccessThenReturn(() => new MonthlySpending(new DateOnly(monthlyBucket.Year, monthlyBucket.Month, 1), Description, Amount, Owner, Tags, monthlyBucket.Identity));
 
-    public void Enable()
-        => Enabled = true;
+    public OperationResult Enable()
+        => ValidateStatusChange(Enabled, true)
+            .IfSuccess(res => Enabled = true);
 
-    public void Disable()
-        => Enabled = false;
+    public OperationResult Disable()
+        => ValidateStatusChange(Enabled, false)
+            .IfSuccess(res => Enabled = false);
 
     public override int GetHashCode()
         => HashCode.Combine(Description, Amount, Owner);

@@ -1,3 +1,4 @@
+using JasperFx;
 using JasperFx.CodeGeneration;
 using Wolverine.Configuration;
 using Wolverine.Runtime.Handlers;
@@ -9,7 +10,7 @@ namespace zerobudget.core.application.Middleware;
 /// </summary>
 public class GlobalExceptionPolicy : IHandlerPolicy
 {
-    public void Apply(IReadOnlyList<HandlerChain> chains, GenerationRules rules, Wolverine.Runtime.IServiceContainer container)
+    public void Apply(IReadOnlyList<HandlerChain> chains, GenerationRules rules, IServiceContainer container)
     {
         foreach (var chain in chains)
         {

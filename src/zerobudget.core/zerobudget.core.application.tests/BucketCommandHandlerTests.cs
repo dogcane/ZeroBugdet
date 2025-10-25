@@ -26,9 +26,10 @@ public class BucketCommandHandlerTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("Test Bucket", result.Name);
-        Assert.Equal("Test Description", result.Description);
-        Assert.Equal(1000m, result.DefaultLimit);
+        Assert.True(result.Success);
+        Assert.Equal("Test Bucket", result.Value!.Name);
+        Assert.Equal("Test Description", result.Value.Description);
+        Assert.Equal(1000m, result.Value.DefaultLimit);
         bucketRepository.Verify(r => r.AddAsync(It.IsAny<Bucket>()), Times.Once);
     }
 
@@ -54,9 +55,10 @@ public class BucketCommandHandlerTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("Updated Bucket", result.Name);
-        Assert.Equal("Updated Description", result.Description);
-        Assert.Equal(1500m, result.DefaultLimit);
+        Assert.True(result.Success);
+        Assert.Equal("Updated Bucket", result.Value!.Name);
+        Assert.Equal("Updated Description", result.Value.Description);
+        Assert.Equal(1500m, result.Value.DefaultLimit);
         bucketRepository.Verify(r => r.UpdateAsync(It.IsAny<Bucket>()), Times.Once);
     }
 

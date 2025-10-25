@@ -173,11 +173,12 @@ public class BucketTests
     public void CreateMonthly_CreatesMonthlyBucket()
     {
         var bucket = Bucket.Create("Test", "Desc", 100m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2025, 9);
-        Assert.NotNull(monthlyBucket);
-        Assert.Equal((short)2025, monthlyBucket.Year);
-        Assert.Equal((short)9, monthlyBucket.Month);
-        Assert.Equal(bucket, monthlyBucket.Bucket);
+        var result = bucket.CreateMonthly(2025, 9);
+        Assert.True(result.Success);
+        Assert.NotNull(result.Value);
+        Assert.Equal((short)2025, result.Value!.Year);
+        Assert.Equal((short)9, result.Value.Month);
+        Assert.Equal(bucket, result.Value.Bucket);
     }
     #endregion
 }

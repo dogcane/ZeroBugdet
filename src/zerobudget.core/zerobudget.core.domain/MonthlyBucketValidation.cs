@@ -12,5 +12,8 @@ public partial class MonthlyBucket
             .With(month, nameof(month)).GreaterThenOrEqual((short)1, "Month must be between 1 and 12.").LessThenOrEqual((short)12, "Month must be between 1 and 12.")
             .With(bucket, nameof(bucket)).Required("Bucket is required.")
             .Result;
+
+    public static OperationResult ValidateBalance(decimal balance)
+        => OperationResult.MakeSuccess();
     #endregion
 }

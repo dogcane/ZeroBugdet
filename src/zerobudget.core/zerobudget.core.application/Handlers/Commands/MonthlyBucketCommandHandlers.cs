@@ -25,9 +25,13 @@ public class GenerateMonthlyDataCommandHandler(
 
         foreach (var bucket in buckets)
         {
-            var newMonthlyBucket = bucket.CreateMonthly(command.Year, command.Month);
+            var monthlyBucketResult = bucket.CreateMonthly(command.Year, command.Month);
+            if (!monthlyBucketResult.Success)
+            {
+                throw new InvalidOperationException($"Failed to create monthly bucket: {string.Join(", ", monthlyBucketResult.Errors.Select(e => e.Description))}");
+            }
 
-            await _monthlyBucketRepository.AddAsync(newMonthlyBucket);
+            await _monthlyBucketRepository.AddAsync(monthlyBucketResult.Value!);
         }
 
         scope.Complete();

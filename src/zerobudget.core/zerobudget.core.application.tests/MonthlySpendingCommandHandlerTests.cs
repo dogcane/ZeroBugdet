@@ -1,4 +1,5 @@
 using ECO.Data;
+using ECO.Integrations.Moq;
 using Moq;
 using Xunit;
 using zerobudget.core.application.Commands;
@@ -22,18 +23,14 @@ public class MonthlySpendingCommandHandlerTests
             tagService.Object);
 
         var bucket = Bucket.Create("Test", "Description", 1000m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2024, 10);
+        var monthlyBucket = bucket.CreateMonthly(2024, 10).Value!;
 
         monthlyBucketRepository
-            .Setup(r => r.LoadAsync(It.IsAny<int>()))
-            .ReturnsAsync(monthlyBucket);
+            .SetupRepository<IMonthlyBucketRepository, MonthlyBucket, int>([monthlyBucket]);
 
         tagService
             .Setup(s => s.EnsureTagsByNameAsync(It.IsAny<string[]>()))
-            .ReturnsAsync(new List<Tag>());
-
-        monthlySpendingRepository.Setup(r => r.AddAsync(It.IsAny<MonthlySpending>()))
-                                  .Returns(Task.CompletedTask);
+            .ReturnsAsync([]);
 
         var command = new CreateMonthlySpendingCommand(
             new DateOnly(2024, 10, 15),
@@ -41,7 +38,7 @@ public class MonthlySpendingCommandHandlerTests
             "Test Spending",
             100m,
             "Owner",
-            Array.Empty<string>());
+            []);
 
         // Act
         var result = await handler.Handle(command);
@@ -66,8 +63,7 @@ public class MonthlySpendingCommandHandlerTests
             tagService.Object);
 
         monthlyBucketRepository
-            .Setup(r => r.LoadAsync(It.IsAny<int>()))
-            .ReturnsAsync((MonthlyBucket?)null);
+            .SetupRepository<IMonthlyBucketRepository, MonthlyBucket, int>([]);
 
         var command = new CreateMonthlySpendingCommand(
             new DateOnly(2024, 10, 15),
@@ -93,13 +89,12 @@ public class MonthlySpendingCommandHandlerTests
             tagService.Object);
 
         var bucket = Bucket.Create("Test", "Description", 1000m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2024, 10);
+        var monthlyBucket = bucket.CreateMonthly(2024, 10).Value!;
         var spending = Spending.Create("Original", 50m, "Owner", Array.Empty<Tag>(), bucket).Value!;
-        var monthlySpending = spending.CreateMonthly(monthlyBucket);
+        var monthlySpending = spending.CreateMonthly(monthlyBucket).Value!;
 
         monthlySpendingRepository
-            .Setup(r => r.LoadAsync(It.IsAny<int>()))
-            .ReturnsAsync(monthlySpending);
+            .SetupRepository<IMonthlySpendingRepository, MonthlySpending, int>([monthlySpending]);
 
         tagService
             .Setup(s => s.EnsureTagsByNameAsync(It.IsAny<string[]>()))
@@ -136,13 +131,12 @@ public class MonthlySpendingCommandHandlerTests
             monthlySpendingRepository.Object);
 
         var bucket = Bucket.Create("Test", "Description", 1000m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2024, 10);
+        var monthlyBucket = bucket.CreateMonthly(2024, 10).Value!;
         var spending = Spending.Create("Test", 100m, "Owner", Array.Empty<Tag>(), bucket).Value!;
-        var monthlySpending = spending.CreateMonthly(monthlyBucket);
+        var monthlySpending = spending.CreateMonthly(monthlyBucket).Value!;
 
         monthlySpendingRepository
-            .Setup(r => r.LoadAsync(It.IsAny<int>()))
-            .ReturnsAsync(monthlySpending);
+            .SetupRepository<IMonthlySpendingRepository, MonthlySpending, int>([monthlySpending]);
 
         monthlySpendingRepository.Setup(r => r.RemoveAsync(It.IsAny<MonthlySpending>()))
                                   .Returns(Task.CompletedTask);
@@ -165,8 +159,7 @@ public class MonthlySpendingCommandHandlerTests
             monthlySpendingRepository.Object);
 
         monthlySpendingRepository
-            .Setup(r => r.LoadAsync(It.IsAny<int>()))
-            .ReturnsAsync((MonthlySpending?)null);
+            .SetupRepository<IMonthlySpendingRepository, MonthlySpending, int>([]);
 
         var command = new DeleteMonthlySpendingCommand(999);
 

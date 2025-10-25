@@ -26,20 +26,24 @@ public sealed partial class Bucket : AggregateRoot<int>
     #endregion
 
     #region Methods
-    public void Update(string name, string description, decimal defaultLimit)
+    public OperationResult Update(string name, string description, decimal defaultLimit)
         => Validate(name, description, defaultLimit, Enabled)
             .IfSuccess(res => (Name, Description, DefaultLimit) = (name, description, defaultLimit));
 
-    public void UpdateDefaultBalance(decimal defaultBalance)
-        => DefaultBalance = defaultBalance;
+    public OperationResult UpdateDefaultBalance(decimal defaultBalance)
+        => ValidateDefaultBalance(defaultBalance)
+            .IfSuccess(res => DefaultBalance = defaultBalance);
 
-    public MonthlyBucket CreateMonthly(short year, short month)
-        => new(year, month, this);
+    public OperationResult<MonthlyBucket> CreateMonthly(short year, short month)
+        => ValidateMonthlyBucketCreation(year, month)
+            .IfSuccessThenReturn(() => new MonthlyBucket(year, month, this));
 
-    public void Enable()
-        => Enabled = true;
+    public OperationResult Enable()
+        => ValidateStatusChange(Enabled, true)
+            .IfSuccess(res => Enabled = true);
 
-    public void Disable()
-        => Enabled = false;
+    public OperationResult Disable()
+        => ValidateStatusChange(Enabled, false)
+            .IfSuccess(res => Enabled = false);
     #endregion
 }

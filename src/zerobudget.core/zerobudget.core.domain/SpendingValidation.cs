@@ -20,5 +20,14 @@ public partial class Spending
         .With(bucket, nameof(bucket)).Required("Bucket is required.")
         .Result;
 
+    public static OperationResult ValidateMonthlySpendingCreation(MonthlyBucket monthlyBucket)
+        => OperationResult.MakeSuccess()
+            .With(monthlyBucket, nameof(monthlyBucket)).Required("Monthly bucket is required.")
+            .Result;
+
+    public static OperationResult ValidateStatusChange(bool oldStatus, bool newStatus)
+        => OperationResult.MakeSuccess()
+            .With(newStatus, nameof(newStatus)).Condition(val => val != oldStatus, "The new status must be different from the current one.")
+            .Result;
     #endregion
 }

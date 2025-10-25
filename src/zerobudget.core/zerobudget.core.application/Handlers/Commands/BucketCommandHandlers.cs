@@ -15,21 +15,21 @@ public class CreateBucketCommandHandler(IBucketRepository bucketRepository, ILog
     private readonly ILogger<CreateBucketCommandHandler>? _logger = logger;
     private readonly BucketMapper _mapper = new BucketMapper();
 
-    public async Task<BucketDto> Handle(CreateBucketCommand command)
+    public async Task<OperationResult<BucketDto>> Handle(CreateBucketCommand command)
     {
         using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
 
         var bucketResult = Bucket.Create(command.Name, command.Description, command.DefaultLimit);
         if (!bucketResult.Success)
         {
-            throw new InvalidOperationException(string.Join(", ", bucketResult.Errors.Select(e => e.Description)));
+            return OperationResult<BucketDto>.MakeFailure(bucketResult.Errors);
         }
 
         var bucket = bucketResult.Value!;
         await _bucketRepository.AddAsync(bucket);
 
         scope.Complete();
-        return _mapper.ToDto(bucket);
+        return OperationResult<BucketDto>.MakeSuccess(_mapper.ToDto(bucket));
     }
 }
 
@@ -39,21 +39,26 @@ public class UpdateBucketCommandHandler(IBucketRepository bucketRepository, ILog
     private readonly ILogger<UpdateBucketCommandHandler>? _logger = logger;
     private readonly BucketMapper _mapper = new BucketMapper();
 
-    public async Task<BucketDto> Handle(UpdateBucketCommand command)
+    public async Task<OperationResult<BucketDto>> Handle(UpdateBucketCommand command)
     {
         using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
 
         var bucket = await _bucketRepository.LoadAsync(command.Id);
         if (bucket == null)
         {
-            throw new InvalidOperationException("Bucket not found");
+            return OperationResult<BucketDto>.MakeFailure(ErrorMessage.Create("UPDATE_BUCKET", "Bucket not found"));
         }
 
-        bucket.Update(command.Name, command.Description, command.DefaultLimit);
+        var updateResult = bucket.Update(command.Name, command.Description, command.DefaultLimit);
+        if (!updateResult.Success)
+        {
+            return OperationResult<BucketDto>.MakeFailure(updateResult.Errors);
+        }
+
         await _bucketRepository.UpdateAsync(bucket);
 
         scope.Complete();
-        return _mapper.ToDto(bucket);
+        return OperationResult<BucketDto>.MakeSuccess(_mapper.ToDto(bucket));
     }
 }
 
@@ -76,7 +81,11 @@ public class DeleteBucketCommandHandler(IBucketRepository bucketRepository, IMon
         var hasRelatedMonthlyBuckets = _monthlyBucketRepository.Any(mb => mb.Bucket.Identity == bucket.Identity);
         if (hasRelatedMonthlyBuckets)
         {
-            bucket.Disable();
+            var disableResult = bucket.Disable();
+            if (!disableResult.Success)
+            {
+                throw new InvalidOperationException(string.Join(", ", disableResult.Errors.Select(e => e.Description)));
+            }
             await _bucketRepository.UpdateAsync(bucket);
         }
         else
@@ -104,7 +113,12 @@ public class EnableBucketCommandHandler(IBucketRepository bucketRepository, ILog
             throw new InvalidOperationException("Bucket not found");
         }
 
-        bucket.Enable();
+        var enableResult = bucket.Enable();
+        if (!enableResult.Success)
+        {
+            throw new InvalidOperationException(string.Join(", ", enableResult.Errors.Select(e => e.Description)));
+        }
+
         await _bucketRepository.UpdateAsync(bucket);
         scope.Complete();
         return _mapper.ToDto(bucket);
