@@ -1,5 +1,5 @@
 using ECO;
-
+using Resulz;
 
 namespace zerobudget.core.domain;
 
@@ -27,7 +27,8 @@ public partial class MonthlyBucket : AggregateRoot<int>
     #endregion
 
     #region Methods
-    public void UpdateBalance(decimal balance)
-        => Balance = balance;
+    public OperationResult UpdateBalance(decimal balance)
+        => ValidateBalance(balance)
+            .IfSuccess(res => Balance = balance);
     #endregion
 }

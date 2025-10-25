@@ -108,7 +108,11 @@ public class DeleteSpendingCommandHandler(
 
         if (hasRelatedMonthlySpendings)
         {
-            spending.Disable();
+            var disableResult = spending.Disable();
+            if (!disableResult.Success)
+            {
+                throw new InvalidOperationException(string.Join(", ", disableResult.Errors.Select(e => e.Description)));
+            }
             await _spendingRepository.UpdateAsync(spending);
         }
         else
@@ -136,7 +140,12 @@ public class EnableSpendingCommandHandler(
         if (spending == null)
             throw new InvalidOperationException("Spending not found");
 
-        spending.Enable();
+        var enableResult = spending.Enable();
+        if (!enableResult.Success)
+        {
+            throw new InvalidOperationException(string.Join(", ", enableResult.Errors.Select(e => e.Description)));
+        }
+
         await _spendingRepository.UpdateAsync(spending);
 
         scope.Complete();

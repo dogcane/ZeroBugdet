@@ -187,8 +187,10 @@ public class SpendingTests
     {
         var bucket = Bucket.Create("Test", "Desc", 100m).Value!;
         var spending = Spending.Create("desc", 10m, "owner", Array.Empty<Tag>(), bucket).Value!;
-        spending.Disable();
-        spending.Enable();
+        var disableResult = spending.Disable();
+        Assert.True(disableResult.Success);
+        var enableResult = spending.Enable();
+        Assert.True(enableResult.Success);
         Assert.True(spending.Enabled);
     }
 
@@ -197,7 +199,8 @@ public class SpendingTests
     {
         var bucket = Bucket.Create("Test", "Desc", 100m).Value!;
         var spending = Spending.Create("desc", 10m, "owner", Array.Empty<Tag>(), bucket).Value!;
-        spending.Disable();
+        var result = spending.Disable();
+        Assert.True(result.Success);
         Assert.False(spending.Enabled);
     }
     #endregion
@@ -207,9 +210,11 @@ public class SpendingTests
     public void CreateMonthly_CreatesMonthlySpending()
     {
         var bucket = Bucket.Create("Test", "Desc", 100m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2025, 9);
+        var monthlyBucket = bucket.CreateMonthly(2025, 9).Value!;
         var spending = Spending.Create("desc", 10m, "owner", Array.Empty<Tag>(), bucket).Value!;
-        var monthlySpending = spending.CreateMonthly(monthlyBucket);
+        var result = spending.CreateMonthly(monthlyBucket);
+        Assert.True(result.Success);
+        var monthlySpending = result.Value!;
         Assert.NotNull(monthlySpending);
         Assert.Equal(new DateOnly(2025, 9, 1), monthlySpending.Date);
         Assert.Equal("desc", monthlySpending.Description);
@@ -222,11 +227,13 @@ public class SpendingTests
     public void CreateMonthly_WithTags_PreservesTags()
     {
         var bucket = Bucket.Create("Test", "Desc", 100m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2025, 9);
+        var monthlyBucket = bucket.CreateMonthly(2025, 9).Value!;
         var tag1 = Tag.Create("Tag1").Value!;
         var tag2 = Tag.Create("Tag2").Value!;
         var spending = Spending.Create("desc", 10m, "owner", new[] { tag1, tag2 }, bucket).Value!;
-        var monthlySpending = spending.CreateMonthly(monthlyBucket);
+        var result = spending.CreateMonthly(monthlyBucket);
+        Assert.True(result.Success);
+        var monthlySpending = result.Value!;
         Assert.Equal(2, monthlySpending.Tags.Length);
         Assert.Contains("tag1", monthlySpending.Tags);
         Assert.Contains("tag2", monthlySpending.Tags);

@@ -1,4 +1,5 @@
 using ECO.Data;
+using ECO.Integrations.Moq;
 using Moq;
 using Xunit;
 using zerobudget.core.application.Handlers.Queries;
@@ -19,8 +20,7 @@ public class TagQueryHandlerTests
         var tag = Tag.Create("TestTag").Value!;
 
         tagRepository
-            .Setup(r => r.LoadAsync(It.IsAny<int>()))
-            .ReturnsAsync(tag);
+            .SetupRepository<ITagRepository, Tag, int>([tag]);
 
         var query = new GetTagByIdQuery(1);
 
@@ -40,8 +40,7 @@ public class TagQueryHandlerTests
         var handler = new GetTagByIdQueryHandler(tagRepository.Object);
 
         tagRepository
-            .Setup(r => r.LoadAsync(It.IsAny<int>()))
-            .ReturnsAsync((Tag?)null);
+            .SetupRepository<ITagRepository, Tag, int>([]);
 
         var query = new GetTagByIdQuery(999);
 

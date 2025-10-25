@@ -7,7 +7,7 @@ public class MonthlySpendingTests
     public void Create_ValidMonthlySpending_ReturnsSuccess()
     {
         var bucket = Bucket.Create("Test", "Desc", 100m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2025, 9);
+        var monthlyBucket = bucket.CreateMonthly(2025, 9).Value!;
         var date = new DateOnly(2025, 9, 15);
         var result = MonthlySpending.Create(date, "desc", 10m, "owner", Array.Empty<string>(), monthlyBucket);
         Assert.True(result.Success);
@@ -23,7 +23,7 @@ public class MonthlySpendingTests
     public void Create_WithTags_ReturnsSuccessWithTags()
     {
         var bucket = Bucket.Create("Test", "Desc", 100m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2025, 9);
+        var monthlyBucket = bucket.CreateMonthly(2025, 9).Value!;
         var date = new DateOnly(2025, 9, 15);
         var tags = new[] { "tag1", "tag2" };
         var result = MonthlySpending.Create(date, "desc", 10m, "owner", tags, monthlyBucket);
@@ -37,7 +37,7 @@ public class MonthlySpendingTests
     public void Create_WithEmptyDescription_ReturnsFailure()
     {
         var bucket = Bucket.Create("Test", "Desc", 100m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2025, 9);
+        var monthlyBucket = bucket.CreateMonthly(2025, 9).Value!;
         var date = new DateOnly(2025, 9, 15);
         var result = MonthlySpending.Create(date, "", 10m, "owner", Array.Empty<string>(), monthlyBucket);
         Assert.False(result.Success);
@@ -48,7 +48,7 @@ public class MonthlySpendingTests
     public void Create_WithNullDescription_ReturnsFailure()
     {
         var bucket = Bucket.Create("Test", "Desc", 100m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2025, 9);
+        var monthlyBucket = bucket.CreateMonthly(2025, 9).Value!;
         var date = new DateOnly(2025, 9, 15);
         var result = MonthlySpending.Create(date, null!, 10m, "owner", Array.Empty<string>(), monthlyBucket);
         Assert.False(result.Success);
@@ -59,7 +59,7 @@ public class MonthlySpendingTests
     public void Create_WithDescriptionTooLong_ReturnsFailure()
     {
         var bucket = Bucket.Create("Test", "Desc", 100m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2025, 9);
+        var monthlyBucket = bucket.CreateMonthly(2025, 9).Value!;
         var date = new DateOnly(2025, 9, 15);
         var result = MonthlySpending.Create(date, new string('a', 501), 10m, "owner", Array.Empty<string>(), monthlyBucket);
         Assert.False(result.Success);
@@ -70,7 +70,7 @@ public class MonthlySpendingTests
     public void Create_WithNegativeAmount_ReturnsFailure()
     {
         var bucket = Bucket.Create("Test", "Desc", 100m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2025, 9);
+        var monthlyBucket = bucket.CreateMonthly(2025, 9).Value!;
         var date = new DateOnly(2025, 9, 15);
         var result = MonthlySpending.Create(date, "desc", -1m, "owner", Array.Empty<string>(), monthlyBucket);
         Assert.False(result.Success);
@@ -81,7 +81,7 @@ public class MonthlySpendingTests
     public void Create_WithZeroAmount_ReturnsSuccess()
     {
         var bucket = Bucket.Create("Test", "Desc", 100m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2025, 9);
+        var monthlyBucket = bucket.CreateMonthly(2025, 9).Value!;
         var date = new DateOnly(2025, 9, 15);
         var result = MonthlySpending.Create(date, "desc", 0m, "owner", Array.Empty<string>(), monthlyBucket);
         Assert.True(result.Success);
@@ -92,7 +92,7 @@ public class MonthlySpendingTests
     public void Create_WithEmptyOwner_ReturnsFailure()
     {
         var bucket = Bucket.Create("Test", "Desc", 100m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2025, 9);
+        var monthlyBucket = bucket.CreateMonthly(2025, 9).Value!;
         var date = new DateOnly(2025, 9, 15);
         var result = MonthlySpending.Create(date, "desc", 10m, "", Array.Empty<string>(), monthlyBucket);
         Assert.False(result.Success);
@@ -103,7 +103,7 @@ public class MonthlySpendingTests
     public void Create_WithNullOwner_ReturnsFailure()
     {
         var bucket = Bucket.Create("Test", "Desc", 100m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2025, 9);
+        var monthlyBucket = bucket.CreateMonthly(2025, 9).Value!;
         var date = new DateOnly(2025, 9, 15);
         var result = MonthlySpending.Create(date, "desc", 10m, null!, Array.Empty<string>(), monthlyBucket);
         Assert.False(result.Success);
@@ -114,7 +114,7 @@ public class MonthlySpendingTests
     public void Create_WithOwnerTooLong_ReturnsFailure()
     {
         var bucket = Bucket.Create("Test", "Desc", 100m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2025, 9);
+        var monthlyBucket = bucket.CreateMonthly(2025, 9).Value!;
         var date = new DateOnly(2025, 9, 15);
         var result = MonthlySpending.Create(date, "desc", 10m, new string('a', 101), Array.Empty<string>(), monthlyBucket);
         Assert.False(result.Success);
@@ -125,7 +125,7 @@ public class MonthlySpendingTests
     public void Create_WithMoreThanThreeTags_ReturnsFailure()
     {
         var bucket = Bucket.Create("Test", "Desc", 100m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2025, 9);
+        var monthlyBucket = bucket.CreateMonthly(2025, 9).Value!;
         var date = new DateOnly(2025, 9, 15);
         var tags = new[] { "tag1", "tag2", "tag3", "tag4" };
         var result = MonthlySpending.Create(date, "desc", 10m, "owner", tags, monthlyBucket);
@@ -137,7 +137,7 @@ public class MonthlySpendingTests
     public void Create_WithThreeTags_ReturnsSuccess()
     {
         var bucket = Bucket.Create("Test", "Desc", 100m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2025, 9);
+        var monthlyBucket = bucket.CreateMonthly(2025, 9).Value!;
         var date = new DateOnly(2025, 9, 15);
         var tags = new[] { "tag1", "tag2", "tag3" };
         var result = MonthlySpending.Create(date, "desc", 10m, "owner", tags, monthlyBucket);
@@ -152,11 +152,11 @@ public class MonthlySpendingTests
     public void Update_ValidData_UpdatesProperties()
     {
         var bucket = Bucket.Create("Test", "Desc", 100m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2025, 9);
+        var monthlyBucket = bucket.CreateMonthly(2025, 9).Value!;
         var date = new DateOnly(2025, 9, 15);
         var spending = MonthlySpending.Create(date, "desc", 10m, "owner", Array.Empty<string>(), monthlyBucket).Value!;
         var newDate = new DateOnly(2025, 9, 20);
-        spending.Update(newDate, "newdesc", 20m, "newowner", Array.Empty<string>());
+        var updateResult = spending.Update(newDate, "newdesc", 20m, "newowner", Array.Empty<string>());
         Assert.Equal(newDate, spending.Date);
         Assert.Equal(20m, spending.Amount);
         Assert.Equal("newdesc", spending.Description);
@@ -167,11 +167,11 @@ public class MonthlySpendingTests
     public void Update_WithInvalidDescription_DoesNotUpdate()
     {
         var bucket = Bucket.Create("Test", "Desc", 100m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2025, 9);
+        var monthlyBucket = bucket.CreateMonthly(2025, 9).Value!;
         var date = new DateOnly(2025, 9, 15);
         var spending = MonthlySpending.Create(date, "desc", 10m, "owner", Array.Empty<string>(), monthlyBucket).Value!;
         var newDate = new DateOnly(2025, 9, 20);
-        spending.Update(newDate, "", 20m, "newowner", Array.Empty<string>());
+        var updateResult = spending.Update(newDate, "", 20m, "newowner", Array.Empty<string>());
         Assert.Equal("desc", spending.Description);
         Assert.Equal(date, spending.Date);
     }
@@ -180,11 +180,11 @@ public class MonthlySpendingTests
     public void Update_WithNegativeAmount_DoesNotUpdate()
     {
         var bucket = Bucket.Create("Test", "Desc", 100m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2025, 9);
+        var monthlyBucket = bucket.CreateMonthly(2025, 9).Value!;
         var date = new DateOnly(2025, 9, 15);
         var spending = MonthlySpending.Create(date, "desc", 10m, "owner", Array.Empty<string>(), monthlyBucket).Value!;
         var newDate = new DateOnly(2025, 9, 20);
-        spending.Update(newDate, "newdesc", -20m, "newowner", Array.Empty<string>());
+        var updateResult = spending.Update(newDate, "newdesc", -20m, "newowner", Array.Empty<string>());
         Assert.Equal(10m, spending.Amount);
     }
     #endregion
@@ -194,7 +194,7 @@ public class MonthlySpendingTests
     public void Equals_SameValues_ReturnsTrue()
     {
         var bucket = Bucket.Create("Test", "Desc", 100m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2025, 9);
+        var monthlyBucket = bucket.CreateMonthly(2025, 9).Value!;
         var date = new DateOnly(2025, 9, 15);
         var spending1 = MonthlySpending.Create(date, "desc", 10m, "owner", Array.Empty<string>(), monthlyBucket).Value!;
         var spending2 = MonthlySpending.Create(date, "desc", 10m, "owner", Array.Empty<string>(), monthlyBucket).Value!;
@@ -206,7 +206,7 @@ public class MonthlySpendingTests
     public void Equals_DifferentDate_ReturnsFalse()
     {
         var bucket = Bucket.Create("Test", "Desc", 100m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2025, 9);
+        var monthlyBucket = bucket.CreateMonthly(2025, 9).Value!;
         var date1 = new DateOnly(2025, 9, 15);
         var date2 = new DateOnly(2025, 9, 20);
         var spending1 = MonthlySpending.Create(date1, "desc", 10m, "owner", Array.Empty<string>(), monthlyBucket).Value!;
@@ -218,7 +218,7 @@ public class MonthlySpendingTests
     public void Equals_DifferentDescription_ReturnsFalse()
     {
         var bucket = Bucket.Create("Test", "Desc", 100m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2025, 9);
+        var monthlyBucket = bucket.CreateMonthly(2025, 9).Value!;
         var date = new DateOnly(2025, 9, 15);
         var spending1 = MonthlySpending.Create(date, "desc1", 10m, "owner", Array.Empty<string>(), monthlyBucket).Value!;
         var spending2 = MonthlySpending.Create(date, "desc2", 10m, "owner", Array.Empty<string>(), monthlyBucket).Value!;
@@ -229,7 +229,7 @@ public class MonthlySpendingTests
     public void Equals_DifferentAmount_ReturnsFalse()
     {
         var bucket = Bucket.Create("Test", "Desc", 100m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2025, 9);
+        var monthlyBucket = bucket.CreateMonthly(2025, 9).Value!;
         var date = new DateOnly(2025, 9, 15);
         var spending1 = MonthlySpending.Create(date, "desc", 10m, "owner", Array.Empty<string>(), monthlyBucket).Value!;
         var spending2 = MonthlySpending.Create(date, "desc", 20m, "owner", Array.Empty<string>(), monthlyBucket).Value!;
@@ -240,7 +240,7 @@ public class MonthlySpendingTests
     public void Equals_DifferentOwner_ReturnsFalse()
     {
         var bucket = Bucket.Create("Test", "Desc", 100m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2025, 9);
+        var monthlyBucket = bucket.CreateMonthly(2025, 9).Value!;
         var date = new DateOnly(2025, 9, 15);
         var spending1 = MonthlySpending.Create(date, "desc", 10m, "owner1", Array.Empty<string>(), monthlyBucket).Value!;
         var spending2 = MonthlySpending.Create(date, "desc", 10m, "owner2", Array.Empty<string>(), monthlyBucket).Value!;
@@ -251,7 +251,7 @@ public class MonthlySpendingTests
     public void Equals_WithNull_ReturnsFalse()
     {
         var bucket = Bucket.Create("Test", "Desc", 100m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2025, 9);
+        var monthlyBucket = bucket.CreateMonthly(2025, 9).Value!;
         var date = new DateOnly(2025, 9, 15);
         var spending = MonthlySpending.Create(date, "desc", 10m, "owner", Array.Empty<string>(), monthlyBucket).Value!;
         Assert.False(spending.Equals(null));
@@ -262,7 +262,7 @@ public class MonthlySpendingTests
     public void GetHashCode_SameValues_ReturnsSameHash()
     {
         var bucket = Bucket.Create("Test", "Desc", 100m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2025, 9);
+        var monthlyBucket = bucket.CreateMonthly(2025, 9).Value!;
         var date = new DateOnly(2025, 9, 15);
         var spending1 = MonthlySpending.Create(date, "desc", 10m, "owner", Array.Empty<string>(), monthlyBucket).Value!;
         var spending2 = MonthlySpending.Create(date, "desc", 10m, "owner", Array.Empty<string>(), monthlyBucket).Value!;

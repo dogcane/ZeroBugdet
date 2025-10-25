@@ -1,4 +1,5 @@
 using ECO.Data;
+using ECO.Integrations.Moq;
 using Moq;
 using Xunit;
 using zerobudget.core.application.Handlers.Queries;
@@ -20,8 +21,7 @@ public class SpendingQueryHandlerTests
         var spending = Spending.Create("Test Spending", 100m, "Owner", Array.Empty<Tag>(), bucket).Value!;
 
         spendingRepository
-            .Setup(r => r.LoadAsync(It.IsAny<int>()))
-            .ReturnsAsync(spending);
+            .SetupRepository<ISpendingRepository, Spending, int>([spending]);
 
         var query = new GetSpendingByIdQuery(1);
 
@@ -42,8 +42,7 @@ public class SpendingQueryHandlerTests
         var handler = new GetSpendingByIdQueryHandler(spendingRepository.Object);
 
         spendingRepository
-            .Setup(r => r.LoadAsync(It.IsAny<int>()))
-            .ReturnsAsync((Spending?)null);
+            .SetupRepository<ISpendingRepository, Spending, int>([]);
 
         var query = new GetSpendingByIdQuery(999);
 
@@ -113,7 +112,8 @@ public class SpendingQueryHandlerTests
         var spending1 = Spending.Create("Spending1", 100m, "Owner1", Array.Empty<Tag>(), bucket).Value!;
         var spending2 = Spending.Create("Spending2", 200m, "Owner2", Array.Empty<Tag>(), bucket).Value!;
 
-        spendingRepository.SetupAsQueryable<ISpendingRepository, Spending, int>(new[] { spending1, spending2 });
+        spendingRepository
+            .SetupRepository<ISpendingRepository, Spending, int>([spending1, spending2]);
 
         var query = new GetSpendingsByOwnerQuery("Owner1");
 

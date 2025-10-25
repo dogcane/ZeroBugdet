@@ -2,6 +2,7 @@ using Xunit;
 using zerobudget.core.application.Commands;
 using zerobudget.core.domain;
 using Moq;
+using ECO.Integrations.Moq;
 using zerobudget.core.application.Handlers.Commands;
 
 namespace zerobudget.core.application.tests.Integration;
@@ -18,8 +19,6 @@ public class MonthlyDataGenerationIntegrationTests
         // Arrange
         var mockMonthlyBucketRepository = new Mock<IMonthlyBucketRepository>();
         var mockBucketRepository = new Mock<IBucketRepository>();
-        var mockMonthlySpendingRepository = new Mock<IMonthlySpendingRepository>();
-        var mockSpendingRepository = new Mock<ISpendingRepository>();
 
         var handler = new GenerateMonthlyDataCommandHandler(
             mockMonthlyBucketRepository.Object,
@@ -31,13 +30,8 @@ public class MonthlyDataGenerationIntegrationTests
 
         mockBucketRepository.SetupAsQueryable<IBucketRepository, Bucket, int>(new[] { bucket1, bucket2 });
 
-        // Setup spendings
-        var spending1 = Spending.Create(
-            "Test Spending 1",
-            100m,
-            "Owner 1",
-            Array.Empty<Tag>(),
-            bucket1).Value!;
+        mockMonthlyBucketRepository
+            .SetupRepository<IMonthlyBucketRepository, MonthlyBucket, int>([]);
 
         var spending2 = Spending.Create(
             "Test Spending 2",
@@ -65,8 +59,6 @@ public class MonthlyDataGenerationIntegrationTests
         // Arrange
         var mockMonthlyBucketRepository = new Mock<IMonthlyBucketRepository>();
         var mockBucketRepository = new Mock<IBucketRepository>();
-        var mockMonthlySpendingRepository = new Mock<IMonthlySpendingRepository>();
-        var mockSpendingRepository = new Mock<ISpendingRepository>();
 
         var handler = new GenerateMonthlyDataCommandHandler(
             mockMonthlyBucketRepository.Object,
@@ -74,13 +66,12 @@ public class MonthlyDataGenerationIntegrationTests
 
         // Setup existing monthly data
         var bucket = Bucket.Create("Test Bucket", "Description", 1000m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2025, 1);
+        var monthlyBucket = bucket.CreateMonthly(2025, 1).Value!;
 
         mockBucketRepository.SetupAsQueryable<IBucketRepository, Bucket, int>(new[] { bucket });
 
-        mockMonthlyBucketRepository.SetupAsQueryable<IMonthlyBucketRepository, MonthlyBucket, int>(new[] { monthlyBucket });
-
-        mockSpendingRepository.SetupAsQueryable<ISpendingRepository, Spending, int>(Enumerable.Empty<Spending>());
+        mockMonthlyBucketRepository
+            .SetupRepository<IMonthlyBucketRepository, MonthlyBucket, int>([monthlyBucket]);
 
         var command = new GenerateMonthlyDataCommand(2025, 1);
 
