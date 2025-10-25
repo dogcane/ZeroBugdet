@@ -69,9 +69,7 @@ public class MonthlySpendingQueryHandlerTests
         var monthlySpending1 = spending1.CreateMonthly(monthlyBucket).Value!;
         var monthlySpending2 = spending2.CreateMonthly(monthlyBucket).Value!;
 
-        monthlySpendingRepository
-            .Setup(r => r.AsQueryable())
-            .Returns(new[] { monthlySpending1, monthlySpending2 }.AsQueryable());
+        monthlySpendingRepository.SetupAsQueryable<IMonthlySpendingRepository, MonthlySpending, int>(new[] { monthlySpending1, monthlySpending2 });
 
         var query = new GetAllMonthlySpendingsQuery();
 
@@ -98,9 +96,7 @@ public class MonthlySpendingQueryHandlerTests
         var monthlySpending1 = spending1.CreateMonthly(monthlyBucket1).Value!;
         var monthlySpending2 = spending2.CreateMonthly(monthlyBucket2).Value!;
 
-        monthlySpendingRepository
-            .Setup(r => r.AsQueryable())
-            .Returns(new[] { monthlySpending1, monthlySpending2 }.AsQueryable());
+        monthlySpendingRepository.SetupAsQueryable<IMonthlySpendingRepository, MonthlySpending, int>(new[] { monthlySpending1, monthlySpending2 });
 
         var query = new GetMonthlySpendingsByMonthlyBucketIdQuery(monthlyBucket1.Identity);
 
@@ -128,9 +124,7 @@ public class MonthlySpendingQueryHandlerTests
         var monthlySpending1 = spending1.CreateMonthly(monthlyBucket1).Value!;
         var monthlySpending2 = spending2.CreateMonthly(monthlyBucket2).Value!;
 
-        monthlySpendingRepository
-            .Setup(r => r.AsQueryable())
-            .Returns(new[] { monthlySpending1, monthlySpending2 }.AsQueryable());
+        monthlySpendingRepository.SetupAsQueryable<IMonthlySpendingRepository, MonthlySpending, int>(new[] { monthlySpending1, monthlySpending2 });
 
         var query = new GetMonthlySpendingsByDateRangeQuery(
             new DateOnly(2024, 10, 1),
@@ -159,9 +153,7 @@ public class MonthlySpendingQueryHandlerTests
         var monthlySpending1 = spending1.CreateMonthly(monthlyBucket).Value!;
         var monthlySpending2 = spending2.CreateMonthly(monthlyBucket).Value!;
 
-        monthlySpendingRepository
-            .Setup(r => r.AsQueryable())
-            .Returns(new[] { monthlySpending1, monthlySpending2 }.AsQueryable());
+        monthlySpendingRepository.SetupAsQueryable<IMonthlySpendingRepository, MonthlySpending, int>(new[] { monthlySpending1, monthlySpending2 });
 
         var query = new GetMonthlySpendingsByOwnerQuery("Owner1");
 

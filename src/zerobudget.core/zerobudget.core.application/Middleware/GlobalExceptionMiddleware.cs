@@ -53,11 +53,16 @@ public class GlobalExceptionMiddleware(ILogger<GlobalExceptionMiddleware>? logge
     private static T CreateGenericOperationResultFailure<T>(Exception ex, string messageType)
     {
         var resultType = typeof(T).GetGenericArguments()[0];
+        var errorMessage = ErrorMessage.Create("Global", $"An unexpected error occurred while processing {messageType}: {ex.Message}");
         var makeFailureMethod = typeof(OperationResult<>).MakeGenericType(resultType)
-            .GetMethod("MakeFailure", new[] { typeof(string) });
+            .GetMethod("MakeFailure", new[] { typeof(ErrorMessage) });
 
-        return (T)makeFailureMethod!.Invoke(null,
-            [$"An unexpected error occurred while processing {messageType}: {ex.Message}"])!;
+        if (makeFailureMethod == null)
+        {
+            throw new InvalidOperationException($"MakeFailure method not found on OperationResult<{resultType.Name}>");
+        }
+
+        return (T)makeFailureMethod.Invoke(null, [errorMessage])!;
     }
 
     private static T CreateOperationResultFailure<T>(Exception ex, string messageType)
@@ -67,11 +72,37 @@ public class GlobalExceptionMiddleware(ILogger<GlobalExceptionMiddleware>? logge
 
     private static T HandleReferenceOrValueType<T>(Exception ex, string messageType)
     {
-        if (typeof(T).IsClass && Nullable.GetUnderlyingType(typeof(T)) == null)
+        // Special case for string (which implements IEnumerable<char> but should return null)
+        if (typeof(T) == typeof(string))
         {
-            return HandleReferenceType<T>();
+            return default(T)!;
         }
 
+        // Check if T is IEnumerable<>
+        if (typeof(T).IsGenericType && typeof(T).GetGenericTypeDefinition() == typeof(IEnumerable<>))
+        {
+            var elementType = typeof(T).GetGenericArguments()[0];
+            var emptyMethod = typeof(Enumerable).GetMethod("Empty")!.MakeGenericMethod(elementType);
+            return (T)emptyMethod.Invoke(null, null)!;
+        }
+
+        // Check if T implements IEnumerable<> (excluding string which we handled above)
+        var enumerableInterface = typeof(T).GetInterfaces()
+            .FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+        if (enumerableInterface != null)
+        {
+            var elementType = enumerableInterface.GetGenericArguments()[0];
+            var emptyMethod = typeof(Enumerable).GetMethod("Empty")!.MakeGenericMethod(elementType);
+            return (T)emptyMethod.Invoke(null, null)!;
+        }
+
+        // For reference types (classes and interfaces), return null
+        if (!typeof(T).IsValueType)
+        {
+            return default(T)!;
+        }
+
+        // For value types, throw exception
         throw new InvalidOperationException($"An unexpected error occurred while processing {messageType}: {ex.Message}", ex);
     }
 

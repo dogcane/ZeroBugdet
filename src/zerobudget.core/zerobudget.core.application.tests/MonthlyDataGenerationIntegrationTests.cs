@@ -28,14 +28,21 @@ public class MonthlyDataGenerationIntegrationTests
         var bucket1 = Bucket.Create("Test Bucket 1", "Description 1", 1000m).Value!;
         var bucket2 = Bucket.Create("Test Bucket 2", "Description 2", 2000m).Value!;
 
-        mockBucketRepository.Setup(r => r.AsQueryable())
-            .Returns(new[] { bucket1, bucket2 }.AsQueryable());
+        mockBucketRepository.SetupAsQueryable<IBucketRepository, Bucket, int>(new[] { bucket1, bucket2 });
 
         mockMonthlyBucketRepository
             .SetupRepository<IMonthlyBucketRepository, MonthlyBucket, int>([]);
 
-        mockMonthlyBucketRepository.Setup(r => r.AddAsync(It.IsAny<MonthlyBucket>()))
-            .Returns(Task.CompletedTask);
+        var spending2 = Spending.Create(
+            "Test Spending 2",
+            200m,
+            "Owner 2",
+            Array.Empty<Tag>(),
+            bucket2).Value!;
+
+        mockSpendingRepository.SetupAsQueryable<ISpendingRepository, Spending, int>(new[] { spending1, spending2 });
+
+        mockMonthlyBucketRepository.SetupAsQueryable<IMonthlyBucketRepository, MonthlyBucket, int>(Enumerable.Empty<MonthlyBucket>());
 
         var command = new GenerateMonthlyDataCommand(2025, 1);
 
@@ -61,8 +68,7 @@ public class MonthlyDataGenerationIntegrationTests
         var bucket = Bucket.Create("Test Bucket", "Description", 1000m).Value!;
         var monthlyBucket = bucket.CreateMonthly(2025, 1).Value!;
 
-        mockBucketRepository.Setup(r => r.AsQueryable())
-            .Returns(new[] { bucket }.AsQueryable());
+        mockBucketRepository.SetupAsQueryable<IBucketRepository, Bucket, int>(new[] { bucket });
 
         mockMonthlyBucketRepository
             .SetupRepository<IMonthlyBucketRepository, MonthlyBucket, int>([monthlyBucket]);

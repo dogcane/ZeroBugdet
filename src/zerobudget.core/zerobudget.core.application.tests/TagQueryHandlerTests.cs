@@ -61,9 +61,7 @@ public class TagQueryHandlerTests
         var tag1 = Tag.Create("Tag1").Value!;
         var tag2 = Tag.Create("Tag2").Value!;
 
-        tagRepository
-            .Setup(r => r.AsQueryable())
-            .Returns(new[] { tag1, tag2 }.AsQueryable());
+        tagRepository.SetupAsQueryable<ITagRepository, Tag, int>(new[] { tag1, tag2 });
 
         var query = new GetAllTagsQuery();
 
@@ -85,9 +83,7 @@ public class TagQueryHandlerTests
         var tag1 = Tag.Create("TestTag1").Value!;
         var tag2 = Tag.Create("OtherTag").Value!;
 
-        tagRepository
-            .Setup(r => r.AsQueryable())
-            .Returns(new[] { tag1, tag2 }.AsQueryable());
+        tagRepository.SetupAsQueryable<ITagRepository, Tag, int>(new[] { tag1, tag2 });
 
         var query = new GetTagsByNameQuery("test");
 

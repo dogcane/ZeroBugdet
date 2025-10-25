@@ -14,19 +14,17 @@ public class GlobalExceptionMiddlewareTests
 {
     private readonly Mock<ILogger<GlobalExceptionMiddleware>> _mockLogger;
     private readonly Mock<IMessageContext> _mockContext;
-    private readonly Mock<Envelope> _mockEnvelope;
     private readonly GlobalExceptionMiddleware _middleware;
 
     public GlobalExceptionMiddlewareTests()
     {
         _mockLogger = new Mock<ILogger<GlobalExceptionMiddleware>>();
         _mockContext = new Mock<IMessageContext>();
-        _mockEnvelope = new Mock<Envelope>();
         _middleware = new GlobalExceptionMiddleware(_mockLogger.Object);
 
-        // Setup mock context
-        _mockEnvelope.Setup(e => e.Message).Returns(new TestCommand());
-        _mockContext.Setup(c => c.Envelope).Returns(_mockEnvelope.Object);
+        // Setup mock context with a real Envelope
+        var envelope = new Envelope(new TestCommand());
+        _mockContext.Setup(c => c.Envelope).Returns(envelope);
     }
 
     [Fact]

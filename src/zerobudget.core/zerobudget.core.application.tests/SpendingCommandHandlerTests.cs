@@ -32,7 +32,8 @@ public class SpendingCommandHandlerTests
         var tag2 = tag2Result.Value!;
 
         bucketRepository
-            .SetupRepository<IBucketRepository, Bucket, int>([bucket]);
+            .Setup(r => r.LoadAsync(It.IsAny<int>()))
+            .Returns(new ValueTask<Bucket?>(bucket));
 
         tagService.Setup(s => s.EnsureTagsByNameAsync(It.IsAny<string[]>()))
                   .ReturnsAsync(new List<Tag> { tag1, tag2 });
@@ -83,7 +84,8 @@ public class SpendingCommandHandlerTests
         var newTag = newTagResult.Value!;
 
         bucketRepository
-            .SetupRepository<IBucketRepository, Bucket, int>([bucket]);
+            .Setup(r => r.LoadAsync(It.IsAny<int>()))
+            .Returns(new ValueTask<Bucket?>(bucket));
 
         tagService.Setup(s => s.EnsureTagsByNameAsync(It.IsAny<string[]>()))
                   .ReturnsAsync(new List<Tag> { existingTag, newTag });
@@ -124,7 +126,8 @@ public class SpendingCommandHandlerTests
             tagService.Object);
 
         bucketRepository
-            .SetupRepository<IBucketRepository, Bucket, int>([]);
+            .Setup(r => r.LoadAsync(It.IsAny<int>()))
+            .Returns(new ValueTask<Bucket?>(null as Bucket));
 
         var command = new CreateSpendingCommand(
             Date: DateOnly.FromDateTime(DateTime.Now),
@@ -159,7 +162,8 @@ public class SpendingCommandHandlerTests
         var tag1 = tag1Result.Value!;
 
         spendingRepository
-            .SetupRepository<ISpendingRepository, Spending, int>([spending]);
+            .Setup(r => r.LoadAsync(It.IsAny<int>()))
+            .Returns(new ValueTask<Spending?>(spending));
 
         tagService.Setup(s => s.EnsureTagsByNameAsync(It.IsAny<string[]>()))
                   .ReturnsAsync(new List<Tag> { tag1 });
@@ -199,7 +203,8 @@ public class SpendingCommandHandlerTests
             tagService.Object);
 
         spendingRepository
-            .SetupRepository<ISpendingRepository, Spending, int>([]);
+            .Setup(r => r.LoadAsync(It.IsAny<int>()))
+            .Returns(new ValueTask<Spending?>(null as Spending));
 
         var command = new UpdateSpendingCommand(
             Id: 1,
