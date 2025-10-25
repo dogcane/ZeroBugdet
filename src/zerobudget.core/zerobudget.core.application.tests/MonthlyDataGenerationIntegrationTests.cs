@@ -30,27 +30,14 @@ public class MonthlyDataGenerationIntegrationTests
 
         mockBucketRepository.SetupAsQueryable<IBucketRepository, Bucket, int>(new[] { bucket1, bucket2 });
 
-        mockMonthlyBucketRepository
-            .SetupRepository<IMonthlyBucketRepository, MonthlyBucket, int>([]);
-
-        var spending2 = Spending.Create(
-            "Test Spending 2",
-            200m,
-            "Owner 2",
-            Array.Empty<Tag>(),
-            bucket2).Value!;
-
-        mockSpendingRepository.SetupAsQueryable<ISpendingRepository, Spending, int>(new[] { spending1, spending2 });
-
-        mockMonthlyBucketRepository.SetupAsQueryable<IMonthlyBucketRepository, MonthlyBucket, int>(Enumerable.Empty<MonthlyBucket>());
-
         var command = new GenerateMonthlyDataCommand(2025, 1);
 
         // Act
         var result = await handler.Handle(command);
 
         // Assert
-        Assert.True(result); // Handler returns true on success
+        Assert.True(result.Success);
+        Assert.True(result.Value); // Handler returns true on success
     }
 
     [Fact]
@@ -79,6 +66,7 @@ public class MonthlyDataGenerationIntegrationTests
         var result = await handler.Handle(command);
 
         // Assert
-        Assert.True(result); // Current implementation always returns true (doesn't check for existing data)
+        Assert.True(result.Success);
+        Assert.True(result.Value); // Current implementation always returns true (doesn't check for existing data)
     }
 }

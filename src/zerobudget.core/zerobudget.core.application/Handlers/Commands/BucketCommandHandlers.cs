@@ -68,14 +68,14 @@ public class DeleteBucketCommandHandler(IBucketRepository bucketRepository, IMon
     private readonly IMonthlyBucketRepository _monthlyBucketRepository = monthlyBucketRepository;
     private readonly ILogger<DeleteBucketCommandHandler>? _logger = logger;
 
-    public async Task Handle(DeleteBucketCommand command)
+    public async Task<OperationResult> Handle(DeleteBucketCommand command)
     {
         using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
 
         var bucket = await _bucketRepository.LoadAsync(command.Id);
         if (bucket == null)
         {
-            throw new InvalidOperationException("Bucket not found");
+            return OperationResult.MakeFailure(ErrorMessage.Create("DELETE_BUCKET", "Bucket not found"));
         }
 
         var hasRelatedMonthlyBuckets = _monthlyBucketRepository.Any(mb => mb.Bucket.Identity == bucket.Identity);
@@ -84,7 +84,7 @@ public class DeleteBucketCommandHandler(IBucketRepository bucketRepository, IMon
             var disableResult = bucket.Disable();
             if (!disableResult.Success)
             {
-                throw new InvalidOperationException(string.Join(", ", disableResult.Errors.Select(e => e.Description)));
+                return OperationResult.MakeFailure(disableResult.Errors);
             }
             await _bucketRepository.UpdateAsync(bucket);
         }
@@ -94,6 +94,7 @@ public class DeleteBucketCommandHandler(IBucketRepository bucketRepository, IMon
         }
 
         scope.Complete();
+        return OperationResult.MakeSuccess();
     }
 }
 
@@ -103,24 +104,24 @@ public class EnableBucketCommandHandler(IBucketRepository bucketRepository, ILog
     private readonly ILogger<EnableBucketCommandHandler>? _logger = logger;
     private readonly BucketMapper _mapper = new BucketMapper();
 
-    public async Task<BucketDto> Handle(EnableBucketCommand command)
+    public async Task<OperationResult<BucketDto>> Handle(EnableBucketCommand command)
     {
         using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
 
         var bucket = await _bucketRepository.LoadAsync(command.Id);
         if (bucket == null)
         {
-            throw new InvalidOperationException("Bucket not found");
+            return OperationResult<BucketDto>.MakeFailure(ErrorMessage.Create("ENABLE_BUCKET", "Bucket not found"));
         }
 
         var enableResult = bucket.Enable();
         if (!enableResult.Success)
         {
-            throw new InvalidOperationException(string.Join(", ", enableResult.Errors.Select(e => e.Description)));
+            return OperationResult<BucketDto>.MakeFailure(enableResult.Errors);
         }
 
         await _bucketRepository.UpdateAsync(bucket);
         scope.Complete();
-        return _mapper.ToDto(bucket);
+        return OperationResult<BucketDto>.MakeSuccess(_mapper.ToDto(bucket));
     }
 }

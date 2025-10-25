@@ -63,7 +63,8 @@ public class MonthlyDataGenerationCommandHandlerTests
         var result = await handler.Handle(command);
 
         // Assert
-        Assert.True(result);
+        Assert.True(result.Success);
+        Assert.True(result.Value);
         monthlyBucketRepository.Verify(r => r.AddAsync(It.IsAny<MonthlyBucket>()), Times.Exactly(2));
     }
 

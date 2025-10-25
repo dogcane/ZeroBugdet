@@ -54,11 +54,12 @@ public class SpendingCommandHandlerTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("Test Spending", result.Description);
-        Assert.Equal(100m, result.Amount);
-        Assert.Equal(2, result.Tags.Length);
-        Assert.Contains("food", result.Tags);
-        Assert.Contains("holiday", result.Tags);
+        Assert.True(result.Success);
+        Assert.Equal("Test Spending", result.Value!.Description);
+        Assert.Equal(100m, result.Value.Amount);
+        Assert.Equal(2, result.Value.Tags.Length);
+        Assert.Contains("food", result.Value.Tags);
+        Assert.Contains("holiday", result.Value.Tags);
         spendingRepository.Verify(r => r.AddAsync(It.IsAny<Spending>()), Times.Once);
     }
 
@@ -106,9 +107,10 @@ public class SpendingCommandHandlerTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(2, result.Tags.Length);
-        Assert.Contains("food", result.Tags);
-        Assert.Contains("cinema", result.Tags);
+        Assert.True(result.Success);
+        Assert.Equal(2, result.Value!.Tags.Length);
+        Assert.Contains("food", result.Value.Tags);
+        Assert.Contains("cinema", result.Value.Tags);
         spendingRepository.Verify(r => r.AddAsync(It.IsAny<Spending>()), Times.Once);
     }
 
@@ -137,8 +139,12 @@ public class SpendingCommandHandlerTests
             Owner: "John",
             TagNames: new[] { "food" });
 
-        // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => handler.Handle(command));
+        // Act
+        var result = await handler.Handle(command);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.NotEmpty(result.Errors);
         spendingRepository.Verify(r => r.AddAsync(It.IsAny<Spending>()), Times.Never);
     }
 
@@ -184,10 +190,11 @@ public class SpendingCommandHandlerTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("Updated Spending", result.Description);
-        Assert.Equal(150m, result.Amount);
-        Assert.Equal("Jane", result.Owner);
-        Assert.Contains("food", result.Tags);
+        Assert.True(result.Success);
+        Assert.Equal("Updated Spending", result.Value!.Description);
+        Assert.Equal(150m, result.Value.Amount);
+        Assert.Equal("Jane", result.Value.Owner);
+        Assert.Contains("food", result.Value.Tags);
         spendingRepository.Verify(r => r.UpdateAsync(It.IsAny<Spending>()), Times.Once);
     }
 
@@ -214,8 +221,12 @@ public class SpendingCommandHandlerTests
             Owner: "Jane",
             TagNames: new[] { "food" });
 
-        // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => handler.Handle(command));
+        // Act
+        var result = await handler.Handle(command);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.NotEmpty(result.Errors);
         spendingRepository.Verify(r => r.UpdateAsync(It.IsAny<Spending>()), Times.Never);
     }
 }

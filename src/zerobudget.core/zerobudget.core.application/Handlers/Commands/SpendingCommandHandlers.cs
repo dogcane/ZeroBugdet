@@ -20,13 +20,13 @@ public class CreateSpendingCommandHandler(
     private readonly ILogger<CreateSpendingCommandHandler>? _logger = logger;
     private readonly SpendingMapper _mapper = new SpendingMapper();
 
-    public async Task<SpendingDto> Handle(CreateSpendingCommand command)
+    public async Task<OperationResult<SpendingDto>> Handle(CreateSpendingCommand command)
     {
         using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
 
         var bucket = await _bucketRepository.LoadAsync(command.BucketId);
         if (bucket == null)
-            throw new InvalidOperationException("Bucket not found");
+            return OperationResult<SpendingDto>.MakeFailure(ErrorMessage.Create("CREATE_SPENDING", "Bucket not found"));
 
         var tags = await _tagService.EnsureTagsByNameAsync(command.TagNames);
 
@@ -38,13 +38,13 @@ public class CreateSpendingCommandHandler(
             bucket);
 
         if (!spendingResult.Success)
-            throw new InvalidOperationException(string.Join(", ", spendingResult.Errors.Select(e => e.Description)));
+            return OperationResult<SpendingDto>.MakeFailure(spendingResult.Errors);
 
         var spending = spendingResult.Value!;
         await _spendingRepository.AddAsync(spending);
 
         scope.Complete();
-        return _mapper.ToDto(spending);
+        return OperationResult<SpendingDto>.MakeSuccess(_mapper.ToDto(spending));
     }
 }
 
@@ -58,13 +58,13 @@ public class UpdateSpendingCommandHandler(
     private readonly ILogger<UpdateSpendingCommandHandler>? _logger = logger;
     private readonly SpendingMapper _mapper = new SpendingMapper();
 
-    public async Task<SpendingDto> Handle(UpdateSpendingCommand command)
+    public async Task<OperationResult<SpendingDto>> Handle(UpdateSpendingCommand command)
     {
         using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
 
         var spending = await _spendingRepository.LoadAsync(command.Id);
         if (spending == null)
-            throw new InvalidOperationException("Spending not found");
+            return OperationResult<SpendingDto>.MakeFailure(ErrorMessage.Create("UPDATE_SPENDING", "Spending not found"));
 
         var tags = await _tagService.EnsureTagsByNameAsync(command.TagNames);
 
@@ -75,12 +75,12 @@ public class UpdateSpendingCommandHandler(
             [.. tags]);
 
         if (!updateResult.Success)
-            throw new InvalidOperationException(string.Join(", ", updateResult.Errors.Select(e => e.Description)));
+            return OperationResult<SpendingDto>.MakeFailure(updateResult.Errors);
 
         await _spendingRepository.UpdateAsync(spending);
 
         scope.Complete();
-        return _mapper.ToDto(spending);
+        return OperationResult<SpendingDto>.MakeSuccess(_mapper.ToDto(spending));
     }
 }
 
@@ -93,13 +93,13 @@ public class DeleteSpendingCommandHandler(
     private readonly IMonthlySpendingRepository _monthlySpendingRepository = monthlySpendingRepository;
     private readonly ILogger<DeleteSpendingCommandHandler>? _logger = logger;
 
-    public async Task Handle(DeleteSpendingCommand command)
+    public async Task<OperationResult> Handle(DeleteSpendingCommand command)
     {
         using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
 
         var spending = await _spendingRepository.LoadAsync(command.Id);
         if (spending == null)
-            throw new InvalidOperationException("Spending not found");
+            return OperationResult.MakeFailure(ErrorMessage.Create("DELETE_SPENDING", "Spending not found"));
 
         var hasRelatedMonthlySpendings = _monthlySpendingRepository.Any(ms =>
             ms.Description == spending.Description &&
@@ -111,7 +111,7 @@ public class DeleteSpendingCommandHandler(
             var disableResult = spending.Disable();
             if (!disableResult.Success)
             {
-                throw new InvalidOperationException(string.Join(", ", disableResult.Errors.Select(e => e.Description)));
+                return OperationResult.MakeFailure(disableResult.Errors);
             }
             await _spendingRepository.UpdateAsync(spending);
         }
@@ -121,6 +121,7 @@ public class DeleteSpendingCommandHandler(
         }
 
         scope.Complete();
+        return OperationResult.MakeSuccess();
     }
 }
 
@@ -132,23 +133,23 @@ public class EnableSpendingCommandHandler(
     private readonly ILogger<EnableSpendingCommandHandler>? _logger = logger;
     private readonly SpendingMapper _mapper = new SpendingMapper();
 
-    public async Task<SpendingDto> Handle(EnableSpendingCommand command)
+    public async Task<OperationResult<SpendingDto>> Handle(EnableSpendingCommand command)
     {
         using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
 
         var spending = await _spendingRepository.LoadAsync(command.Id);
         if (spending == null)
-            throw new InvalidOperationException("Spending not found");
+            return OperationResult<SpendingDto>.MakeFailure(ErrorMessage.Create("ENABLE_SPENDING", "Spending not found"));
 
         var enableResult = spending.Enable();
         if (!enableResult.Success)
         {
-            throw new InvalidOperationException(string.Join(", ", enableResult.Errors.Select(e => e.Description)));
+            return OperationResult<SpendingDto>.MakeFailure(enableResult.Errors);
         }
 
         await _spendingRepository.UpdateAsync(spending);
 
         scope.Complete();
-        return _mapper.ToDto(spending);
+        return OperationResult<SpendingDto>.MakeSuccess(_mapper.ToDto(spending));
     }
 }

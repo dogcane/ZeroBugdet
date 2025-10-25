@@ -26,20 +26,24 @@ public class TagCommandHandlerTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("testtag", result.Name);
+        Assert.True(result.Success);
+        Assert.Equal("testtag", result.Value!.Name);
         tagRepository.Verify(r => r.AddAsync(It.IsAny<Tag>()), Times.Once);
     }
 
     [Fact]
-    public async Task Handle_CreateTagCommand_WithEmptyName_ShouldThrowException()
+    public async Task Handle_CreateTagCommand_WithEmptyName_ShouldReturnFailure()
     {
         // Arrange
         var tagRepository = new Mock<ITagRepository>();
         var handler = new CreateTagCommandHandler(tagRepository.Object);
         var command = new CreateTagCommand("");
 
-        // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => handler.Handle(command));
+        // Act
+        var result = await handler.Handle(command);
+
+        // Assert
+        Assert.False(result.Success);
         tagRepository.Verify(r => r.AddAsync(It.IsAny<Tag>()), Times.Never);
     }
 
@@ -60,14 +64,15 @@ public class TagCommandHandlerTests
                      .Returns(Task.CompletedTask);
 
         // Act
-        await handler.Handle(command);
+        var result = await handler.Handle(command);
 
         // Assert
+        Assert.True(result.Success);
         tagRepository.Verify(r => r.RemoveAsync(It.IsAny<Tag>()), Times.Once);
     }
 
     [Fact]
-    public async Task Handle_DeleteTagCommand_WithNonExistentTag_ShouldThrowException()
+    public async Task Handle_DeleteTagCommand_WithNonExistentTag_ShouldReturnFailure()
     {
         // Arrange
         var tagRepository = new Mock<ITagRepository>();
@@ -77,8 +82,12 @@ public class TagCommandHandlerTests
         tagRepository
             .SetupRepository<ITagRepository, Tag, int>([]);
 
-        // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => handler.Handle(command));
+        // Act
+        var result = await handler.Handle(command);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.NotEmpty(result.Errors);
         tagRepository.Verify(r => r.RemoveAsync(It.IsAny<Tag>()), Times.Never);
     }
 }

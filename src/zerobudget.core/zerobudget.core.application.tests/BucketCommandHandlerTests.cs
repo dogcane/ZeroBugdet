@@ -87,14 +87,15 @@ public class BucketCommandHandlerTests
                      .Returns(Task.CompletedTask);
 
         // Act
-        await handler.Handle(command);
+        var result = await handler.Handle(command);
 
         // Assert
+        Assert.True(result.Success);
         bucketRepository.Verify(r => r.RemoveAsync(It.IsAny<Bucket>()), Times.Once);
     }
 
     [Fact]
-    public async Task Handle_UpdateBucketCommand_WithNonExistentBucket_ShouldThrowException()
+    public async Task Handle_UpdateBucketCommand_WithNonExistentBucket_ShouldReturnFailure()
     {
         // Arrange
         var bucketRepository = new Mock<IBucketRepository>();
@@ -105,7 +106,11 @@ public class BucketCommandHandlerTests
             .Setup(r => r.LoadAsync(It.IsAny<int>()))
             .Returns(new ValueTask<Bucket?>(null as Bucket));
 
-        // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => handler.Handle(command));
+        // Act
+        var result = await handler.Handle(command);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.NotEmpty(result.Errors);
     }
 }
