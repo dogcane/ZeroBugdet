@@ -12,7 +12,9 @@ public class MonthlyBucketTests
     public void Constructor_SetsPropertiesCorrectly()
     {
         var bucket = Bucket.Create("Test", "Desc", 100m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2025, 9);
+        var result = bucket.CreateMonthly(2025, 9);
+        Assert.True(result.Success);
+        var monthlyBucket = result.Value!;
         Assert.Equal((short)2025, monthlyBucket.Year);
         Assert.Equal((short)9, monthlyBucket.Month);
         Assert.Equal(bucket, monthlyBucket.Bucket);
@@ -25,7 +27,9 @@ public class MonthlyBucketTests
     public void Constructor_WithJanuaryMonth_SetsPropertiesCorrectly()
     {
         var bucket = Bucket.Create("Test", "Desc", 100m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2025, 1);
+        var result = bucket.CreateMonthly(2025, 1);
+        Assert.True(result.Success);
+        var monthlyBucket = result.Value!;
         Assert.Equal((short)2025, monthlyBucket.Year);
         Assert.Equal((short)1, monthlyBucket.Month);
     }
@@ -34,7 +38,9 @@ public class MonthlyBucketTests
     public void Constructor_WithDecemberMonth_SetsPropertiesCorrectly()
     {
         var bucket = Bucket.Create("Test", "Desc", 100m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2025, 12);
+        var result = bucket.CreateMonthly(2025, 12);
+        Assert.True(result.Success);
+        var monthlyBucket = result.Value!;
         Assert.Equal((short)2025, monthlyBucket.Year);
         Assert.Equal((short)12, monthlyBucket.Month);
     }
@@ -45,8 +51,9 @@ public class MonthlyBucketTests
     public void UpdateBalance_SetsNewBalance()
     {
         var bucket = Bucket.Create("Test", "Desc", 100m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2025, 9);
-        monthlyBucket.UpdateBalance(75m);
+        var monthlyBucket = bucket.CreateMonthly(2025, 9).Value!;
+        var result = monthlyBucket.UpdateBalance(75m);
+        Assert.True(result.Success);
         Assert.Equal(75m, monthlyBucket.Balance);
     }
 
@@ -54,8 +61,9 @@ public class MonthlyBucketTests
     public void UpdateBalance_WithNegativeValue_SetsBalance()
     {
         var bucket = Bucket.Create("Test", "Desc", 100m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2025, 9);
-        monthlyBucket.UpdateBalance(-50m);
+        var monthlyBucket = bucket.CreateMonthly(2025, 9).Value!;
+        var result = monthlyBucket.UpdateBalance(-50m);
+        Assert.True(result.Success);
         Assert.Equal(-50m, monthlyBucket.Balance);
     }
 
@@ -63,8 +71,9 @@ public class MonthlyBucketTests
     public void UpdateBalance_WithZero_SetsBalance()
     {
         var bucket = Bucket.Create("Test", "Desc", 100m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2025, 9);
-        monthlyBucket.UpdateBalance(0m);
+        var monthlyBucket = bucket.CreateMonthly(2025, 9).Value!;
+        var result = monthlyBucket.UpdateBalance(0m);
+        Assert.True(result.Success);
         Assert.Equal(0m, monthlyBucket.Balance);
     }
     #endregion

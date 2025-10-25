@@ -27,7 +27,7 @@ public sealed partial class MonthlySpending : AggregateRoot<int>, IEquatable<Mon
     #endregion
 
     #region Methods
-    public void Update(DateOnly date, string description, decimal amount, string owner, string[] tags)
+    public OperationResult Update(DateOnly date, string description, decimal amount, string owner, string[] tags)
         => Validate(date, description, amount, owner, tags)
             .IfSuccess(res => (Date, Description, Amount, Owner, Tags) = (date, description, amount, owner, tags));
 

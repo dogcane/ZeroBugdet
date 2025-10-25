@@ -15,14 +15,12 @@ public partial class Bucket
             .With(enabled, nameof(enabled)).EqualTo(true, "Bucket must be enabled.")
             .Result;
     public static OperationResult ValidateDefaultBalance(decimal defaultBalance)
-        => OperationResult.MakeSuccess()
-            .With(defaultBalance, nameof(defaultBalance)).GreaterThenOrEqual(0, "Default balance must be positive.")
-            .Result;
+        => OperationResult.MakeSuccess();
 
     public static OperationResult ValidateMonthlyBucketCreation(short year, short month)
         => OperationResult.MakeSuccess()
-            .With(year, nameof(year)).Between((short)2000, (short)2100, "Year must be between 2000 and 2100.")
-            .With(month, nameof(month)).Between((short)1, (short)12, "Month must be between 1 and 12.")
+            .With(year, nameof(year)).GreaterThenOrEqual((short)2000, "Year must be 2000 or later.").LessThenOrEqual((short)2100, "Year must be 2100 or earlier.")
+            .With(month, nameof(month)).GreaterThenOrEqual((short)1, "Month must be 1 or later.").LessThenOrEqual((short)12, "Month must be 12 or earlier.")
             .Result;
 
     public static OperationResult ValidateStatusChange(bool oldStatus, bool newStatus)
