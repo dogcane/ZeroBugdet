@@ -26,7 +26,8 @@ public class TagCommandHandlerTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("testtag", result.Name);
+        Assert.True(result.Success);
+        Assert.Equal("testtag", result.Value!.Name);
         tagRepository.Verify(r => r.AddAsync(It.IsAny<Tag>()), Times.Once);
     }
 
@@ -39,7 +40,8 @@ public class TagCommandHandlerTests
         var command = new CreateTagCommand("");
 
         // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => handler.Handle(command));
+        var result = await handler.Handle(command);
+        Assert.False(result.Success);
         tagRepository.Verify(r => r.AddAsync(It.IsAny<Tag>()), Times.Never);
     }
 
@@ -60,9 +62,10 @@ public class TagCommandHandlerTests
                      .Returns(Task.CompletedTask);
 
         // Act
-        await handler.Handle(command);
+        var result = await handler.Handle(command);
 
         // Assert
+        Assert.True(result.Success);
         tagRepository.Verify(r => r.RemoveAsync(It.IsAny<Tag>()), Times.Once);
     }
 
@@ -78,7 +81,8 @@ public class TagCommandHandlerTests
             .SetupRepository<ITagRepository, Tag, int>([]);
 
         // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => handler.Handle(command));
+        var result = await handler.Handle(command);
+        Assert.False(result.Success);
         tagRepository.Verify(r => r.RemoveAsync(It.IsAny<Tag>()), Times.Never);
     }
 }

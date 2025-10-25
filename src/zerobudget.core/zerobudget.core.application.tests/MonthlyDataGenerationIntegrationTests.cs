@@ -43,7 +43,8 @@ public class MonthlyDataGenerationIntegrationTests
         var result = await handler.Handle(command);
 
         // Assert
-        Assert.True(result); // Handler returns true on success
+        Assert.True(result.Success);
+        Assert.True(result.Value); // Handler returns true on success
     }
 
     [Fact]
@@ -73,6 +74,7 @@ public class MonthlyDataGenerationIntegrationTests
         var result = await handler.Handle(command);
 
         // Assert
-        Assert.True(result); // Current implementation always returns true (doesn't check for existing data)
+        Assert.True(result.Success);
+        Assert.True(result.Value); // Current implementation always returns true (doesn't check for existing data)
     }
 }

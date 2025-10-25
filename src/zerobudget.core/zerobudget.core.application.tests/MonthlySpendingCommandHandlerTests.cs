@@ -45,8 +45,9 @@ public class MonthlySpendingCommandHandlerTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("Test Spending", result.Description);
-        Assert.Equal(100m, result.Amount);
+        Assert.True(result.Success);
+        Assert.Equal("Test Spending", result.Value!.Description);
+        Assert.Equal(100m, result.Value.Amount);
         monthlySpendingRepository.Verify(r => r.AddAsync(It.IsAny<MonthlySpending>()), Times.Once);
     }
 
@@ -74,7 +75,8 @@ public class MonthlySpendingCommandHandlerTests
             Array.Empty<string>());
 
         // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => handler.Handle(command));
+        var result = await handler.Handle(command);
+        Assert.False(result.Success);
         monthlySpendingRepository.Verify(r => r.AddAsync(It.IsAny<MonthlySpending>()), Times.Never);
     }
 
@@ -117,8 +119,9 @@ public class MonthlySpendingCommandHandlerTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("Updated Spending", result.Description);
-        Assert.Equal(150m, result.Amount);
+        Assert.True(result.Success);
+        Assert.Equal("Updated Spending", result.Value!.Description);
+        Assert.Equal(150m, result.Value.Amount);
         monthlySpendingRepository.Verify(r => r.UpdateAsync(It.IsAny<MonthlySpending>()), Times.Once);
     }
 
@@ -144,9 +147,10 @@ public class MonthlySpendingCommandHandlerTests
         var command = new DeleteMonthlySpendingCommand(1);
 
         // Act
-        await handler.Handle(command);
+        var result = await handler.Handle(command);
 
         // Assert
+        Assert.True(result.Success);
         monthlySpendingRepository.Verify(r => r.RemoveAsync(It.IsAny<MonthlySpending>()), Times.Once);
     }
 
@@ -164,7 +168,8 @@ public class MonthlySpendingCommandHandlerTests
         var command = new DeleteMonthlySpendingCommand(999);
 
         // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => handler.Handle(command));
+        var result = await handler.Handle(command);
+        Assert.False(result.Success);
         monthlySpendingRepository.Verify(r => r.RemoveAsync(It.IsAny<MonthlySpending>()), Times.Never);
     }
 }

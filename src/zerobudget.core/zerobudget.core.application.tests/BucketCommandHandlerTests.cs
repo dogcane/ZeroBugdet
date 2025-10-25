@@ -83,9 +83,10 @@ public class BucketCommandHandlerTests
                      .Returns(Task.CompletedTask);
 
         // Act
-        await handler.Handle(command);
+        var result = await handler.Handle(command);
 
         // Assert
+        Assert.True(result.Success);
         bucketRepository.Verify(r => r.RemoveAsync(It.IsAny<Bucket>()), Times.Once);
     }
 
@@ -101,6 +102,7 @@ public class BucketCommandHandlerTests
             .SetupRepository<IBucketRepository, Bucket, int>([]);
 
         // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => handler.Handle(command));
+        var result = await handler.Handle(command);
+        Assert.False(result.Success);
     }
 }
