@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Bucket, CreateBucketCommand, UpdateBucketRequest } from '../models/bucket.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class BucketService {
-  private apiUrl = 'https://localhost:7000/api/bucket'; // TODO: Configure from environment
+  private apiUrl = `${environment.apiUrl}/bucket`;
 
   constructor(private http: HttpClient) {}
 

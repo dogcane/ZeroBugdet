@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Spending, CreateSpendingCommand, UpdateSpendingRequest } from '../models/spending.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SpendingService {
-  private apiUrl = 'https://localhost:7000/api/spending'; // TODO: Configure from environment
+  private apiUrl = `${environment.apiUrl}/spending`;
 
   constructor(private http: HttpClient) {}
 

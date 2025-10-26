@@ -2,13 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { MonthlyBucket, MonthlySpending, GenerateMonthlyDataRequest } from '../models/monthly.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MonthlyService {
-  private bucketApiUrl = 'https://localhost:7000/api/monthlybucket'; // TODO: Configure from environment
-  private spendingApiUrl = 'https://localhost:7000/api/monthlyspending';
+  private bucketApiUrl = `${environment.apiUrl}/monthlybucket`;
+  private spendingApiUrl = `${environment.apiUrl}/monthlyspending`;
 
   constructor(private http: HttpClient) {}
 

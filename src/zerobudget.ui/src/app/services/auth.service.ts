@@ -11,12 +11,13 @@ import {
   UserInvitation,
   CompleteRegistrationRequest
 } from '../models/user.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'https://localhost:7000/api/account'; // TODO: Configure from environment
+  private apiUrl = `${environment.apiUrl}/account`;
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
   private tokenKey = 'auth_token';
