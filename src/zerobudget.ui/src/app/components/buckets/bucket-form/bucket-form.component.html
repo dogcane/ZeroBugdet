@@ -1,0 +1,29 @@
+<h2 mat-dialog-title>{{ isEdit ? 'Edit' : 'Create' }} Bucket</h2>
+<mat-dialog-content>
+  <form [formGroup]="bucketForm">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Name</mat-label>
+      <input matInput formControlName="name" placeholder="Bucket name">
+      <mat-error *ngIf="bucketForm.get('name')?.hasError('required')">Name is required</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Description</mat-label>
+      <textarea matInput formControlName="description" placeholder="Bucket description" rows="3"></textarea>
+      <mat-error *ngIf="bucketForm.get('description')?.hasError('required')">Description is required</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Default Limit</mat-label>
+      <input matInput type="number" formControlName="defaultLimit" placeholder="0.00">
+      <mat-error *ngIf="bucketForm.get('defaultLimit')?.hasError('required')">Default limit is required</mat-error>
+      <mat-error *ngIf="bucketForm.get('defaultLimit')?.hasError('min')">Must be a positive number</mat-error>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()" [disabled]="loading">Cancel</button>
+  <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="loading || bucketForm.invalid">
+    {{ loading ? 'Saving...' : (isEdit ? 'Update' : 'Create') }}
+  </button>
+</mat-dialog-actions>
