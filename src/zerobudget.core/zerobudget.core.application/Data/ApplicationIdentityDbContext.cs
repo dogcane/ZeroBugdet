@@ -28,12 +28,6 @@ public class ApplicationIdentityDbContext : IdentityDbContext<ApplicationUser, I
         builder.Entity<ApplicationUser>(entity =>
         {
             entity.ToTable(name: "Users");
-            
-            // Configure self-referencing relationship for invited users
-            entity.HasOne(u => u.InvitedBy)
-                .WithMany(u => u.InvitedUsers)
-                .HasForeignKey(u => u.InvitedByUserId)
-                .OnDelete(DeleteBehavior.Restrict);
         });
 
         builder.Entity<IdentityRole>(entity =>
@@ -75,11 +69,6 @@ public class ApplicationIdentityDbContext : IdentityDbContext<ApplicationUser, I
             entity.Property(e => e.Token).IsRequired().HasMaxLength(256);
             entity.HasIndex(e => e.Token).IsUnique();
             entity.HasIndex(e => e.Email);
-            
-            entity.HasOne(e => e.InvitedBy)
-                .WithMany(u => u.SentInvitations)
-                .HasForeignKey(e => e.InvitedByUserId)
-                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

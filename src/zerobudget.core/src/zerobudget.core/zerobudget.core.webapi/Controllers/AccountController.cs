@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Resulz;
 using Wolverine;
 using zerobudget.core.application.Commands;
 using zerobudget.core.application.DTOs;
@@ -62,12 +63,21 @@ public class AccountController : ControllerBase
         try
         {
             var command = new RegisterMainUserCommand(request.Email, request.Password, request.ConfirmPassword);
-            var result = await _messageBus.InvokeAsync<UserDto>(command);
+            var result = await _messageBus.InvokeAsync<OperationResult<UserDto>>(command);
+
+            if (!result.Success)
+            {
+                return BadRequest(new
+                {
+                    message = "Main user registration failed",
+                    errors = result.Errors
+                });
+            }
 
             return Ok(new
             {
                 message = "Main user registered successfully",
-                user = result
+                user = result.Value
             });
         }
         catch (Exception ex)
@@ -97,12 +107,21 @@ public class AccountController : ControllerBase
                 return Unauthorized(new { error = "User not authenticated" });
 
             var command = new InviteUserCommand(request.Email, userId);
-            var result = await _messageBus.InvokeAsync<UserInvitationDto>(command);
+            var result = await _messageBus.InvokeAsync<OperationResult<UserInvitationDto>>(command);
+
+            if (!result.Success)
+            {
+                return BadRequest(new
+                {
+                    message = "User invitation failed",
+                    errors = result.Errors
+                });
+            }
 
             return Ok(new
             {
                 message = "User invited successfully",
-                invitation = result
+                invitation = result.Value
             });
         }
         catch (Exception ex)
@@ -126,12 +145,21 @@ public class AccountController : ControllerBase
         try
         {
             var command = new CompleteUserRegistrationCommand(request.Token, request.Password, request.ConfirmPassword);
-            var result = await _messageBus.InvokeAsync<UserDto>(command);
+            var result = await _messageBus.InvokeAsync<OperationResult<UserDto>>(command);
+
+            if (!result.Success)
+            {
+                return BadRequest(new
+                {
+                    message = "Registration completion failed",
+                    errors = result.Errors
+                });
+            }
 
             return Ok(new
             {
                 message = "Registration completed successfully",
-                user = result
+                user = result.Value
             });
         }
         catch (Exception ex)
@@ -224,7 +252,16 @@ public class AccountController : ControllerBase
                 return Unauthorized(new { error = "User not authenticated" });
 
             var command = new DeleteUserCommand(userId, requestingUserId);
-            await _messageBus.InvokeAsync(command);
+            var result = await _messageBus.InvokeAsync<OperationResult>(command);
+
+            if (!result.Success)
+            {
+                return BadRequest(new
+                {
+                    message = "User deletion failed",
+                    errors = result.Errors
+                });
+            }
 
             return Ok(new { message = "User deleted successfully" });
         }

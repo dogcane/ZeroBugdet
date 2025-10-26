@@ -21,19 +21,4 @@ public class ApplicationUser : IdentityUser
     /// Date and time when the user was created
     /// </summary>
     public DateTime CreatedAt { get; set; }
-
-    /// <summary>
-    /// Navigation property to the user who invited this user
-    /// </summary>
-    public virtual ApplicationUser? InvitedBy { get; set; }
-
-    /// <summary>
-    /// Collection of users invited by this user
-    /// </summary>
-    public virtual ICollection<ApplicationUser> InvitedUsers { get; set; } = new List<ApplicationUser>();
-
-    /// <summary>
-    /// Collection of invitations sent by this user
-    /// </summary>
-    public virtual ICollection<UserInvitation> SentInvitations { get; set; } = new List<UserInvitation>();
 }

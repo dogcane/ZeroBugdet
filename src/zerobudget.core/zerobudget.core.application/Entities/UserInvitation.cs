@@ -44,9 +44,4 @@ public class UserInvitation
     /// Date and time when the invitation was used (null if not used)
     /// </summary>
     public DateTime? UsedAt { get; set; }
-
-    /// <summary>
-    /// Navigation property to the user who sent the invitation
-    /// </summary>
-    public virtual ApplicationUser InvitedBy { get; set; } = null!;
 }
