@@ -11,6 +11,8 @@ using zerobudget.core.infrastructure.data;
 using zerobudget.core.application.Handlers.Queries;
 using zerobudget.core.application.Handlers.Commands;
 using zerobudget.core.application.Middleware;
+using zerobudget.core.application.Data;
+using zerobudget.core.application.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,10 +26,10 @@ var audience = jwtSettings["Audience"] ?? "ZeroBudgetClients";
 builder.Services.AddControllers();
 
 // Configure ASP.NET Core Identity
-builder.Services.AddDbContext<IdentityDbContext>(options =>
+builder.Services.AddDbContext<ApplicationIdentityDbContext>(options =>
     options.UseInMemoryDatabase("ZeroBudget_Identity"));
 
-builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     {
         // Password settings
         options.Password.RequireDigit = true;
@@ -46,7 +48,7 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
         options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
         options.User.RequireUniqueEmail = true;
     })
-    .AddEntityFrameworkStores<IdentityDbContext>()
+    .AddEntityFrameworkStores<ApplicationIdentityDbContext>()
     .AddDefaultTokenProviders();
 
 // Configure JWT Authentication
