@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Wolverine;
 using zerobudget.core.application.Commands;
@@ -7,6 +8,7 @@ using zerobudget.core.application.Queries;
 namespace zerobudget.core.webapi.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public class MonthlySpendingController(IMessageBus messageBus) : ControllerBase
 {

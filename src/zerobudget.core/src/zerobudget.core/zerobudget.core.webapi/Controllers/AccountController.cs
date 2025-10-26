@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Resulz;
@@ -76,6 +77,7 @@ public class AccountController(
     /// Invite a user via email (only main user can invite)
     /// </summary>
     [HttpPost("invite-user")]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -194,6 +196,7 @@ public class AccountController(
     /// Get all users (only main user can access)
     /// </summary>
     [HttpGet("users")]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetAllUsers()
@@ -225,6 +228,7 @@ public class AccountController(
     /// Delete a user (only main user can delete, physical deletion)
     /// </summary>
     [HttpDelete("users/{userId}")]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -261,6 +265,7 @@ public class AccountController(
     /// Get invitations sent by current user
     /// </summary>
     [HttpGet("invitations")]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetInvitations()
