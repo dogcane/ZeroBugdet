@@ -55,6 +55,13 @@ public static class ServiceCollectionExtensions
         services.AddScoped<GetMonthlySpendingsByDateRangeQueryHandler>();
         services.AddScoped<GetMonthlySpendingsByOwnerQueryHandler>();
 
+        // User Query Handlers
+        services.AddScoped<IsMainUserRequiredQueryHandler>();
+        services.AddScoped<GetAllUsersQueryHandler>();
+        services.AddScoped<GetUserByIdQueryHandler>();
+        services.AddScoped<ValidateInvitationTokenQueryHandler>();
+        services.AddScoped<GetInvitationsByUserQueryHandler>();
+
         // Command Handlers
         services.AddScoped<CreateBucketCommandHandler>();
         services.AddScoped<UpdateBucketCommandHandler>();
@@ -71,6 +78,12 @@ public static class ServiceCollectionExtensions
         services.AddScoped<CreateMonthlySpendingCommandHandler>();
         services.AddScoped<UpdateMonthlySpendingCommandHandler>();
         services.AddScoped<DeleteMonthlySpendingCommandHandler>();
+
+        // User Command Handlers
+        services.AddScoped<RegisterMainUserCommandHandler>();
+        services.AddScoped<InviteUserCommandHandler>();
+        services.AddScoped<CompleteUserRegistrationCommandHandler>();
+        services.AddScoped<DeleteUserCommandHandler>();
 
         // Add Wolverine with discovery
         services.AddWolverine(opts =>
