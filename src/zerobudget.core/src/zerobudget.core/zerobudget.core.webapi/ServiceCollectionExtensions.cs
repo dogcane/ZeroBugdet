@@ -5,6 +5,8 @@ using zerobudget.core.application.Handlers.Commands;
 using zerobudget.core.application.Handlers.Queries;
 using zerobudget.core.application.Queries;
 using zerobudget.core.application.Middleware;
+using zerobudget.core.identity.Handlers.Commands;
+using zerobudget.core.identity.Handlers.Queries;
 using zerobudget.core.domain;
 using zerobudget.core.infrastructure.data;
 using ECO.Data;

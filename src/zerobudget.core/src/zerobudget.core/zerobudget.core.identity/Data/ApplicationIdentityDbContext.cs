@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using zerobudget.core.application.Entities;
+using zerobudget.core.identity.Entities;
 
-namespace zerobudget.core.application.Data;
+namespace zerobudget.core.identity.Data;
 
 /// <summary>
 /// DbContext for managing Identity (users, roles, claims, etc.) with custom ApplicationUser

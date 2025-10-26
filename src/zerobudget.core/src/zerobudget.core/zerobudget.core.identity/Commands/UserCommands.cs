@@ -1,4 +1,4 @@
-namespace zerobudget.core.application.Commands;
+namespace zerobudget.core.identity.Commands;
 
 /// <summary>
 /// Command to register the main user (first user in the system)

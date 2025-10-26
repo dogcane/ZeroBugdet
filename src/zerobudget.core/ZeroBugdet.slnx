@@ -7,6 +7,7 @@
   <Folder Name="/src/" />
   <Folder Name="/src/zerobudget.core/">
     <Project Path="src/zerobudget.core/zerobudget.core.identity/zerobudget.core.identity.csproj" />
+    <Project Path="src/zerobudget.core/zerobudget.core.identity.tests/zerobudget.core.identity.tests.csproj" />
     <Project Path="src/zerobudget.core/zerobudget.core.webapi/zerobudget.core.webapi.csproj" />
     <Project Path="zerobudget.core.application.tests/zerobudget.core.application.tests.csproj" />
     <Project Path="zerobudget.core.application/zerobudget.core.application.csproj" />
