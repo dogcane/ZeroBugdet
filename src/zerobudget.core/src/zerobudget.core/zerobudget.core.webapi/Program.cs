@@ -6,6 +6,21 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
+
+// Add CORS configuration
+var allowedOrigins = builder.Configuration["Cors:AllowedOrigins"];
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowConfiguredOrigins", builder =>
+    {
+        builder
+            .WithOrigins(allowedOrigins?.Split(";") ?? Array.Empty<string>())
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
+    });
+});
+
 // Add identity services (JWT, ASP.NET Core Identity, etc.)
 builder.Services.AddZeroBudgetIdentity(builder.Configuration);
 // Add application services
@@ -58,6 +73,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Add CORS middleware
+app.UseCors("AllowConfiguredOrigins");
 
 // Add authentication and authorization middleware
 app.UseAuthentication();
