@@ -38,7 +38,7 @@ public class UserQueryHandlerTests
         var query = new IsMainUserRequiredQuery();
 
         var users = new List<ApplicationUser>();
-        var mockUsers = users.BuildMock();
+        var mockUsers = users.AsQueryable();
         mockUserManager.Setup(m => m.Users)
             .Returns(mockUsers);
 
@@ -62,7 +62,7 @@ public class UserQueryHandlerTests
             new ApplicationUser { Id = "1", Email = "user@example.com", IsMainUser = true }
         };
 
-        var mockUsers = users.AsQueryable().BuildMock();
+        var mockUsers = users.AsQueryable();
         mockUserManager.Setup(m => m.Users)
             .Returns(mockUsers);
 
@@ -102,7 +102,7 @@ public class UserQueryHandlerTests
             }
         };
 
-        var mockUsers = users.BuildMock();
+        var mockUsers = users.AsQueryable();
         mockUserManager.Setup(m => m.Users)
             .Returns(mockUsers);
 

@@ -39,8 +39,8 @@ public class UserCommandHandlerTests
         var command = new RegisterMainUserCommand("test@example.com", "Password123!", "Password123!");
 
         var users = new List<ApplicationUser>();
-        var mockUsers = users.AsQueryable().BuildMockDbSet();
-        
+        var mockUsers = users.AsQueryable();
+
         mockUserManager.Setup(m => m.Users)
             .Returns(mockUsers);
 
@@ -71,7 +71,7 @@ public class UserCommandHandlerTests
             new ApplicationUser { Email = "existing@example.com", IsMainUser = true }
         };
 
-        var mockUsers = existingUsers.AsQueryable().BuildMockDbSet();
+        var mockUsers = existingUsers.AsQueryable();
         mockUserManager.Setup(m => m.Users)
             .Returns(mockUsers);
 
@@ -92,8 +92,8 @@ public class UserCommandHandlerTests
         var command = new RegisterMainUserCommand("test@example.com", "Password123!", "DifferentPassword");
 
         var users = new List<ApplicationUser>();
-        var mockUsers = users.AsQueryable().BuildMockDbSet();
-        
+        var mockUsers = users.AsQueryable();
+
         mockUserManager.Setup(m => m.Users)
             .Returns(mockUsers);
 
@@ -127,7 +127,7 @@ public class UserCommandHandlerTests
             .ReturnsAsync((ApplicationUser?)null);
 
         var users = new List<ApplicationUser> { mainUser };
-        var mockUsers = users.AsQueryable().BuildMockDbSet();
+        var mockUsers = users.AsQueryable();
         mockUserManager.Setup(m => m.Users)
             .Returns(mockUsers);
 
@@ -206,7 +206,7 @@ public class UserCommandHandlerTests
         mockUserManager.Setup(m => m.FindByEmailAsync("newuser@example.com"))
             .ReturnsAsync((ApplicationUser?)null);
 
-        var mockUsers = users.AsQueryable().BuildMockDbSet();
+        var mockUsers = users.AsQueryable();
         mockUserManager.Setup(m => m.Users)
             .Returns(mockUsers);
 
