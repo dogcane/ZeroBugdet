@@ -22,3 +22,7 @@ packages/
 # Temporary files
 *.tmp
 *.log
+# Angular
+src/zerobudget.ui/node_modules/
+src/zerobudget.ui/dist/
+src/zerobudget.ui/.angular/

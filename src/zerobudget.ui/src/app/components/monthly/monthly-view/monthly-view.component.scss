@@ -1,0 +1,25 @@
+.month-selector {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  align-items: center;
+}
+
+.monthly-table {
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.over-budget {
+  color: red;
+  font-weight: bold;
+}
+
+.under-budget {
+  color: green;
+}
+
+.section-title {
+  margin-top: 24px;
+  margin-bottom: 16px;
+}

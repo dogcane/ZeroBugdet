@@ -1,0 +1,69 @@
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>New Spending</mat-card-title>
+    <mat-card-subtitle>Add a new expense</mat-card-subtitle>
+  </mat-card-header>
+  <mat-card-content>
+    <form [formGroup]="spendingForm" (ngSubmit)="onSubmit()">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Bucket</mat-label>
+        <mat-select formControlName="bucketId">
+          <mat-option *ngFor="let bucket of buckets" [value]="bucket.id">
+            {{ bucket.name }}
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="spendingForm.get('bucketId')?.hasError('required')">Bucket is required</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Date</mat-label>
+        <input matInput [matDatepicker]="picker" formControlName="date">
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+        <mat-error *ngIf="spendingForm.get('date')?.hasError('required')">Date is required</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Description</mat-label>
+        <input matInput formControlName="description" placeholder="What did you buy?">
+        <mat-error *ngIf="spendingForm.get('description')?.hasError('required')">Description is required</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Amount</mat-label>
+        <input matInput type="number" formControlName="amount" placeholder="0.00">
+        <mat-error *ngIf="spendingForm.get('amount')?.hasError('required')">Amount is required</mat-error>
+        <mat-error *ngIf="spendingForm.get('amount')?.hasError('min')">Amount must be greater than 0</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Owner</mat-label>
+        <input matInput formControlName="owner" placeholder="Who made this purchase?">
+        <mat-error *ngIf="spendingForm.get('owner')?.hasError('required')">Owner is required</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Tags</mat-label>
+        <mat-chip-grid #chipGrid aria-label="Enter tags">
+          <mat-chip-row *ngFor="let tag of tags" (removed)="removeTag(tag)">
+            {{tag}}
+            <button matChipRemove [attr.aria-label]="'remove ' + tag">
+              <mat-icon>cancel</mat-icon>
+            </button>
+          </mat-chip-row>
+        </mat-chip-grid>
+        <input placeholder="Add tag..."
+               [matChipInputFor]="chipGrid"
+               [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+               (matChipInputTokenEnd)="addTag($event)" />
+      </mat-form-field>
+
+      <div class="button-row">
+        <button mat-button type="button" (click)="onCancel()" [disabled]="loading">Cancel</button>
+        <button mat-raised-button color="primary" type="submit" [disabled]="loading || spendingForm.invalid">
+          {{ loading ? 'Creating...' : 'Create Spending' }}
+        </button>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>
