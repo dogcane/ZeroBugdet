@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 
-namespace zerobudget.core.application.Entities;
+namespace zerobudget.core.identity.Entities;
 
 /// <summary>
 /// Custom user entity extending IdentityUser with additional properties for user management

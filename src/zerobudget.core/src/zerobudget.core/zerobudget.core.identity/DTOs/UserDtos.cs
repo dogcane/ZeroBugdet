@@ -1,4 +1,4 @@
-namespace zerobudget.core.application.DTOs;
+namespace zerobudget.core.identity.DTOs;
 
 /// <summary>
 /// DTO for user information

@@ -4,12 +4,12 @@ using Microsoft.Extensions.Logging;
 using MockQueryable.Moq;
 using Moq;
 using Xunit;
-using zerobudget.core.application.Commands;
-using zerobudget.core.application.Data;
-using zerobudget.core.application.Entities;
-using zerobudget.core.application.Handlers.Commands;
+using zerobudget.core.identity.Commands;
+using zerobudget.core.identity.Data;
+using zerobudget.core.identity.Entities;
+using zerobudget.core.identity.Handlers.Commands;
 
-namespace zerobudget.core.application.tests;
+namespace zerobudget.core.identity.tests;
 
 public class UserCommandHandlerTests
 {

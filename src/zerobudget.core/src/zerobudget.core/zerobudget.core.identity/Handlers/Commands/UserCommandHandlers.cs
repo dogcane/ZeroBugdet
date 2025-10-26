@@ -2,12 +2,12 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Resulz;
-using zerobudget.core.application.Commands;
-using zerobudget.core.application.Data;
-using zerobudget.core.application.DTOs;
-using zerobudget.core.application.Entities;
+using zerobudget.core.identity.Commands;
+using zerobudget.core.identity.Data;
+using zerobudget.core.identity.DTOs;
+using zerobudget.core.identity.Entities;
 
-namespace zerobudget.core.application.Handlers.Commands;
+namespace zerobudget.core.identity.Handlers.Commands;
 
 /// <summary>
 /// Handler for RegisterMainUserCommand

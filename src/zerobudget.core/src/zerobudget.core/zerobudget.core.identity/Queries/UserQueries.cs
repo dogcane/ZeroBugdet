@@ -1,4 +1,4 @@
-namespace zerobudget.core.application.Queries;
+namespace zerobudget.core.identity.Queries;
 
 /// <summary>
 /// Query to check if the main user registration is required (no users exist)

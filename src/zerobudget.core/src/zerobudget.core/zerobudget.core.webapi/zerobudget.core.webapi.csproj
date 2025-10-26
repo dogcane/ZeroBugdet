@@ -20,6 +20,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\zerobudget.core.application\zerobudget.core.application.csproj" />
     <ProjectReference Include="..\..\..\zerobudget.core.infrastructure.data\zerobudget.core.infrastructure.data.csproj" />
+    <ProjectReference Include="..\zerobudget.core.identity\zerobudget.core.identity.csproj" />
   </ItemGroup>
 
 </Project>

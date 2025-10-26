@@ -1,14 +1,16 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Resulz;
 using Wolverine;
-using zerobudget.core.application.Commands;
-using zerobudget.core.application.DTOs;
-using zerobudget.core.application.Entities;
-using zerobudget.core.application.Queries;
-using zerobudget.core.webapi.Services;
+using zerobudget.core.identity.Commands;
+using zerobudget.core.identity.DTOs;
+using zerobudget.core.identity.Entities;
+using zerobudget.core.identity.Queries;
+using zerobudget.core.identity.Services;
 
-namespace zerobudget.core.webapi.Controllers;
+namespace zerobudget.core.identity.Controllers;
 
 /// <summary>
 /// Account controller for user authentication and registration

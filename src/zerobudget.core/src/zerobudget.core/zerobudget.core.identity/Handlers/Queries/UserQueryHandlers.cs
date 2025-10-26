@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using zerobudget.core.application.Data;
-using zerobudget.core.application.DTOs;
-using zerobudget.core.application.Entities;
-using zerobudget.core.application.Queries;
+using zerobudget.core.identity.Data;
+using zerobudget.core.identity.DTOs;
+using zerobudget.core.identity.Entities;
+using zerobudget.core.identity.Queries;
 
-namespace zerobudget.core.application.Handlers.Queries;
+namespace zerobudget.core.identity.Handlers.Queries;
 
 /// <summary>
 /// Handler for IsMainUserRequiredQuery

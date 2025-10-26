@@ -3,12 +3,12 @@ using Microsoft.EntityFrameworkCore;
 using MockQueryable.Moq;
 using Moq;
 using Xunit;
-using zerobudget.core.application.Data;
-using zerobudget.core.application.Entities;
-using zerobudget.core.application.Handlers.Queries;
-using zerobudget.core.application.Queries;
+using zerobudget.core.identity.Data;
+using zerobudget.core.identity.Entities;
+using zerobudget.core.identity.Handlers.Queries;
+using zerobudget.core.identity.Queries;
 
-namespace zerobudget.core.application.tests;
+namespace zerobudget.core.identity.tests;
 
 public class UserQueryHandlerTests
 {

@@ -1,4 +1,4 @@
-namespace zerobudget.core.application.Entities;
+namespace zerobudget.core.identity.Entities;
 
 /// <summary>
 /// Represents an invitation sent to a user to join the application

@@ -6,13 +6,13 @@ using Wolverine;
 using Scalar.AspNetCore;
 using System.Text;
 using zerobudget.core.webapi;
-using zerobudget.core.webapi.Services;
+using zerobudget.core.identity.Services;
 using zerobudget.core.infrastructure.data;
 using zerobudget.core.application.Handlers.Queries;
 using zerobudget.core.application.Handlers.Commands;
 using zerobudget.core.application.Middleware;
-using zerobudget.core.application.Data;
-using zerobudget.core.application.Entities;
+using zerobudget.core.identity.Data;
+using zerobudget.core.identity.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
 
