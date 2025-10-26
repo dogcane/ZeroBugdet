@@ -8,20 +8,13 @@ namespace zerobudget.core.webapi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class TagController : ControllerBase
+public class TagController(IMessageBus messageBus) : ControllerBase
 {
-    private readonly IMessageBus _messageBus;
-
-    public TagController(IMessageBus messageBus)
-    {
-        _messageBus = messageBus;
-    }
-
     [HttpGet("{id}")]
     public async Task<ActionResult<TagDto>> GetById(int id)
     {
         var query = new GetTagByIdQuery(id);
-        var result = await _messageBus.InvokeAsync<TagDto?>(query);
+        var result = await messageBus.InvokeAsync<TagDto?>(query);
 
         if (result == null)
             return NotFound();
@@ -33,7 +26,7 @@ public class TagController : ControllerBase
     public async Task<ActionResult<IEnumerable<TagDto>>> GetAll()
     {
         var query = new GetAllTagsQuery();
-        var result = await _messageBus.InvokeAsync<IEnumerable<TagDto>>(query);
+        var result = await messageBus.InvokeAsync<IEnumerable<TagDto>>(query);
 
         return Ok(result);
     }
@@ -42,7 +35,7 @@ public class TagController : ControllerBase
     public async Task<ActionResult<IEnumerable<TagDto>>> GetByName([FromQuery] string name)
     {
         var query = new GetTagsByNameQuery(name);
-        var result = await _messageBus.InvokeAsync<IEnumerable<TagDto>>(query);
+        var result = await messageBus.InvokeAsync<IEnumerable<TagDto>>(query);
 
         return Ok(result);
     }
@@ -50,7 +43,7 @@ public class TagController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<TagDto>> Create([FromBody] CreateTagCommand command)
     {
-        var result = await _messageBus.InvokeAsync<TagDto>(command);
+        var result = await messageBus.InvokeAsync<TagDto>(command);
         return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
@@ -58,7 +51,7 @@ public class TagController : ControllerBase
     public async Task<ActionResult> Delete(int id)
     {
         var command = new DeleteTagCommand(id);
-        await _messageBus.InvokeAsync(command);
+        await messageBus.InvokeAsync(command);
 
         return NoContent();
     }
@@ -67,7 +60,7 @@ public class TagController : ControllerBase
     public async Task<ActionResult> CleanupUnused()
     {
         var command = new CleanupUnusedTagsCommand();
-        await _messageBus.InvokeAsync(command);
+        await messageBus.InvokeAsync(command);
 
         return NoContent();
     }

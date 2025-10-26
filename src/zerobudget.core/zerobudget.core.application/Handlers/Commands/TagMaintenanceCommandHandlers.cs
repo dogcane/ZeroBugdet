@@ -12,9 +12,6 @@ public class TagMaintenanceCommandHandlers(
     ITagRepository tagRepository,
     ILogger<TagMaintenanceCommandHandlers> logger)
 {
-    private readonly ITagRepository _tagRepository = tagRepository;
-    private readonly ILogger<TagMaintenanceCommandHandlers> _logger = logger;
-
     /// <summary>
     /// Handles the cleanup of unused tags.
     /// This operation uses PostgreSQL-optimized queries for performance.
@@ -23,17 +20,17 @@ public class TagMaintenanceCommandHandlers(
     {
         try
         {
-            _logger.LogInformation("Starting cleanup of unused tags...");
+            logger.LogInformation("Starting cleanup of unused tags...");
             
-            var removedCount = await _tagRepository.RemoveUnusedTagsAsync();
+            var removedCount = await tagRepository.RemoveUnusedTagsAsync();
             
-            _logger.LogInformation("Cleanup completed. Removed {RemovedCount} unused tags.", removedCount);
+            logger.LogInformation("Cleanup completed. Removed {RemovedCount} unused tags.", removedCount);
             
             return OperationResult<int>.MakeSuccess(removedCount);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error during tag cleanup");
+            logger.LogError(ex, "Error during tag cleanup");
             return OperationResult<int>.MakeFailure(ErrorMessage.Create("TAG", $"Error during tag cleanup: {ex.Message}"));
         }
     }

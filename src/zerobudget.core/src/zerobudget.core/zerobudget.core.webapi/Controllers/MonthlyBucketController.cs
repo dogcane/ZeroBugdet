@@ -8,20 +8,13 @@ namespace zerobudget.core.webapi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class MonthlyBucketController : ControllerBase
+public class MonthlyBucketController(IMessageBus messageBus) : ControllerBase
 {
-    private readonly IMessageBus _messageBus;
-
-    public MonthlyBucketController(IMessageBus messageBus)
-    {
-        _messageBus = messageBus;
-    }
-
     [HttpGet("{id}")]
     public async Task<ActionResult<MonthlyBucketDto>> GetById(int id)
     {
         var query = new GetMonthlyBucketByIdQuery(id);
-        var result = await _messageBus.InvokeAsync<MonthlyBucketDto?>(query);
+        var result = await messageBus.InvokeAsync<MonthlyBucketDto?>(query);
 
         if (result == null)
             return NotFound();
@@ -33,7 +26,7 @@ public class MonthlyBucketController : ControllerBase
     public async Task<ActionResult<IEnumerable<MonthlyBucketDto>>> GetAll()
     {
         var query = new GetAllMonthlyBucketsQuery();
-        var result = await _messageBus.InvokeAsync<IEnumerable<MonthlyBucketDto>>(query);
+        var result = await messageBus.InvokeAsync<IEnumerable<MonthlyBucketDto>>(query);
 
         return Ok(result);
     }
@@ -42,7 +35,7 @@ public class MonthlyBucketController : ControllerBase
     public async Task<ActionResult<IEnumerable<MonthlyBucketDto>>> GetByYearMonth(short year, short month)
     {
         var query = new GetMonthlyBucketsByYearMonthQuery(year, month);
-        var result = await _messageBus.InvokeAsync<IEnumerable<MonthlyBucketDto>>(query);
+        var result = await messageBus.InvokeAsync<IEnumerable<MonthlyBucketDto>>(query);
 
         return Ok(result);
     }
@@ -51,7 +44,7 @@ public class MonthlyBucketController : ControllerBase
     public async Task<ActionResult<IEnumerable<MonthlyBucketDto>>> GetByBucketId(int bucketId)
     {
         var query = new GetMonthlyBucketsByBucketIdQuery(bucketId);
-        var result = await _messageBus.InvokeAsync<IEnumerable<MonthlyBucketDto>>(query);
+        var result = await messageBus.InvokeAsync<IEnumerable<MonthlyBucketDto>>(query);
 
         return Ok(result);
     }
@@ -60,7 +53,7 @@ public class MonthlyBucketController : ControllerBase
     public async Task<ActionResult> GenerateMonthlyData([FromBody] GenerateMonthlyDataRequest request)
     {
         var command = new GenerateMonthlyDataCommand(request.Year, request.Month);
-        await _messageBus.InvokeAsync(command);
+        await messageBus.InvokeAsync(command);
 
         return Ok();
     }

@@ -8,20 +8,13 @@ namespace zerobudget.core.webapi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class MonthlySpendingController : ControllerBase
+public class MonthlySpendingController(IMessageBus messageBus) : ControllerBase
 {
-    private readonly IMessageBus _messageBus;
-
-    public MonthlySpendingController(IMessageBus messageBus)
-    {
-        _messageBus = messageBus;
-    }
-
     [HttpGet("{id}")]
     public async Task<ActionResult<MonthlySpendingDto>> GetById(int id)
     {
         var query = new GetMonthlySpendingByIdQuery(id);
-        var result = await _messageBus.InvokeAsync<MonthlySpendingDto?>(query);
+        var result = await messageBus.InvokeAsync<MonthlySpendingDto?>(query);
 
         if (result == null)
             return NotFound();
@@ -33,7 +26,7 @@ public class MonthlySpendingController : ControllerBase
     public async Task<ActionResult<IEnumerable<MonthlySpendingDto>>> GetAll()
     {
         var query = new GetAllMonthlySpendingsQuery();
-        var result = await _messageBus.InvokeAsync<IEnumerable<MonthlySpendingDto>>(query);
+        var result = await messageBus.InvokeAsync<IEnumerable<MonthlySpendingDto>>(query);
 
         return Ok(result);
     }
@@ -42,7 +35,7 @@ public class MonthlySpendingController : ControllerBase
     public async Task<ActionResult<IEnumerable<MonthlySpendingDto>>> GetByMonthlyBucketId(int monthlyBucketId)
     {
         var query = new GetMonthlySpendingsByMonthlyBucketIdQuery(monthlyBucketId);
-        var result = await _messageBus.InvokeAsync<IEnumerable<MonthlySpendingDto>>(query);
+        var result = await messageBus.InvokeAsync<IEnumerable<MonthlySpendingDto>>(query);
 
         return Ok(result);
     }
@@ -53,7 +46,7 @@ public class MonthlySpendingController : ControllerBase
         [FromQuery] DateOnly endDate)
     {
         var query = new GetMonthlySpendingsByDateRangeQuery(startDate, endDate);
-        var result = await _messageBus.InvokeAsync<IEnumerable<MonthlySpendingDto>>(query);
+        var result = await messageBus.InvokeAsync<IEnumerable<MonthlySpendingDto>>(query);
 
         return Ok(result);
     }
@@ -62,7 +55,7 @@ public class MonthlySpendingController : ControllerBase
     public async Task<ActionResult<IEnumerable<MonthlySpendingDto>>> GetByOwner(string owner)
     {
         var query = new GetMonthlySpendingsByOwnerQuery(owner);
-        var result = await _messageBus.InvokeAsync<IEnumerable<MonthlySpendingDto>>(query);
+        var result = await messageBus.InvokeAsync<IEnumerable<MonthlySpendingDto>>(query);
 
         return Ok(result);
     }
@@ -70,7 +63,7 @@ public class MonthlySpendingController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<MonthlySpendingDto>> Create([FromBody] CreateMonthlySpendingCommand command)
     {
-        var result = await _messageBus.InvokeAsync<MonthlySpendingDto>(command);
+        var result = await messageBus.InvokeAsync<MonthlySpendingDto>(command);
         return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
@@ -78,7 +71,7 @@ public class MonthlySpendingController : ControllerBase
     public async Task<ActionResult<MonthlySpendingDto>> Update(int id, [FromBody] UpdateMonthlySpendingRequest request)
     {
         var command = new UpdateMonthlySpendingCommand(id, request.Date, request.Description, request.Amount, request.Owner, request.TagNames);
-        var result = await _messageBus.InvokeAsync<MonthlySpendingDto>(command);
+        var result = await messageBus.InvokeAsync<MonthlySpendingDto>(command);
 
         return Ok(result);
     }
@@ -87,7 +80,7 @@ public class MonthlySpendingController : ControllerBase
     public async Task<ActionResult> Delete(int id)
     {
         var command = new DeleteMonthlySpendingCommand(id);
-        await _messageBus.InvokeAsync(command);
+        await messageBus.InvokeAsync(command);
 
         return NoContent();
     }

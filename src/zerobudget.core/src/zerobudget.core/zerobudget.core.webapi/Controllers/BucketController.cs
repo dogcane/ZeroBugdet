@@ -8,20 +8,13 @@ namespace zerobudget.core.webapi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class BucketController : ControllerBase
+public class BucketController(IMessageBus messageBus) : ControllerBase
 {
-    private readonly IMessageBus _messageBus;
-
-    public BucketController(IMessageBus messageBus)
-    {
-        _messageBus = messageBus;
-    }
-
     [HttpGet("{id}")]
     public async Task<ActionResult<BucketDto>> GetById(int id)
     {
         var query = new GetBucketByIdQuery(id);
-        var result = await _messageBus.InvokeAsync<BucketDto?>(query);
+        var result = await messageBus.InvokeAsync<BucketDto?>(query);
 
         if (result == null)
             return NotFound();
@@ -36,7 +29,7 @@ public class BucketController : ControllerBase
         [FromQuery] bool enabled = true)
     {
         var query = new GetBucketsByNameQuery(name, description, enabled);
-        var result = await _messageBus.InvokeAsync<IEnumerable<BucketDto>>(query);
+        var result = await messageBus.InvokeAsync<IEnumerable<BucketDto>>(query);
 
         return Ok(result);
     }
@@ -44,7 +37,7 @@ public class BucketController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<BucketDto>> Create([FromBody] CreateBucketCommand command)
     {
-        var result = await _messageBus.InvokeAsync<BucketDto>(command);
+        var result = await messageBus.InvokeAsync<BucketDto>(command);
         return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
@@ -52,7 +45,7 @@ public class BucketController : ControllerBase
     public async Task<ActionResult<BucketDto>> Update(int id, [FromBody] UpdateBucketRequest request)
     {
         var command = new UpdateBucketCommand(id, request.Name, request.Description, request.DefaultLimit);
-        var result = await _messageBus.InvokeAsync<BucketDto>(command);
+        var result = await messageBus.InvokeAsync<BucketDto>(command);
 
         return Ok(result);
     }
@@ -61,7 +54,7 @@ public class BucketController : ControllerBase
     public async Task<ActionResult> Delete(int id)
     {
         var command = new DeleteBucketCommand(id);
-        await _messageBus.InvokeAsync(command);
+        await messageBus.InvokeAsync(command);
 
         return NoContent();
     }
@@ -70,7 +63,7 @@ public class BucketController : ControllerBase
     public async Task<ActionResult<BucketDto>> Enable(int id)
     {
         var command = new EnableBucketCommand(id);
-        var result = await _messageBus.InvokeAsync<BucketDto>(command);
+        var result = await messageBus.InvokeAsync<BucketDto>(command);
 
         return Ok(result);
     }

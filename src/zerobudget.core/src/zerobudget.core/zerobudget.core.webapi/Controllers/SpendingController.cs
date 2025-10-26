@@ -8,20 +8,13 @@ namespace zerobudget.core.webapi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class SpendingController : ControllerBase
+public class SpendingController(IMessageBus messageBus) : ControllerBase
 {
-    private readonly IMessageBus _messageBus;
-
-    public SpendingController(IMessageBus messageBus)
-    {
-        _messageBus = messageBus;
-    }
-
     [HttpGet("{id}")]
     public async Task<ActionResult<SpendingDto>> GetById(int id)
     {
         var query = new GetSpendingByIdQuery(id);
-        var result = await _messageBus.InvokeAsync<SpendingDto?>(query);
+        var result = await messageBus.InvokeAsync<SpendingDto?>(query);
 
         if (result == null)
             return NotFound();
@@ -33,7 +26,7 @@ public class SpendingController : ControllerBase
     public async Task<ActionResult<IEnumerable<SpendingDto>>> GetAll()
     {
         var query = new GetAllSpendingsQuery();
-        var result = await _messageBus.InvokeAsync<IEnumerable<SpendingDto>>(query);
+        var result = await messageBus.InvokeAsync<IEnumerable<SpendingDto>>(query);
 
         return Ok(result);
     }
@@ -42,7 +35,7 @@ public class SpendingController : ControllerBase
     public async Task<ActionResult<IEnumerable<SpendingDto>>> GetByBucketId(int bucketId)
     {
         var query = new GetSpendingsByBucketIdQuery(bucketId);
-        var result = await _messageBus.InvokeAsync<IEnumerable<SpendingDto>>(query);
+        var result = await messageBus.InvokeAsync<IEnumerable<SpendingDto>>(query);
 
         return Ok(result);
     }
@@ -51,7 +44,7 @@ public class SpendingController : ControllerBase
     public async Task<ActionResult<IEnumerable<SpendingDto>>> GetByOwner(string owner)
     {
         var query = new GetSpendingsByOwnerQuery(owner);
-        var result = await _messageBus.InvokeAsync<IEnumerable<SpendingDto>>(query);
+        var result = await messageBus.InvokeAsync<IEnumerable<SpendingDto>>(query);
 
         return Ok(result);
     }
@@ -59,7 +52,7 @@ public class SpendingController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<SpendingDto>> Create([FromBody] CreateSpendingCommand command)
     {
-        var result = await _messageBus.InvokeAsync<SpendingDto>(command);
+        var result = await messageBus.InvokeAsync<SpendingDto>(command);
         return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
@@ -67,7 +60,7 @@ public class SpendingController : ControllerBase
     public async Task<ActionResult<SpendingDto>> Update(int id, [FromBody] UpdateSpendingRequest request)
     {
         var command = new UpdateSpendingCommand(id, request.Date, request.Description, request.Amount, request.Owner, request.TagNames);
-        var result = await _messageBus.InvokeAsync<SpendingDto>(command);
+        var result = await messageBus.InvokeAsync<SpendingDto>(command);
 
         return Ok(result);
     }
@@ -76,7 +69,7 @@ public class SpendingController : ControllerBase
     public async Task<ActionResult> Delete(int id)
     {
         var command = new DeleteSpendingCommand(id);
-        await _messageBus.InvokeAsync(command);
+        await messageBus.InvokeAsync(command);
 
         return NoContent();
     }
@@ -85,7 +78,7 @@ public class SpendingController : ControllerBase
     public async Task<ActionResult<SpendingDto>> Enable(int id)
     {
         var command = new EnableSpendingCommand(id);
-        var result = await _messageBus.InvokeAsync<SpendingDto>(command);
+        var result = await messageBus.InvokeAsync<SpendingDto>(command);
 
         return Ok(result);
     }
