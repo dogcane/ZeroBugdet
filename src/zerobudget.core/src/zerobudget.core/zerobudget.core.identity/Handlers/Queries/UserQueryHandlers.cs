@@ -11,22 +11,13 @@ namespace zerobudget.core.identity.Handlers.Queries;
 /// <summary>
 /// Handler for IsMainUserRequiredQuery
 /// </summary>
-public class IsMainUserRequiredQueryHandler
+public class IsMainUserRequiredQueryHandler(
+    UserManager<ApplicationUser> userManager,
+    ILogger<IsMainUserRequiredQueryHandler>? logger = null)
 {
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly ILogger<IsMainUserRequiredQueryHandler>? _logger;
-
-    public IsMainUserRequiredQueryHandler(
-        UserManager<ApplicationUser> userManager,
-        ILogger<IsMainUserRequiredQueryHandler>? logger = null)
-    {
-        _userManager = userManager;
-        _logger = logger;
-    }
-
     public async Task<bool> Handle(IsMainUserRequiredQuery query)
     {
-        var userCount = await _userManager.Users.CountAsync();
+        var userCount = await userManager.Users.CountAsync();
         return userCount == 0;
     }
 }
@@ -34,22 +25,13 @@ public class IsMainUserRequiredQueryHandler
 /// <summary>
 /// Handler for GetAllUsersQuery
 /// </summary>
-public class GetAllUsersQueryHandler
+public class GetAllUsersQueryHandler(
+    UserManager<ApplicationUser> userManager,
+    ILogger<GetAllUsersQueryHandler>? logger = null)
 {
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly ILogger<GetAllUsersQueryHandler>? _logger;
-
-    public GetAllUsersQueryHandler(
-        UserManager<ApplicationUser> userManager,
-        ILogger<GetAllUsersQueryHandler>? logger = null)
-    {
-        _userManager = userManager;
-        _logger = logger;
-    }
-
     public async Task<IEnumerable<UserDto>> Handle(GetAllUsersQuery query)
     {
-        var users = await _userManager.Users.ToListAsync();
+        var users = await userManager.Users.ToListAsync();
         return users.Select(u => new UserDto
         {
             Id = u.Id,
@@ -65,22 +47,13 @@ public class GetAllUsersQueryHandler
 /// <summary>
 /// Handler for GetUserByIdQuery
 /// </summary>
-public class GetUserByIdQueryHandler
+public class GetUserByIdQueryHandler(
+    UserManager<ApplicationUser> userManager,
+    ILogger<GetUserByIdQueryHandler>? logger = null)
 {
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly ILogger<GetUserByIdQueryHandler>? _logger;
-
-    public GetUserByIdQueryHandler(
-        UserManager<ApplicationUser> userManager,
-        ILogger<GetUserByIdQueryHandler>? logger = null)
-    {
-        _userManager = userManager;
-        _logger = logger;
-    }
-
     public async Task<UserDto?> Handle(GetUserByIdQuery query)
     {
-        var user = await _userManager.FindByIdAsync(query.UserId);
+        var user = await userManager.FindByIdAsync(query.UserId);
         if (user == null)
             return null;
 
@@ -99,22 +72,13 @@ public class GetUserByIdQueryHandler
 /// <summary>
 /// Handler for ValidateInvitationTokenQuery
 /// </summary>
-public class ValidateInvitationTokenQueryHandler
+public class ValidateInvitationTokenQueryHandler(
+    ApplicationIdentityDbContext context,
+    ILogger<ValidateInvitationTokenQueryHandler>? logger = null)
 {
-    private readonly ApplicationIdentityDbContext _context;
-    private readonly ILogger<ValidateInvitationTokenQueryHandler>? _logger;
-
-    public ValidateInvitationTokenQueryHandler(
-        ApplicationIdentityDbContext context,
-        ILogger<ValidateInvitationTokenQueryHandler>? logger = null)
-    {
-        _context = context;
-        _logger = logger;
-    }
-
     public async Task<UserInvitationDto?> Handle(ValidateInvitationTokenQuery query)
     {
-        var invitation = await _context.UserInvitations
+        var invitation = await context.UserInvitations
             .FirstOrDefaultAsync(i => i.Token == query.Token);
 
         if (invitation == null)
@@ -136,22 +100,13 @@ public class ValidateInvitationTokenQueryHandler
 /// <summary>
 /// Handler for GetInvitationsByUserQuery
 /// </summary>
-public class GetInvitationsByUserQueryHandler
+public class GetInvitationsByUserQueryHandler(
+    ApplicationIdentityDbContext context,
+    ILogger<GetInvitationsByUserQueryHandler>? logger = null)
 {
-    private readonly ApplicationIdentityDbContext _context;
-    private readonly ILogger<GetInvitationsByUserQueryHandler>? _logger;
-
-    public GetInvitationsByUserQueryHandler(
-        ApplicationIdentityDbContext context,
-        ILogger<GetInvitationsByUserQueryHandler>? logger = null)
-    {
-        _context = context;
-        _logger = logger;
-    }
-
     public async Task<IEnumerable<UserInvitationDto>> Handle(GetInvitationsByUserQuery query)
     {
-        var invitations = await _context.UserInvitations
+        var invitations = await context.UserInvitations
             .Where(i => i.InvitedByUserId == query.UserId)
             .OrderByDescending(i => i.CreatedAt)
             .ToListAsync();

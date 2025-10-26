@@ -13,14 +13,12 @@ namespace zerobudget.core.application.Handlers.Queries;
 /// </summary>
 public class GetBucketByIdQueryHandler(IBucketRepository bucketRepository, ILogger<GetBucketByIdQueryHandler>? logger = null)
 {
-    private readonly IBucketRepository _bucketRepository = bucketRepository;
-    private readonly ILogger<GetBucketByIdQueryHandler>? _logger = logger;
     private readonly BucketMapper _mapper = new();
 
     public async Task<BucketDto?> Handle(GetBucketByIdQuery query)
     {
         using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
-        var bucket = await _bucketRepository.LoadAsync(query.Id);
+        var bucket = await bucketRepository.LoadAsync(query.Id);
         if (bucket == null)
             return null;
         scope.Complete();
@@ -33,14 +31,12 @@ public class GetBucketByIdQueryHandler(IBucketRepository bucketRepository, ILogg
 /// </summary>
 public class GetBucketsByNameQueryHandler(IBucketRepository bucketRepository, ILogger<GetBucketsByNameQueryHandler>? logger = null)
 {
-    private readonly IBucketRepository _bucketRepository = bucketRepository;
-    private readonly ILogger<GetBucketsByNameQueryHandler>? _logger = logger;
     private readonly BucketMapper _mapper = new();
 
     public async Task<IEnumerable<BucketDto>> Handle(GetBucketsByNameQuery query)
     {
         using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
-        var buckets = _bucketRepository.AsQueryable();
+        var buckets = bucketRepository.AsQueryable();
         if (!string.IsNullOrWhiteSpace(query.Name))
         {
             buckets = buckets.Where(b => b.Name.Contains(query.Name, StringComparison.OrdinalIgnoreCase));

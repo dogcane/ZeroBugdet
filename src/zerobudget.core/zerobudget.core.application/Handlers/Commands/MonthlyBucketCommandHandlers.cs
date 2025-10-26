@@ -13,15 +13,11 @@ public class GenerateMonthlyDataCommandHandler(
     IBucketRepository bucketRepository,
     ILogger<GenerateMonthlyDataCommandHandler>? logger = null)
 {
-    private readonly IMonthlyBucketRepository _monthlyBucketRepository = monthlyBucketRepository;
-    private readonly IBucketRepository _bucketRepository = bucketRepository;
-    private readonly ILogger<GenerateMonthlyDataCommandHandler>? _logger = logger;
-
     public async Task<OperationResult<bool>> Handle(GenerateMonthlyDataCommand command)
     {
         using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
 
-        var buckets = _bucketRepository.AsQueryable().ToList();
+        var buckets = bucketRepository.AsQueryable().ToList();
 
         foreach (var bucket in buckets)
         {
@@ -31,7 +27,7 @@ public class GenerateMonthlyDataCommandHandler(
                 return OperationResult<bool>.MakeFailure(monthlyBucketResult.Errors);
             }
 
-            await _monthlyBucketRepository.AddAsync(monthlyBucketResult.Value!);
+            await monthlyBucketRepository.AddAsync(monthlyBucketResult.Value!);
         }
 
         scope.Complete();

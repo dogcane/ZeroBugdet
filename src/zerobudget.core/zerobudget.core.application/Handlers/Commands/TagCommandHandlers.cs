@@ -9,9 +9,7 @@ namespace zerobudget.core.application.Handlers.Commands;
 
 public class CreateTagCommandHandler(ITagRepository tagRepository, ILogger<CreateTagCommandHandler>? logger = null)
 {
-    private readonly ITagRepository _tagRepository = tagRepository;
-    private readonly ILogger<CreateTagCommandHandler>? _logger = logger;
-    private readonly TagMapper _mapper = new TagMapper();
+    private readonly TagMapper _mapper = new();
 
     public async Task<OperationResult<TagDto>> Handle(CreateTagCommand command)
     {
@@ -20,7 +18,7 @@ public class CreateTagCommandHandler(ITagRepository tagRepository, ILogger<Creat
             return OperationResult<TagDto>.MakeFailure(tagResult.Errors);
 
         var tag = tagResult.Value!;
-        await _tagRepository.AddAsync(tag);
+        await tagRepository.AddAsync(tag);
 
         return OperationResult<TagDto>.MakeSuccess(_mapper.ToDto(tag));
     }
@@ -28,25 +26,19 @@ public class CreateTagCommandHandler(ITagRepository tagRepository, ILogger<Creat
 
 public class DeleteTagCommandHandler(ITagRepository tagRepository, ILogger<DeleteTagCommandHandler>? logger = null)
 {
-    private readonly ITagRepository _tagRepository = tagRepository;
-    private readonly ILogger<DeleteTagCommandHandler>? _logger = logger;
-
     public async Task<OperationResult> Handle(DeleteTagCommand command)
     {
-        var tag = await _tagRepository.LoadAsync(command.Id);
+        var tag = await tagRepository.LoadAsync(command.Id);
         if (tag == null)
             return OperationResult.MakeFailure(ErrorMessage.Create("DELETE_TAG", "Tag not found"));
 
-        await _tagRepository.RemoveAsync(tag);
+        await tagRepository.RemoveAsync(tag);
         return OperationResult.MakeSuccess();
     }
 }
 
 public class CleanupUnusedTagsCommandHandler(ITagService tagService, ILogger<CleanupUnusedTagsCommandHandler>? logger = null)
 {
-    private readonly ITagService _tagService = tagService;
-    private readonly ILogger<CleanupUnusedTagsCommandHandler>? _logger = logger;
-
     public Task<OperationResult<int>> Handle(CleanupUnusedTagsCommand command)
     {
         // Note: This is a placeholder implementation. The actual implementation is in TagMaintenanceCommandHandlers.cs

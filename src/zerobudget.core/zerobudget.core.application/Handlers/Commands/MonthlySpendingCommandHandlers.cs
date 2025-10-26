@@ -13,19 +13,15 @@ public class CreateMonthlySpendingCommandHandler(
     ITagService tagService,
     ILogger<CreateMonthlySpendingCommandHandler>? logger = null)
 {
-    private readonly IMonthlySpendingRepository _monthlySpendingRepository = monthlySpendingRepository;
-    private readonly IMonthlyBucketRepository _monthlyBucketRepository = monthlyBucketRepository;
-    private readonly ITagService _tagService = tagService;
-    private readonly ILogger<CreateMonthlySpendingCommandHandler>? _logger = logger;
-    private readonly MonthlySpendingMapper _mapper = new MonthlySpendingMapper();
+    private readonly MonthlySpendingMapper _mapper = new();
 
     public async Task<OperationResult<MonthlySpendingDto>> Handle(CreateMonthlySpendingCommand command)
     {
-        var monthlyBucket = await _monthlyBucketRepository.LoadAsync(command.MonthlyBucketId);
+        var monthlyBucket = await monthlyBucketRepository.LoadAsync(command.MonthlyBucketId);
         if (monthlyBucket == null)
             return OperationResult<MonthlySpendingDto>.MakeFailure(ErrorMessage.Create("CREATE_MONTHLY_SPENDING", "Monthly bucket not found"));
 
-        var tags = await _tagService.EnsureTagsByNameAsync(command.TagNames);
+        var tags = await tagService.EnsureTagsByNameAsync(command.TagNames);
 
         var monthlySpendingResult = MonthlySpending.Create(
             command.Date,
@@ -39,7 +35,7 @@ public class CreateMonthlySpendingCommandHandler(
             return OperationResult<MonthlySpendingDto>.MakeFailure(monthlySpendingResult.Errors);
 
         var monthlySpending = monthlySpendingResult.Value!;
-        await _monthlySpendingRepository.AddAsync(monthlySpending);
+        await monthlySpendingRepository.AddAsync(monthlySpending);
 
         return OperationResult<MonthlySpendingDto>.MakeSuccess(_mapper.ToDto(monthlySpending));
     }
@@ -50,18 +46,15 @@ public class UpdateMonthlySpendingCommandHandler(
     ITagService tagService,
     ILogger<UpdateMonthlySpendingCommandHandler>? logger = null)
 {
-    private readonly IMonthlySpendingRepository _monthlySpendingRepository = monthlySpendingRepository;
-    private readonly ITagService _tagService = tagService;
-    private readonly ILogger<UpdateMonthlySpendingCommandHandler>? _logger = logger;
-    private readonly MonthlySpendingMapper _mapper = new MonthlySpendingMapper();
+    private readonly MonthlySpendingMapper _mapper = new();
 
     public async Task<OperationResult<MonthlySpendingDto>> Handle(UpdateMonthlySpendingCommand command)
     {
-        var monthlySpending = await _monthlySpendingRepository.LoadAsync(command.Id);
+        var monthlySpending = await monthlySpendingRepository.LoadAsync(command.Id);
         if (monthlySpending == null)
             return OperationResult<MonthlySpendingDto>.MakeFailure(ErrorMessage.Create("UPDATE_MONTHLY_SPENDING", "Monthly spending not found"));
 
-        var tags = await _tagService.EnsureTagsByNameAsync(command.TagNames);
+        var tags = await tagService.EnsureTagsByNameAsync(command.TagNames);
 
         var updateResult = monthlySpending.Update(
             command.Date,
@@ -73,7 +66,7 @@ public class UpdateMonthlySpendingCommandHandler(
         if (!updateResult.Success)
             return OperationResult<MonthlySpendingDto>.MakeFailure(updateResult.Errors);
 
-        await _monthlySpendingRepository.UpdateAsync(monthlySpending);
+        await monthlySpendingRepository.UpdateAsync(monthlySpending);
 
         return OperationResult<MonthlySpendingDto>.MakeSuccess(_mapper.ToDto(monthlySpending));
     }
@@ -83,16 +76,13 @@ public class DeleteMonthlySpendingCommandHandler(
     IMonthlySpendingRepository monthlySpendingRepository,
     ILogger<DeleteMonthlySpendingCommandHandler>? logger = null)
 {
-    private readonly IMonthlySpendingRepository _monthlySpendingRepository = monthlySpendingRepository;
-    private readonly ILogger<DeleteMonthlySpendingCommandHandler>? _logger = logger;
-
     public async Task<OperationResult> Handle(DeleteMonthlySpendingCommand command)
     {
-        var monthlySpending = await _monthlySpendingRepository.LoadAsync(command.Id);
+        var monthlySpending = await monthlySpendingRepository.LoadAsync(command.Id);
         if (monthlySpending == null)
             return OperationResult.MakeFailure(ErrorMessage.Create("DELETE_MONTHLY_SPENDING", "Monthly spending not found"));
 
-        await _monthlySpendingRepository.RemoveAsync(monthlySpending);
+        await monthlySpendingRepository.RemoveAsync(monthlySpending);
         return OperationResult.MakeSuccess();
     }
 }

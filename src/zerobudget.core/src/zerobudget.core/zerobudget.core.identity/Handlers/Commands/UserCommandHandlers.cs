@@ -12,23 +12,14 @@ namespace zerobudget.core.identity.Handlers.Commands;
 /// <summary>
 /// Handler for RegisterMainUserCommand
 /// </summary>
-public class RegisterMainUserCommandHandler
+public class RegisterMainUserCommandHandler(
+    UserManager<ApplicationUser> userManager,
+    ILogger<RegisterMainUserCommandHandler>? logger = null)
 {
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly ILogger<RegisterMainUserCommandHandler>? _logger;
-
-    public RegisterMainUserCommandHandler(
-        UserManager<ApplicationUser> userManager,
-        ILogger<RegisterMainUserCommandHandler>? logger = null)
-    {
-        _userManager = userManager;
-        _logger = logger;
-    }
-
     public async Task<OperationResult<UserDto>> Handle(RegisterMainUserCommand command)
     {
         // Check if any users exist
-        var userCount = await _userManager.Users.CountAsync();
+        var userCount = await userManager.Users.CountAsync();
         if (userCount > 0)
         {
             return OperationResult<UserDto>.MakeFailure(
@@ -52,7 +43,7 @@ public class RegisterMainUserCommandHandler
             EmailConfirmed = true // Auto-confirm main user
         };
 
-        var result = await _userManager.CreateAsync(user, command.Password);
+        var result = await userManager.CreateAsync(user, command.Password);
 
         if (!result.Succeeded)
         {
@@ -61,7 +52,7 @@ public class RegisterMainUserCommandHandler
             return OperationResult<UserDto>.MakeFailure(errors);
         }
 
-        _logger?.LogInformation($"Main user {command.Email} registered successfully");
+        logger?.LogInformation($"Main user {command.Email} registered successfully");
 
         return OperationResult<UserDto>.MakeSuccess(new UserDto
         {
@@ -78,26 +69,15 @@ public class RegisterMainUserCommandHandler
 /// <summary>
 /// Handler for InviteUserCommand
 /// </summary>
-public class InviteUserCommandHandler
+public class InviteUserCommandHandler(
+    UserManager<ApplicationUser> userManager,
+    ApplicationIdentityDbContext context,
+    ILogger<InviteUserCommandHandler>? logger = null)
 {
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly ApplicationIdentityDbContext _context;
-    private readonly ILogger<InviteUserCommandHandler>? _logger;
-
-    public InviteUserCommandHandler(
-        UserManager<ApplicationUser> userManager,
-        ApplicationIdentityDbContext context,
-        ILogger<InviteUserCommandHandler>? logger = null)
-    {
-        _userManager = userManager;
-        _context = context;
-        _logger = logger;
-    }
-
     public async Task<OperationResult<UserInvitationDto>> Handle(InviteUserCommand command)
     {
         // Verify the inviting user is the main user
-        var invitingUser = await _userManager.FindByIdAsync(command.InvitedByUserId);
+        var invitingUser = await userManager.FindByIdAsync(command.InvitedByUserId);
         if (invitingUser == null || !invitingUser.IsMainUser)
         {
             return OperationResult<UserInvitationDto>.MakeFailure(
@@ -105,7 +85,7 @@ public class InviteUserCommandHandler
         }
 
         // Check if email already exists as a user
-        var existingUser = await _userManager.FindByEmailAsync(command.Email);
+        var existingUser = await userManager.FindByEmailAsync(command.Email);
         if (existingUser != null)
         {
             return OperationResult<UserInvitationDto>.MakeFailure(
@@ -113,7 +93,7 @@ public class InviteUserCommandHandler
         }
 
         // Check if there's already a pending invitation for this email
-        var existingInvitation = await _context.UserInvitations
+        var existingInvitation = await context.UserInvitations
             .FirstOrDefaultAsync(i => i.Email == command.Email && !i.IsUsed && i.ExpiresAt > DateTime.UtcNow);
         if (existingInvitation != null)
         {
@@ -122,8 +102,8 @@ public class InviteUserCommandHandler
         }
 
         // Count total users (excluding main user) and pending invitations
-        var totalUsers = await _userManager.Users.CountAsync(u => !u.IsMainUser);
-        var pendingInvitations = await _context.UserInvitations
+        var totalUsers = await userManager.Users.CountAsync(u => !u.IsMainUser);
+        var pendingInvitations = await context.UserInvitations
             .CountAsync(i => !i.IsUsed && i.ExpiresAt > DateTime.UtcNow);
         
         if (totalUsers + pendingInvitations >= 5)
@@ -143,10 +123,10 @@ public class InviteUserCommandHandler
             IsUsed = false
         };
 
-        _context.UserInvitations.Add(invitation);
-        await _context.SaveChangesAsync();
+        context.UserInvitations.Add(invitation);
+        await context.SaveChangesAsync();
 
-        _logger?.LogInformation($"User {command.Email} invited by {command.InvitedByUserId}");
+        logger?.LogInformation($"User {command.Email} invited by {command.InvitedByUserId}");
 
         return OperationResult<UserInvitationDto>.MakeSuccess(new UserInvitationDto
         {
@@ -164,22 +144,11 @@ public class InviteUserCommandHandler
 /// <summary>
 /// Handler for CompleteUserRegistrationCommand
 /// </summary>
-public class CompleteUserRegistrationCommandHandler
+public class CompleteUserRegistrationCommandHandler(
+    UserManager<ApplicationUser> userManager,
+    ApplicationIdentityDbContext context,
+    ILogger<CompleteUserRegistrationCommandHandler>? logger = null)
 {
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly ApplicationIdentityDbContext _context;
-    private readonly ILogger<CompleteUserRegistrationCommandHandler>? _logger;
-
-    public CompleteUserRegistrationCommandHandler(
-        UserManager<ApplicationUser> userManager,
-        ApplicationIdentityDbContext context,
-        ILogger<CompleteUserRegistrationCommandHandler>? logger = null)
-    {
-        _userManager = userManager;
-        _context = context;
-        _logger = logger;
-    }
-
     public async Task<OperationResult<UserDto>> Handle(CompleteUserRegistrationCommand command)
     {
         // Validate passwords match
@@ -190,7 +159,7 @@ public class CompleteUserRegistrationCommandHandler
         }
 
         // Find and validate the invitation
-        var invitation = await _context.UserInvitations
+        var invitation = await context.UserInvitations
             .FirstOrDefaultAsync(i => i.Token == command.Token);
 
         if (invitation == null)
@@ -212,7 +181,7 @@ public class CompleteUserRegistrationCommandHandler
         }
 
         // Check if email already exists as a user (race condition check)
-        var existingUser = await _userManager.FindByEmailAsync(invitation.Email);
+        var existingUser = await userManager.FindByEmailAsync(invitation.Email);
         if (existingUser != null)
         {
             return OperationResult<UserDto>.MakeFailure(
@@ -230,7 +199,7 @@ public class CompleteUserRegistrationCommandHandler
             EmailConfirmed = true // Auto-confirm invited users
         };
 
-        var result = await _userManager.CreateAsync(user, command.Password);
+        var result = await userManager.CreateAsync(user, command.Password);
 
         if (!result.Succeeded)
         {
@@ -242,9 +211,9 @@ public class CompleteUserRegistrationCommandHandler
         // Mark invitation as used
         invitation.IsUsed = true;
         invitation.UsedAt = DateTime.UtcNow;
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
 
-        _logger?.LogInformation($"User {invitation.Email} completed registration via invitation");
+        logger?.LogInformation($"User {invitation.Email} completed registration via invitation");
 
         return OperationResult<UserDto>.MakeSuccess(new UserDto
         {
@@ -261,23 +230,14 @@ public class CompleteUserRegistrationCommandHandler
 /// <summary>
 /// Handler for DeleteUserCommand
 /// </summary>
-public class DeleteUserCommandHandler
+public class DeleteUserCommandHandler(
+    UserManager<ApplicationUser> userManager,
+    ILogger<DeleteUserCommandHandler>? logger = null)
 {
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly ILogger<DeleteUserCommandHandler>? _logger;
-
-    public DeleteUserCommandHandler(
-        UserManager<ApplicationUser> userManager,
-        ILogger<DeleteUserCommandHandler>? logger = null)
-    {
-        _userManager = userManager;
-        _logger = logger;
-    }
-
     public async Task<OperationResult> Handle(DeleteUserCommand command)
     {
         // Verify the requesting user is the main user
-        var requestingUser = await _userManager.FindByIdAsync(command.RequestedByUserId);
+        var requestingUser = await userManager.FindByIdAsync(command.RequestedByUserId);
         if (requestingUser == null || !requestingUser.IsMainUser)
         {
             return OperationResult.MakeFailure(
@@ -285,7 +245,7 @@ public class DeleteUserCommandHandler
         }
 
         // Get the user to delete
-        var userToDelete = await _userManager.FindByIdAsync(command.UserId);
+        var userToDelete = await userManager.FindByIdAsync(command.UserId);
         if (userToDelete == null)
         {
             return OperationResult.MakeFailure(
@@ -300,7 +260,7 @@ public class DeleteUserCommandHandler
         }
 
         // Delete the user
-        var result = await _userManager.DeleteAsync(userToDelete);
+        var result = await userManager.DeleteAsync(userToDelete);
 
         if (!result.Succeeded)
         {
@@ -309,7 +269,7 @@ public class DeleteUserCommandHandler
             return OperationResult.MakeFailure(errors);
         }
 
-        _logger?.LogInformation($"User {userToDelete.Email} deleted by {requestingUser.Email}");
+        logger?.LogInformation($"User {userToDelete.Email} deleted by {requestingUser.Email}");
 
         return OperationResult.MakeSuccess();
     }

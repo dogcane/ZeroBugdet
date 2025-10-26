@@ -15,28 +15,13 @@ namespace zerobudget.core.webapi.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
-public class AccountController : ControllerBase
+public class AccountController(
+    UserManager<ApplicationUser> userManager,
+    SignInManager<ApplicationUser> signInManager,
+    ITokenService tokenService,
+    ILogger<AccountController> logger,
+    IMessageBus messageBus) : ControllerBase
 {
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly SignInManager<ApplicationUser> _signInManager;
-    private readonly ITokenService _tokenService;
-    private readonly ILogger<AccountController> _logger;
-    private readonly IMessageBus _messageBus;
-
-    public AccountController(
-        UserManager<ApplicationUser> userManager,
-        SignInManager<ApplicationUser> signInManager,
-        ITokenService tokenService,
-        ILogger<AccountController> logger,
-        IMessageBus messageBus)
-    {
-        _userManager = userManager;
-        _signInManager = signInManager;
-        _tokenService = tokenService;
-        _logger = logger;
-        _messageBus = messageBus;
-    }
-
     /// <summary>
     /// Check if main user registration is required
     /// </summary>
@@ -45,7 +30,7 @@ public class AccountController : ControllerBase
     public async Task<IActionResult> IsMainUserRequired()
     {
         var query = new IsMainUserRequiredQuery();
-        var isRequired = await _messageBus.InvokeAsync<bool>(query);
+        var isRequired = await messageBus.InvokeAsync<bool>(query);
         return Ok(new { isRequired });
     }
 
@@ -63,7 +48,7 @@ public class AccountController : ControllerBase
         try
         {
             var command = new RegisterMainUserCommand(request.Email, request.Password, request.ConfirmPassword);
-            var result = await _messageBus.InvokeAsync<OperationResult<UserDto>>(command);
+            var result = await messageBus.InvokeAsync<OperationResult<UserDto>>(command);
 
             if (!result.Success)
             {
@@ -82,7 +67,7 @@ public class AccountController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Main user registration error: {ex.Message}");
+            logger.LogError($"Main user registration error: {ex.Message}");
             return StatusCode(StatusCodes.Status500InternalServerError, new { error = ex.Message });
         }
     }
@@ -107,7 +92,7 @@ public class AccountController : ControllerBase
                 return Unauthorized(new { error = "User not authenticated" });
 
             var command = new InviteUserCommand(request.Email, userId);
-            var result = await _messageBus.InvokeAsync<OperationResult<UserInvitationDto>>(command);
+            var result = await messageBus.InvokeAsync<OperationResult<UserInvitationDto>>(command);
 
             if (!result.Success)
             {
@@ -126,7 +111,7 @@ public class AccountController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError($"User invitation error: {ex.Message}");
+            logger.LogError($"User invitation error: {ex.Message}");
             return StatusCode(StatusCodes.Status500InternalServerError, new { error = ex.Message });
         }
     }
@@ -145,7 +130,7 @@ public class AccountController : ControllerBase
         try
         {
             var command = new CompleteUserRegistrationCommand(request.Token, request.Password, request.ConfirmPassword);
-            var result = await _messageBus.InvokeAsync<OperationResult<UserDto>>(command);
+            var result = await messageBus.InvokeAsync<OperationResult<UserDto>>(command);
 
             if (!result.Success)
             {
@@ -164,7 +149,7 @@ public class AccountController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Registration completion error: {ex.Message}");
+            logger.LogError($"Registration completion error: {ex.Message}");
             return StatusCode(StatusCodes.Status500InternalServerError, new { error = ex.Message });
         }
     }
@@ -180,7 +165,7 @@ public class AccountController : ControllerBase
         try
         {
             var query = new ValidateInvitationTokenQuery(token);
-            var invitation = await _messageBus.InvokeAsync<UserInvitationDto?>(query);
+            var invitation = await messageBus.InvokeAsync<UserInvitationDto?>(query);
 
             if (invitation == null)
                 return NotFound(new { error = "Invalid invitation token" });
@@ -200,7 +185,7 @@ public class AccountController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Invitation validation error: {ex.Message}");
+            logger.LogError($"Invitation validation error: {ex.Message}");
             return StatusCode(StatusCodes.Status500InternalServerError, new { error = ex.Message });
         }
     }
@@ -220,18 +205,18 @@ public class AccountController : ControllerBase
                 return Unauthorized(new { error = "User not authenticated" });
 
             // Verify user is main user
-            var currentUser = await _userManager.FindByIdAsync(userId);
+            var currentUser = await userManager.FindByIdAsync(userId);
             if (currentUser == null || !currentUser.IsMainUser)
                 return Unauthorized(new { error = "Only the main user can access user list" });
 
             var query = new GetAllUsersQuery();
-            var users = await _messageBus.InvokeAsync<IEnumerable<UserDto>>(query);
+            var users = await messageBus.InvokeAsync<IEnumerable<UserDto>>(query);
 
             return Ok(users);
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Get users error: {ex.Message}");
+            logger.LogError($"Get users error: {ex.Message}");
             return StatusCode(StatusCodes.Status500InternalServerError, new { error = ex.Message });
         }
     }
@@ -252,7 +237,7 @@ public class AccountController : ControllerBase
                 return Unauthorized(new { error = "User not authenticated" });
 
             var command = new DeleteUserCommand(userId, requestingUserId);
-            var result = await _messageBus.InvokeAsync<OperationResult>(command);
+            var result = await messageBus.InvokeAsync<OperationResult>(command);
 
             if (!result.Success)
             {
@@ -267,7 +252,7 @@ public class AccountController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Delete user error: {ex.Message}");
+            logger.LogError($"Delete user error: {ex.Message}");
             return StatusCode(StatusCodes.Status500InternalServerError, new { error = ex.Message });
         }
     }
@@ -287,13 +272,13 @@ public class AccountController : ControllerBase
                 return Unauthorized(new { error = "User not authenticated" });
 
             var query = new GetInvitationsByUserQuery(userId);
-            var invitations = await _messageBus.InvokeAsync<IEnumerable<UserInvitationDto>>(query);
+            var invitations = await messageBus.InvokeAsync<IEnumerable<UserInvitationDto>>(query);
 
             return Ok(invitations);
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Get invitations error: {ex.Message}");
+            logger.LogError($"Get invitations error: {ex.Message}");
             return StatusCode(StatusCodes.Status500InternalServerError, new { error = ex.Message });
         }
     }
@@ -317,11 +302,11 @@ public class AccountController : ControllerBase
                 Email = request.Email
             };
 
-            var result = await _userManager.CreateAsync(user, request.Password);
+            var result = await userManager.CreateAsync(user, request.Password);
 
             if (result.Succeeded)
             {
-                _logger.LogInformation($"User {request.Email} registered successfully");
+                logger.LogInformation($"User {request.Email} registered successfully");
                 return Ok(new
                 {
                     message = "User registered successfully",
@@ -331,12 +316,12 @@ public class AccountController : ControllerBase
             }
 
             var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-            _logger.LogWarning($"User registration failed: {errors}");
+            logger.LogWarning($"User registration failed: {errors}");
             return BadRequest(new { errors = result.Errors });
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Registration error: {ex.Message}");
+            logger.LogError($"Registration error: {ex.Message}");
             return StatusCode(StatusCodes.Status500InternalServerError, new { error = "An error occurred during registration" });
         }
     }
@@ -355,32 +340,32 @@ public class AccountController : ControllerBase
 
         try
         {
-            var user = await _userManager.FindByEmailAsync(request.Email);
+            var user = await userManager.FindByEmailAsync(request.Email);
             if (user == null)
             {
-                _logger.LogWarning($"Login attempt with non-existent email: {request.Email}");
+                logger.LogWarning($"Login attempt with non-existent email: {request.Email}");
                 return Unauthorized(new { error = "Invalid email or password" });
             }
 
-            var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
+            var result = await signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
 
             if (!result.Succeeded)
             {
                 if (result.IsLockedOut)
                 {
-                    _logger.LogWarning($"User {request.Email} is locked out");
+                    logger.LogWarning($"User {request.Email} is locked out");
                     return Unauthorized(new { error = "Account is locked due to too many failed login attempts" });
                 }
 
-                _logger.LogWarning($"Login failed for user: {request.Email}");
+                logger.LogWarning($"Login failed for user: {request.Email}");
                 return Unauthorized(new { error = "Invalid email or password" });
             }
 
             // Get user roles
-            var roles = await _userManager.GetRolesAsync(user);
-            var token = _tokenService.GenerateToken(user.Id, user.Email ?? "", roles.ToArray());
+            var roles = await userManager.GetRolesAsync(user);
+            var token = tokenService.GenerateToken(user.Id, user.Email ?? "", roles.ToArray());
 
-            _logger.LogInformation($"User {request.Email} logged in successfully");
+            logger.LogInformation($"User {request.Email} logged in successfully");
             return Ok(new
             {
                 message = "Login successful",
@@ -393,7 +378,7 @@ public class AccountController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Login error: {ex.Message}");
+            logger.LogError($"Login error: {ex.Message}");
             return StatusCode(StatusCodes.Status500InternalServerError, new { error = "An error occurred during login" });
         }
     }
@@ -407,13 +392,13 @@ public class AccountController : ControllerBase
     {
         try
         {
-            await _signInManager.SignOutAsync();
-            _logger.LogInformation("User logged out successfully");
+            await signInManager.SignOutAsync();
+            logger.LogInformation("User logged out successfully");
             return Ok(new { message = "Logout successful" });
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Logout error: {ex.Message}");
+            logger.LogError($"Logout error: {ex.Message}");
             return StatusCode(StatusCodes.Status500InternalServerError, new { error = "An error occurred during logout" });
         }
     }
