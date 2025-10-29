@@ -27,7 +27,8 @@ public class GetAllTagsQueryHandler(ITagRepository tagRepository, ILogger<GetAll
     public async Task<IEnumerable<TagDto>> Handle(GetAllTagsQuery query)
     {
         var tags = tagRepository.AsQueryable();
-        return await Task.FromResult(tags.Select(_mapper.ToDto));
+        var result = tags.Select(_mapper.ToDto).ToArray();
+        return await Task.FromResult(result);
     }
 }
 
@@ -39,6 +40,7 @@ public class GetTagsByNameQueryHandler(ITagRepository tagRepository, ILogger<Get
     {
         var tags = tagRepository.AsQueryable();
         var filteredTags = tags.Where(t => t.Name.Contains(query.Name, StringComparison.OrdinalIgnoreCase));
-        return await Task.FromResult(filteredTags.Select(_mapper.ToDto));
+        var result = filteredTags.Select(_mapper.ToDto).ToArray();
+        return await Task.FromResult(result);
     }
 }

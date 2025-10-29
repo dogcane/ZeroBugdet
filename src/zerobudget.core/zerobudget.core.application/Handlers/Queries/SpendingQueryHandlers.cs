@@ -26,7 +26,8 @@ public class GetAllSpendingsQueryHandler(ISpendingRepository spendingRepository,
     public async Task<IEnumerable<SpendingDto>> Handle(GetAllSpendingsQuery query)
     {
         var spendings = spendingRepository.AsQueryable();
-        return await Task.FromResult(spendings.Select(_mapper.ToDto));
+        var result = spendings.Select(_mapper.ToDto).ToArray();
+        return await Task.FromResult(result);
     }
 }
 
@@ -38,7 +39,8 @@ public class GetSpendingsByBucketIdQueryHandler(ISpendingRepository spendingRepo
     {
         var spendings = spendingRepository.AsQueryable();
         var filteredSpendings = spendings.Where(s => s.BucketId == query.BucketId);
-        return await Task.FromResult(filteredSpendings.Select(_mapper.ToDto));
+        var result = filteredSpendings.Select(_mapper.ToDto).ToArray();
+        return await Task.FromResult(result);
     }
 }
 
@@ -50,6 +52,7 @@ public class GetSpendingsByOwnerQueryHandler(ISpendingRepository spendingReposit
     {
         var spendings = spendingRepository.AsQueryable();
         var filteredSpendings = spendings.Where(s => s.Owner.Equals(query.Owner, StringComparison.OrdinalIgnoreCase));
-        return await Task.FromResult(filteredSpendings.Select(_mapper.ToDto));
+        var result = filteredSpendings.Select(_mapper.ToDto).ToArray();
+        return await Task.FromResult(result);
     }
 }

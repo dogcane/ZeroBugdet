@@ -49,7 +49,8 @@ public class GetBucketsByNameQueryHandler(IBucketRepository bucketRepository, IL
         {
             buckets = buckets.Where(b => b.Enabled);
         }
+        var result = buckets.Select(_mapper.ToDto).ToArray();
         scope.Complete();
-        return await Task.FromResult(buckets.Select(_mapper.ToDto));
+        return await Task.FromResult(result);
     }
 }
