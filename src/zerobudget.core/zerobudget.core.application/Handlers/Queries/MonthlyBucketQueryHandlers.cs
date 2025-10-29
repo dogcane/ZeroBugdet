@@ -51,7 +51,7 @@ public class GetMonthlyBucketsByBucketIdQueryHandler(IMonthlyBucketRepository mo
     public async Task<IEnumerable<MonthlyBucketDto>> Handle(GetMonthlyBucketsByBucketIdQuery query)
     {
         var monthlyBuckets = monthlyBucketRepository.AsQueryable();
-        var filteredBuckets = monthlyBuckets.Where(mb => mb.Bucket.Identity == query.BucketId);
+        var filteredBuckets = monthlyBuckets.Where(mb => mb.BucketId == query.BucketId);
         var result = filteredBuckets.Select(_mapper.ToDto).ToArray();
         return await Task.FromResult(result);
     }

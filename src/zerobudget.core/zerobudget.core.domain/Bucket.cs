@@ -36,7 +36,7 @@ public sealed partial class Bucket : AggregateRoot<int>
 
     public OperationResult<MonthlyBucket> CreateMonthly(short year, short month)
         => ValidateMonthlyBucketCreation(year, month)
-            .IfSuccessThenReturn(() => new MonthlyBucket(year, month, this));
+            .IfSuccessThenReturn(() => new MonthlyBucket(year, month, Identity, Description, DefaultLimit));
 
     public OperationResult Enable()
         => ValidateStatusChange(Enabled, true)

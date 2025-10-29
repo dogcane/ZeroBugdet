@@ -9,20 +9,20 @@ public partial class MonthlyBucket : AggregateRoot<int>
     public short Year { get; protected set; } = 0;
     public short Month { get; protected set; } = 0;
     public decimal Balance { get; protected set; } = 0;
-    public Bucket Bucket { get; protected set; } = null!;
+    public int BucketId { get; protected set; } = 0;
     public string Description { get; protected set; } = string.Empty;
     public decimal Limit { get; protected set; } = 0;
     #endregion
 
     #region Constructors
     protected MonthlyBucket() : base() { }
-    internal MonthlyBucket(short year, short month, Bucket bucket) : base()
+    internal MonthlyBucket(short year, short month, int bucketId, string description, decimal defaultLimit) : base()
     {
         Year = year;
         Month = month;
-        Bucket = bucket;
-        Description = bucket.Description;
-        Limit = bucket.DefaultLimit;
+        BucketId = bucketId;
+        Description = description;
+        Limit = defaultLimit;
     }
     #endregion
 

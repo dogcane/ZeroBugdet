@@ -32,12 +32,12 @@ public class MonthlyBucketConfiguration : IEntityTypeConfiguration<MonthlyBucket
             .HasPrecision(18, 2);
 
         // Foreign key configuration
-        builder.Property("BucketId")
+        builder.Property(mb => mb.BucketId)
             .IsRequired();
 
-        builder.HasOne(mb => mb.Bucket)
+        builder.HasOne<Bucket>()
             .WithMany()
-            .HasForeignKey("BucketId")
+            .HasForeignKey(mb => mb.BucketId)
             .OnDelete(DeleteBehavior.Cascade);
 
         // Relationships

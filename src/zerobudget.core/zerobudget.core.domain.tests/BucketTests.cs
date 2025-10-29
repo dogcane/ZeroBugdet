@@ -178,7 +178,7 @@ public class BucketTests
         Assert.NotNull(result.Value);
         Assert.Equal((short)2025, result.Value!.Year);
         Assert.Equal((short)9, result.Value.Month);
-        Assert.Equal(bucket, result.Value.Bucket);
+        Assert.Equal(bucket.Identity, result.Value.BucketId);
     }
     #endregion
 }

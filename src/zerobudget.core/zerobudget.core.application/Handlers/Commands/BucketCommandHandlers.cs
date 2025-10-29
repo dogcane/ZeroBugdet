@@ -70,7 +70,7 @@ public class DeleteBucketCommandHandler(IBucketRepository bucketRepository, IMon
             return OperationResult.MakeFailure(ErrorMessage.Create("DELETE_BUCKET", "Bucket not found"));
         }
 
-        var hasRelatedMonthlyBuckets = monthlyBucketRepository.Any(mb => mb.Bucket.Identity == bucket.Identity);
+        var hasRelatedMonthlyBuckets = monthlyBucketRepository.Any(mb => mb.BucketId == bucket.Identity);
         if (hasRelatedMonthlyBuckets)
         {
             var disableResult = bucket.Disable();

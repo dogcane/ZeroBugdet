@@ -32,12 +32,6 @@ public class BucketConfiguration : IEntityTypeConfiguration<Bucket>
         builder.Property(b => b.Enabled)
             .HasDefaultValue(true);
 
-        // Relationships
-        builder.HasMany<MonthlyBucket>()
-            .WithOne(mb => mb.Bucket)
-            .HasForeignKey("BucketId")
-            .OnDelete(DeleteBehavior.Cascade);
-
         // Table configuration
         builder.ToTable("Buckets");
     }
