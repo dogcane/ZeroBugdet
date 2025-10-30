@@ -17,10 +17,10 @@ public class MonthlySpendingQueryHandlerTests
         var monthlySpendingRepository = new Mock<IMonthlySpendingRepository>();
         var handler = new GetMonthlySpendingByIdQueryHandler(monthlySpendingRepository.Object);
 
-        var bucket = Bucket.Create("Test", "Description", 1000m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2024, 10).Value!;
+        var bucket = Bucket.Create("Test", "Description", 1000m).Value!.WithIdentity<Bucket, int>(1);
+        var monthlyBucket = bucket.CreateMonthly(2024, 10).Value!.WithIdentity<MonthlyBucket, int>(1);
         var spending = Spending.Create("Test Spending", 100m, "Owner", Array.Empty<Tag>(), bucket).Value!;
-        var monthlySpending = spending.CreateMonthly(monthlyBucket).Value!;
+        var monthlySpending = spending.CreateMonthly(monthlyBucket).Value!.WithIdentity<MonthlySpending, int>(1);
 
         monthlySpendingRepository
             .SetupRepository<IMonthlySpendingRepository, MonthlySpending, int>([monthlySpending]);
@@ -62,8 +62,8 @@ public class MonthlySpendingQueryHandlerTests
         var monthlySpendingRepository = new Mock<IMonthlySpendingRepository>();
         var handler = new GetAllMonthlySpendingsQueryHandler(monthlySpendingRepository.Object);
 
-        var bucket = Bucket.Create("Test", "Description", 1000m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2024, 10).Value!;
+        var bucket = Bucket.Create("Test", "Description", 1000m).Value!.WithIdentity<Bucket, int>(1);
+        var monthlyBucket = bucket.CreateMonthly(2024, 10).Value!.WithIdentity<MonthlyBucket, int>(1);
         var spending1 = Spending.Create("Spending1", 100m, "Owner1", Array.Empty<Tag>(), bucket).Value!;
         var spending2 = Spending.Create("Spending2", 200m, "Owner2", Array.Empty<Tag>(), bucket).Value!;
         var monthlySpending1 = spending1.CreateMonthly(monthlyBucket).Value!;
@@ -88,9 +88,9 @@ public class MonthlySpendingQueryHandlerTests
         var monthlySpendingRepository = new Mock<IMonthlySpendingRepository>();
         var handler = new GetMonthlySpendingsByMonthlyBucketIdQueryHandler(monthlySpendingRepository.Object);
 
-        var bucket = Bucket.Create("Test", "Description", 1000m).Value!;
-        var monthlyBucket1 = bucket.CreateMonthly(2024, 10).Value!;
-        var monthlyBucket2 = bucket.CreateMonthly(2024, 11).Value!;
+        var bucket = Bucket.Create("Test", "Description", 1000m).Value!.WithIdentity<Bucket, int>(1);
+        var monthlyBucket1 = bucket.CreateMonthly(2024, 10).Value!.WithIdentity<MonthlyBucket, int>(1);
+        var monthlyBucket2 = bucket.CreateMonthly(2024, 11).Value!.WithIdentity<MonthlyBucket, int>(2);
         var spending1 = Spending.Create("Spending1", 100m, "Owner", Array.Empty<Tag>(), bucket).Value!;
         var spending2 = Spending.Create("Spending2", 200m, "Owner", Array.Empty<Tag>(), bucket).Value!;
         var monthlySpending1 = spending1.CreateMonthly(monthlyBucket1).Value!;
@@ -116,9 +116,9 @@ public class MonthlySpendingQueryHandlerTests
         var monthlySpendingRepository = new Mock<IMonthlySpendingRepository>();
         var handler = new GetMonthlySpendingsByDateRangeQueryHandler(monthlySpendingRepository.Object);
 
-        var bucket = Bucket.Create("Test", "Description", 1000m).Value!;
-        var monthlyBucket1 = bucket.CreateMonthly(2024, 10).Value!;
-        var monthlyBucket2 = bucket.CreateMonthly(2024, 11).Value!;
+        var bucket = Bucket.Create("Test", "Description", 1000m).Value!.WithIdentity<Bucket, int>(1);
+        var monthlyBucket1 = bucket.CreateMonthly(2024, 10).Value!.WithIdentity<MonthlyBucket, int>(1);
+        var monthlyBucket2 = bucket.CreateMonthly(2024, 11).Value!.WithIdentity<MonthlyBucket, int>(2);
         var spending1 = Spending.Create("Spending1", 100m, "Owner", Array.Empty<Tag>(), bucket).Value!;
         var spending2 = Spending.Create("Spending2", 200m, "Owner", Array.Empty<Tag>(), bucket).Value!;
         var monthlySpending1 = spending1.CreateMonthly(monthlyBucket1).Value!;
@@ -146,8 +146,8 @@ public class MonthlySpendingQueryHandlerTests
         var monthlySpendingRepository = new Mock<IMonthlySpendingRepository>();
         var handler = new GetMonthlySpendingsByOwnerQueryHandler(monthlySpendingRepository.Object);
 
-        var bucket = Bucket.Create("Test", "Description", 1000m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2024, 10).Value!;
+        var bucket = Bucket.Create("Test", "Description", 1000m).Value!.WithIdentity<Bucket, int>(1);
+        var monthlyBucket = bucket.CreateMonthly(2024, 10).Value!.WithIdentity<MonthlyBucket, int>(1);
         var spending1 = Spending.Create("Spending1", 100m, "Owner1", Array.Empty<Tag>(), bucket).Value!;
         var spending2 = Spending.Create("Spending2", 200m, "Owner2", Array.Empty<Tag>(), bucket).Value!;
         var monthlySpending1 = spending1.CreateMonthly(monthlyBucket).Value!;

@@ -11,7 +11,6 @@ import { UserListComponent } from './components/users/user-list/user-list.compon
 import { authGuard, mainUserGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
-  { path: '', component: InitialCheckComponent },
   { path: 'login', component: LoginComponent },
   { path: 'register-main-user', component: RegisterMainUserComponent },
   {
@@ -25,5 +24,6 @@ export const routes: Routes = [
       { path: 'spendings/new', component: SpendingFormComponent },
       { path: 'users', component: UserListComponent, canActivate: [mainUserGuard] }
     ]
-  }
+  },
+  { path: '', component: InitialCheckComponent }
 ];

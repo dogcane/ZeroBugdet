@@ -22,8 +22,8 @@ public class MonthlySpendingCommandHandlerTests
             monthlyBucketRepository.Object,
             tagService.Object);
 
-        var bucket = Bucket.Create("Test", "Description", 1000m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2024, 10).Value!;
+        var bucket = Bucket.Create("Test", "Description", 1000m).Value!.WithIdentity<Bucket, int>(1);
+        var monthlyBucket = bucket.CreateMonthly(2024, 10).Value!.WithIdentity<MonthlyBucket, int>(1);
 
         monthlyBucketRepository
             .SetupRepository<IMonthlyBucketRepository, MonthlyBucket, int>([monthlyBucket]);
@@ -93,10 +93,10 @@ public class MonthlySpendingCommandHandlerTests
             monthlySpendingRepository.Object,
             tagService.Object);
 
-        var bucket = Bucket.Create("Test", "Description", 1000m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2024, 10).Value!;
+        var bucket = Bucket.Create("Test", "Description", 1000m).Value!.WithIdentity<Bucket, int>(1);
+        var monthlyBucket = bucket.CreateMonthly(2024, 10).Value!.WithIdentity<MonthlyBucket, int>(1);
         var spending = Spending.Create("Original", 50m, "Owner", Array.Empty<Tag>(), bucket).Value!;
-        var monthlySpending = spending.CreateMonthly(monthlyBucket).Value!;
+        var monthlySpending = spending.CreateMonthly(monthlyBucket).Value!.WithIdentity<MonthlySpending, int>(1);
 
         monthlySpendingRepository
             .SetupRepository<IMonthlySpendingRepository, MonthlySpending, int>([monthlySpending]);
@@ -136,10 +136,10 @@ public class MonthlySpendingCommandHandlerTests
         var handler = new DeleteMonthlySpendingCommandHandler(
             monthlySpendingRepository.Object);
 
-        var bucket = Bucket.Create("Test", "Description", 1000m).Value!;
-        var monthlyBucket = bucket.CreateMonthly(2024, 10).Value!;
+        var bucket = Bucket.Create("Test", "Description", 1000m).Value!.WithIdentity<Bucket, int>(1);
+        var monthlyBucket = bucket.CreateMonthly(2024, 10).Value!.WithIdentity<MonthlyBucket, int>(1);
         var spending = Spending.Create("Test", 100m, "Owner", Array.Empty<Tag>(), bucket).Value!;
-        var monthlySpending = spending.CreateMonthly(monthlyBucket).Value!;
+        var monthlySpending = spending.CreateMonthly(monthlyBucket).Value!.WithIdentity<MonthlySpending, int>(1);
 
         monthlySpendingRepository
             .SetupRepository<IMonthlySpendingRepository, MonthlySpending, int>([monthlySpending]);

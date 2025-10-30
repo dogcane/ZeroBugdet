@@ -17,7 +17,7 @@ public class MonthlyBucketTests
         var monthlyBucket = result.Value!;
         Assert.Equal((short)2025, monthlyBucket.Year);
         Assert.Equal((short)9, monthlyBucket.Month);
-        Assert.Equal(bucket, monthlyBucket.Bucket);
+        Assert.Equal(bucket.Identity, monthlyBucket.BucketId);
         Assert.Equal(bucket.Description, monthlyBucket.Description);
         Assert.Equal(bucket.DefaultLimit, monthlyBucket.Limit);
         Assert.Equal(0m, monthlyBucket.Balance);
@@ -82,16 +82,14 @@ public class MonthlyBucketTests
     [Fact]
     public void Validate_WithValidData_ReturnsSuccess()
     {
-        var bucket = Bucket.Create("Test", "Desc", 100m).Value!;
-        var result = MonthlyBucket.Validate(2025, 9, 100m, bucket);
+        var result = MonthlyBucket.Validate(2025, 9, 100m, 1);
         Assert.True(result.Success);
     }
 
     [Fact]
     public void Validate_WithYearBefore2000_ReturnsFailure()
     {
-        var bucket = Bucket.Create("Test", "Desc", 100m).Value!;
-        var result = MonthlyBucket.Validate(1999, 9, 100m, bucket);
+        var result = MonthlyBucket.Validate(1999, 9, 100m, 1);
         Assert.False(result.Success);
         Assert.NotEmpty(result.Errors);
     }
@@ -99,16 +97,14 @@ public class MonthlyBucketTests
     [Fact]
     public void Validate_WithYear2000_ReturnsSuccess()
     {
-        var bucket = Bucket.Create("Test", "Desc", 100m).Value!;
-        var result = MonthlyBucket.Validate(2000, 9, 100m, bucket);
+        var result = MonthlyBucket.Validate(2000, 9, 100m, 1);
         Assert.True(result.Success);
     }
 
     [Fact]
     public void Validate_WithMonthZero_ReturnsFailure()
     {
-        var bucket = Bucket.Create("Test", "Desc", 100m).Value!;
-        var result = MonthlyBucket.Validate(2025, 0, 100m, bucket);
+        var result = MonthlyBucket.Validate(2025, 0, 100m, 1);
         Assert.False(result.Success);
         Assert.NotEmpty(result.Errors);
     }
@@ -116,16 +112,15 @@ public class MonthlyBucketTests
     [Fact]
     public void Validate_WithMonthThirteen_ReturnsFailure()
     {
-        var bucket = Bucket.Create("Test", "Desc", 100m).Value!;
-        var result = MonthlyBucket.Validate(2025, 13, 100m, bucket);
+        var result = MonthlyBucket.Validate(2025, 13, 100m, 1);
         Assert.False(result.Success);
         Assert.NotEmpty(result.Errors);
     }
 
     [Fact]
-    public void Validate_WithNullBucket_ReturnsFailure()
+    public void Validate_WithInvalidBucketId_ReturnsFailure()
     {
-        var result = MonthlyBucket.Validate(2025, 9, 100m, null!);
+        var result = MonthlyBucket.Validate(2025, 9, 100m, 0);
         Assert.False(result.Success);
         Assert.NotEmpty(result.Errors);
     }

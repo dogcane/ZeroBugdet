@@ -66,6 +66,6 @@ public partial class MonthlyBucketMapper
             monthlyBucket.Balance,
             monthlyBucket.Description,
             monthlyBucket.Limit,
-            monthlyBucket?.Bucket?.Identity ?? 0
+            monthlyBucket.BucketId
         );
 }
