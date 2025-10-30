@@ -26,6 +26,7 @@ public class GetAllMonthlyBucketsQueryHandler(IMonthlyBucketRepository monthlyBu
     public async Task<IEnumerable<MonthlyBucketDto>> Handle(GetAllMonthlyBucketsQuery query)
     {
         var monthlyBuckets = monthlyBucketRepository.AsQueryable();
+        monthlyBuckets = monthlyBuckets.OrderBy(mb => mb.Description);
         var result = monthlyBuckets.Select(_mapper.ToDto).ToArray();
         return await Task.FromResult(result);
     }
@@ -39,6 +40,7 @@ public class GetMonthlyBucketsByYearMonthQueryHandler(IMonthlyBucketRepository m
     {
         var monthlyBuckets = monthlyBucketRepository.AsQueryable();
         var filteredBuckets = monthlyBuckets.Where(mb => mb.Year == query.Year && mb.Month == query.Month);
+        filteredBuckets = filteredBuckets.OrderBy(mb => mb.Description);
         var result = filteredBuckets.Select(_mapper.ToDto).ToArray();
         return await Task.FromResult(result);
     }
@@ -52,6 +54,7 @@ public class GetMonthlyBucketsByBucketIdQueryHandler(IMonthlyBucketRepository mo
     {
         var monthlyBuckets = monthlyBucketRepository.AsQueryable();
         var filteredBuckets = monthlyBuckets.Where(mb => mb.BucketId == query.BucketId);
+        filteredBuckets = filteredBuckets.OrderBy(mb => mb.Description);
         var result = filteredBuckets.Select(_mapper.ToDto).ToArray();
         return await Task.FromResult(result);
     }

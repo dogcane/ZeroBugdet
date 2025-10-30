@@ -49,6 +49,7 @@ public class GetBucketsByNameQueryHandler(IBucketRepository bucketRepository, IL
         {
             buckets = buckets.Where(b => b.Enabled);
         }
+        buckets = buckets.OrderBy(b => b.Name);
         var result = buckets.Select(_mapper.ToDto).ToArray();
         scope.Complete();
         return await Task.FromResult(result);
