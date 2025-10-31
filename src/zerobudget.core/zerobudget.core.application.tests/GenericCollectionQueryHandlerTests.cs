@@ -23,7 +23,7 @@ public class GenericCollectionQueryHandlerTests
         var bucket3 = Bucket.Create("Beta Bucket", "Description B", 3000m).Value!;
         var buckets = new[] { bucket1, bucket2, bucket3 };
 
-        var query = new BucketCollectionQuery { Filters = new Dictionary<string, object?>() };
+        var query = new BucketCollectionQuery();
 
         bucketRepository.SetupAsQueryable<IBucketRepository, Bucket, int>(buckets);
 
@@ -51,10 +51,7 @@ public class GenericCollectionQueryHandlerTests
         var bucket3 = Bucket.Create("Other Bucket", "Description 3", 3000m).Value!;
         var buckets = new[] { bucket1, bucket2, bucket3 };
 
-        var query = new BucketCollectionQuery 
-        { 
-            Filters = new Dictionary<string, object?> { { "Name", "Test" } }
-        };
+        var query = new BucketCollectionQuery(Name: "Test");
 
         bucketRepository.SetupAsQueryable<IBucketRepository, Bucket, int>(buckets);
 
@@ -79,10 +76,7 @@ public class GenericCollectionQueryHandlerTests
         bucket2.Disable();
         var buckets = new[] { bucket1, bucket2 };
 
-        var query = new BucketCollectionQuery 
-        { 
-            Filters = new Dictionary<string, object?> { { "Enabled", true } }
-        };
+        var query = new BucketCollectionQuery(Enabled: true);
 
         bucketRepository.SetupAsQueryable<IBucketRepository, Bucket, int>(buckets);
 
@@ -113,7 +107,7 @@ public class GenericCollectionQueryHandlerTests
         var mb2 = bucket2.CreateMonthly(2024, 1).Value!;
         var monthlyBuckets = new[] { mb1, mb2 };
 
-        var query = new MonthlyBucketCollectionQuery { Filters = new Dictionary<string, object?>() };
+        var query = new MonthlyBucketCollectionQuery();
 
         monthlyBucketRepository.SetupAsQueryable<IMonthlyBucketRepository, MonthlyBucket, int>(monthlyBuckets);
 
@@ -140,10 +134,7 @@ public class GenericCollectionQueryHandlerTests
         var mb2 = bucket.CreateMonthly(2023, 1).Value!;
         var monthlyBuckets = new[] { mb1, mb2 };
 
-        var query = new MonthlyBucketCollectionQuery 
-        { 
-            Filters = new Dictionary<string, object?> { { "Year", (short)2024 } }
-        };
+        var query = new MonthlyBucketCollectionQuery(Year: (short)2024);
 
         monthlyBucketRepository.SetupAsQueryable<IMonthlyBucketRepository, MonthlyBucket, int>(monthlyBuckets);
 
@@ -169,14 +160,7 @@ public class GenericCollectionQueryHandlerTests
         var mb3 = bucket.CreateMonthly(2023, 1).Value!;
         var monthlyBuckets = new[] { mb1, mb2, mb3 };
 
-        var query = new MonthlyBucketCollectionQuery 
-        { 
-            Filters = new Dictionary<string, object?> 
-            { 
-                { "Year", (short)2024 },
-                { "Month", (short)1 }
-            }
-        };
+        var query = new MonthlyBucketCollectionQuery(Year: (short)2024, Month: (short)1);
 
         monthlyBucketRepository.SetupAsQueryable<IMonthlyBucketRepository, MonthlyBucket, int>(monthlyBuckets);
 
@@ -208,7 +192,7 @@ public class GenericCollectionQueryHandlerTests
         var spending3 = Spending.Create("Beta Expense", 300m, "Owner3", [], bucket).Value!;
         var spendings = new[] { spending1, spending2, spending3 };
 
-        var query = new SpendingCollectionQuery { Filters = new Dictionary<string, object?>() };
+        var query = new SpendingCollectionQuery();
 
         spendingRepository.SetupAsQueryable<ISpendingRepository, Spending, int>(spendings);
 
@@ -237,10 +221,7 @@ public class GenericCollectionQueryHandlerTests
         var spending3 = Spending.Create("Grocery Store", 75m, "Owner3", [], bucket).Value!;
         var spendings = new[] { spending1, spending2, spending3 };
 
-        var query = new SpendingCollectionQuery 
-        { 
-            Filters = new Dictionary<string, object?> { { "Description", "Grocery" } }
-        };
+        var query = new SpendingCollectionQuery(Description: "Grocery");
 
         spendingRepository.SetupAsQueryable<ISpendingRepository, Spending, int>(spendings);
 
@@ -266,10 +247,7 @@ public class GenericCollectionQueryHandlerTests
         var spending3 = Spending.Create("Expense 3", 75m, "john@example.com", [], bucket).Value!;
         var spendings = new[] { spending1, spending2, spending3 };
 
-        var query = new SpendingCollectionQuery 
-        { 
-            Filters = new Dictionary<string, object?> { { "Owner", "john" } }
-        };
+        var query = new SpendingCollectionQuery(Owner: "john");
 
         spendingRepository.SetupAsQueryable<ISpendingRepository, Spending, int>(spendings);
 
@@ -301,7 +279,7 @@ public class GenericCollectionQueryHandlerTests
         var spending3 = MonthlySpending.Create(new DateOnly(2024, 1, 10), "Expense 3", 300m, "Owner", [], monthlyBucket).Value!;
         var monthlySpendings = new[] { spending1, spending2, spending3 };
 
-        var query = new MonthlySpendingCollectionQuery { Filters = new Dictionary<string, object?>() };
+        var query = new MonthlySpendingCollectionQuery();
 
         monthlySpendingRepository.SetupAsQueryable<IMonthlySpendingRepository, MonthlySpending, int>(monthlySpendings);
 
@@ -332,14 +310,10 @@ public class GenericCollectionQueryHandlerTests
         var spending3 = MonthlySpending.Create(new DateOnly(2024, 1, 25), "Expense 3", 300m, "Owner", [], monthlyBucket).Value!;
         var monthlySpendings = new[] { spending1, spending2, spending3 };
 
-        var query = new MonthlySpendingCollectionQuery 
-        { 
-            Filters = new Dictionary<string, object?> 
-            { 
-                { "StartDate", new DateOnly(2024, 1, 10) },
-                { "EndDate", new DateOnly(2024, 1, 20) }
-            }
-        };
+        var query = new MonthlySpendingCollectionQuery(
+            StartDate: new DateOnly(2024, 1, 10),
+            EndDate: new DateOnly(2024, 1, 20)
+        );
 
         monthlySpendingRepository.SetupAsQueryable<IMonthlySpendingRepository, MonthlySpending, int>(monthlySpendings);
 
@@ -367,10 +341,7 @@ public class GenericCollectionQueryHandlerTests
         var spending3 = MonthlySpending.Create(new DateOnly(2024, 1, 3), "Expense 3", 300m, "john@example.com", [], monthlyBucket).Value!;
         var monthlySpendings = new[] { spending1, spending2, spending3 };
 
-        var query = new MonthlySpendingCollectionQuery 
-        { 
-            Filters = new Dictionary<string, object?> { { "Owner", "john" } }
-        };
+        var query = new MonthlySpendingCollectionQuery(Owner: "john");
 
         monthlySpendingRepository.SetupAsQueryable<IMonthlySpendingRepository, MonthlySpending, int>(monthlySpendings);
 

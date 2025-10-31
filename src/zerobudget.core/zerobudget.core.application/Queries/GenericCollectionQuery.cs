@@ -1,17 +1,45 @@
 namespace zerobudget.core.application.Queries;
 
 /// <summary>
-/// Generic query for filtering and retrieving collections of entities.
+/// Query for filtering and retrieving Bucket collections.
 /// Excludes Identity property as per requirement.
 /// </summary>
-/// <typeparam name="TDto">The DTO type to return</typeparam>
-public record GenericCollectionQuery<TDto>
-{
-    public Dictionary<string, object?> Filters { get; init; } = new();
-}
+public record BucketCollectionQuery(
+    string? Name = null,
+    string? Description = null,
+    bool? Enabled = null
+);
 
-// Specific query types for each entity
-public record BucketCollectionQuery : GenericCollectionQuery<DTOs.BucketDto>;
-public record MonthlyBucketCollectionQuery : GenericCollectionQuery<DTOs.MonthlyBucketDto>;
-public record SpendingCollectionQuery : GenericCollectionQuery<DTOs.SpendingDto>;
-public record MonthlySpendingCollectionQuery : GenericCollectionQuery<DTOs.MonthlySpendingDto>;
+/// <summary>
+/// Query for filtering and retrieving MonthlyBucket collections.
+/// Excludes Identity property as per requirement.
+/// </summary>
+public record MonthlyBucketCollectionQuery(
+    short? Year = null,
+    short? Month = null,
+    int? BucketId = null,
+    string? Description = null
+);
+
+/// <summary>
+/// Query for filtering and retrieving Spending collections.
+/// Excludes Identity property as per requirement.
+/// </summary>
+public record SpendingCollectionQuery(
+    int? BucketId = null,
+    string? Description = null,
+    string? Owner = null,
+    bool? Enabled = null
+);
+
+/// <summary>
+/// Query for filtering and retrieving MonthlySpending collections.
+/// Excludes Identity property as per requirement.
+/// </summary>
+public record MonthlySpendingCollectionQuery(
+    int? MonthlyBucketId = null,
+    string? Description = null,
+    string? Owner = null,
+    DateOnly? StartDate = null,
+    DateOnly? EndDate = null
+);

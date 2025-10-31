@@ -10,7 +10,7 @@ namespace zerobudget.core.application.Handlers.Queries;
 /// <summary>
 /// Base generic query handler for querying collections of entities
 /// </summary>
-public abstract class GenericCollectionQueryHandler<TEntity, TDto, TRepository>
+public abstract class GenericCollectionQueryHandler<TEntity, TDto, TQuery, TRepository>
     where TEntity : class
     where TRepository : class
 {
@@ -24,32 +24,38 @@ public abstract class GenericCollectionQueryHandler<TEntity, TDto, TRepository>
     }
 
     /// <summary>
-    /// Apply filters to the queryable based on the filter dictionary
+    /// Apply filters to the queryable based on the query object properties
     /// </summary>
-    protected IQueryable<TEntity> ApplyFilters(IQueryable<TEntity> query, Dictionary<string, object?> filters)
+    protected IQueryable<TEntity> ApplyFilters(IQueryable<TEntity> queryable, TQuery query)
     {
-        foreach (var filter in filters)
+        var queryType = typeof(TQuery);
+        var properties = queryType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+        foreach (var queryProperty in properties)
         {
-            if (filter.Value == null)
+            var filterValue = queryProperty.GetValue(query);
+            
+            // Skip null values (optional parameters not provided)
+            if (filterValue == null)
                 continue;
 
+            var propertyName = queryProperty.Name;
+
             // Special handling for date range filters (StartDate, EndDate)
-            if (filter.Key.EndsWith("StartDate", StringComparison.OrdinalIgnoreCase) || 
-                filter.Key.EndsWith("EndDate", StringComparison.OrdinalIgnoreCase))
+            if (propertyName.Equals("StartDate", StringComparison.OrdinalIgnoreCase) || 
+                propertyName.Equals("EndDate", StringComparison.OrdinalIgnoreCase))
             {
-                var actualPropertyName = filter.Key.Replace("StartDate", "").Replace("EndDate", "");
-                if (string.IsNullOrEmpty(actualPropertyName))
-                    actualPropertyName = "Date";
-                
+                var actualPropertyName = "Date";
                 var actualProperty = typeof(TEntity).GetProperty(actualPropertyName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+                
                 if (actualProperty != null && actualProperty.PropertyType == typeof(DateOnly))
                 {
                     var dateParameter = Expression.Parameter(typeof(TEntity), "x");
                     var actualPropertyAccess = Expression.Property(dateParameter, actualProperty);
-                    var dateValue = (DateOnly)filter.Value;
+                    var dateValue = (DateOnly)filterValue;
                     Expression dateComparison;
                     
-                    if (filter.Key.EndsWith("StartDate", StringComparison.OrdinalIgnoreCase))
+                    if (propertyName.Equals("StartDate", StringComparison.OrdinalIgnoreCase))
                     {
                         dateComparison = Expression.GreaterThanOrEqual(actualPropertyAccess, Expression.Constant(dateValue));
                     }
@@ -59,55 +65,56 @@ public abstract class GenericCollectionQueryHandler<TEntity, TDto, TRepository>
                     }
                     
                     var dateLambda = Expression.Lambda<Func<TEntity, bool>>(dateComparison, dateParameter);
-                    query = query.Where(dateLambda);
+                    queryable = queryable.Where(dateLambda);
                 }
                 continue;
             }
 
-            var property = typeof(TEntity).GetProperty(filter.Key, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+            // Find matching property in entity
+            var entityProperty = typeof(TEntity).GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
             
-            if (property == null)
+            if (entityProperty == null)
                 continue;
 
             var parameter = Expression.Parameter(typeof(TEntity), "x");
-            var propertyAccess = Expression.Property(parameter, property);
+            var propertyAccess = Expression.Property(parameter, entityProperty);
             Expression comparison;
 
             // Handle different types
-            if (property.PropertyType == typeof(string))
+            if (entityProperty.PropertyType == typeof(string))
             {
                 // String contains (case-insensitive)
-                var filterValue = filter.Value.ToString();
-                if (!string.IsNullOrWhiteSpace(filterValue))
+                var stringValue = filterValue.ToString();
+                if (!string.IsNullOrWhiteSpace(stringValue))
                 {
                     var containsMethod = typeof(string).GetMethod("Contains", new[] { typeof(string), typeof(StringComparison) })!;
-                    var valueExpression = Expression.Constant(filterValue, typeof(string));
+                    var valueExpression = Expression.Constant(stringValue, typeof(string));
                     var comparisonExpression = Expression.Constant(StringComparison.OrdinalIgnoreCase);
                     comparison = Expression.Call(propertyAccess, containsMethod, valueExpression, comparisonExpression);
                     
                     var lambda = Expression.Lambda<Func<TEntity, bool>>(comparison, parameter);
-                    query = query.Where(lambda);
+                    queryable = queryable.Where(lambda);
                 }
             }
-            else if (property.PropertyType == typeof(bool))
+            else if (entityProperty.PropertyType == typeof(bool))
             {
                 // Boolean equals
-                var value = Convert.ToBoolean(filter.Value);
+                var value = Convert.ToBoolean(filterValue);
                 comparison = Expression.Equal(propertyAccess, Expression.Constant(value));
                 var lambda = Expression.Lambda<Func<TEntity, bool>>(comparison, parameter);
-                query = query.Where(lambda);
+                queryable = queryable.Where(lambda);
             }
-            else if (property.PropertyType == typeof(int) || property.PropertyType == typeof(short))
+            else if (entityProperty.PropertyType == typeof(int) || entityProperty.PropertyType == typeof(short))
             {
                 // Numeric equals
-                var value = Convert.ChangeType(filter.Value, property.PropertyType);
-                comparison = Expression.Equal(propertyAccess, Expression.Constant(value, property.PropertyType));
+                var value = Convert.ChangeType(filterValue, entityProperty.PropertyType);
+                comparison = Expression.Equal(propertyAccess, Expression.Constant(value, entityProperty.PropertyType));
                 var lambda = Expression.Lambda<Func<TEntity, bool>>(comparison, parameter);
-                query = query.Where(lambda);
+                queryable = queryable.Where(lambda);
             }
         }
 
-        return query;
+        return queryable;
     }
 
     /// <summary>
@@ -125,7 +132,7 @@ public abstract class GenericCollectionQueryHandler<TEntity, TDto, TRepository>
 /// Generic query handler for Bucket entities
 /// Orders by Name ascending
 /// </summary>
-public class BucketCollectionQueryHandler : GenericCollectionQueryHandler<Bucket, BucketDto, IBucketRepository>
+public class BucketCollectionQueryHandler : GenericCollectionQueryHandler<Bucket, BucketDto, BucketCollectionQuery, IBucketRepository>
 {
     private readonly Mappers.BucketMapper _mapper = new();
 
@@ -137,7 +144,7 @@ public class BucketCollectionQueryHandler : GenericCollectionQueryHandler<Bucket
     public async Task<IEnumerable<BucketDto>> Handle(BucketCollectionQuery query)
     {
         var queryable = Repository.AsQueryable();
-        queryable = ApplyFilters(queryable, query.Filters);
+        queryable = ApplyFilters(queryable, query);
         queryable = ApplyOrdering(queryable);
         var result = queryable.Select(MapToDto).ToArray();
         return await Task.FromResult(result);
@@ -158,7 +165,7 @@ public class BucketCollectionQueryHandler : GenericCollectionQueryHandler<Bucket
 /// Generic query handler for MonthlyBucket entities
 /// Orders by Name ascending (via Bucket relationship, but we'll use Year/Month as proxy)
 /// </summary>
-public class MonthlyBucketCollectionQueryHandler : GenericCollectionQueryHandler<MonthlyBucket, MonthlyBucketDto, IMonthlyBucketRepository>
+public class MonthlyBucketCollectionQueryHandler : GenericCollectionQueryHandler<MonthlyBucket, MonthlyBucketDto, MonthlyBucketCollectionQuery, IMonthlyBucketRepository>
 {
     private readonly Mappers.MonthlyBucketMapper _mapper = new();
 
@@ -170,7 +177,7 @@ public class MonthlyBucketCollectionQueryHandler : GenericCollectionQueryHandler
     public async Task<IEnumerable<MonthlyBucketDto>> Handle(MonthlyBucketCollectionQuery query)
     {
         var queryable = Repository.AsQueryable();
-        queryable = ApplyFilters(queryable, query.Filters);
+        queryable = ApplyFilters(queryable, query);
         queryable = ApplyOrdering(queryable);
         var result = queryable.Select(MapToDto).ToArray();
         return await Task.FromResult(result);
@@ -192,7 +199,7 @@ public class MonthlyBucketCollectionQueryHandler : GenericCollectionQueryHandler
 /// Generic query handler for Spending entities
 /// Orders by Description ascending
 /// </summary>
-public class SpendingCollectionQueryHandler : GenericCollectionQueryHandler<Spending, SpendingDto, ISpendingRepository>
+public class SpendingCollectionQueryHandler : GenericCollectionQueryHandler<Spending, SpendingDto, SpendingCollectionQuery, ISpendingRepository>
 {
     private readonly Mappers.SpendingMapper _mapper = new();
 
@@ -204,7 +211,7 @@ public class SpendingCollectionQueryHandler : GenericCollectionQueryHandler<Spen
     public async Task<IEnumerable<SpendingDto>> Handle(SpendingCollectionQuery query)
     {
         var queryable = Repository.AsQueryable();
-        queryable = ApplyFilters(queryable, query.Filters);
+        queryable = ApplyFilters(queryable, query);
         queryable = ApplyOrdering(queryable);
         var result = queryable.Select(MapToDto).ToArray();
         return await Task.FromResult(result);
@@ -225,7 +232,7 @@ public class SpendingCollectionQueryHandler : GenericCollectionQueryHandler<Spen
 /// Generic query handler for MonthlySpending entities
 /// Orders by Date descending
 /// </summary>
-public class MonthlySpendingCollectionQueryHandler : GenericCollectionQueryHandler<MonthlySpending, MonthlySpendingDto, IMonthlySpendingRepository>
+public class MonthlySpendingCollectionQueryHandler : GenericCollectionQueryHandler<MonthlySpending, MonthlySpendingDto, MonthlySpendingCollectionQuery, IMonthlySpendingRepository>
 {
     private readonly Mappers.MonthlySpendingMapper _mapper = new();
 
@@ -237,7 +244,7 @@ public class MonthlySpendingCollectionQueryHandler : GenericCollectionQueryHandl
     public async Task<IEnumerable<MonthlySpendingDto>> Handle(MonthlySpendingCollectionQuery query)
     {
         var queryable = Repository.AsQueryable();
-        queryable = ApplyFilters(queryable, query.Filters);
+        queryable = ApplyFilters(queryable, query);
         queryable = ApplyOrdering(queryable);
         var result = queryable.Select(MapToDto).ToArray();
         return await Task.FromResult(result);
