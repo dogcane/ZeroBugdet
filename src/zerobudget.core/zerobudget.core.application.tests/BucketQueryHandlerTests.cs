@@ -54,17 +54,17 @@ public class BucketQueryHandlerTests
     }
 
     [Fact]
-    public async Task Handle_GetBucketsByNameQuery_ShouldReturnBucketsWithMatchingName()
+    public async Task Handle_GetBucketsQuery_ShouldReturnBucketsWithMatchingFilters()
     {
         // Arrange
         var bucketRepository = new Mock<IBucketRepository>();
-        var handler = new GetBucketsByNameQueryHandler(bucketRepository.Object);
+        var handler = new GetBucketsQueryHandler(bucketRepository.Object);
 
         var bucket1Result = Bucket.Create("Bucket 1", "Description 1", 1000m);
         var bucket2Result = Bucket.Create("Bucket 2", "Description 2", 2000m);
         var buckets = new[] { bucket1Result.Value!, bucket2Result.Value! };
 
-        var query = new GetBucketsByNameQuery("Bucket", "", true);
+        var query = new GetBucketsQuery("Bucket", "", true);
 
         // Setup the repository to act as IQueryable
         bucketRepository.SetupAsQueryable<IBucketRepository, Bucket, int>(buckets);

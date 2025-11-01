@@ -30,7 +30,7 @@ public class BucketController(IMessageBus messageBus) : ControllerBase
         [FromQuery] string description,
         [FromQuery] bool enabled = true)
     {
-        var query = new GetBucketsByNameQuery(name, description, enabled);
+        var query = new GetBucketsQuery(name, description, enabled);
         var result = await messageBus.InvokeAsync<IEnumerable<BucketDto>>(query);
 
         return Ok(result);

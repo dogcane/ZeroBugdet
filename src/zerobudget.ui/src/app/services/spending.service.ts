@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Spending, CreateSpendingCommand, UpdateSpendingRequest } from '../models/spending.model';
 import { environment } from '../../environments/environment';
@@ -10,22 +10,33 @@ import { environment } from '../../environments/environment';
 export class SpendingService {
   private apiUrl = `${environment.apiUrl}/spending`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getById(id: number): Observable<Spending> {
     return this.http.get<Spending>(`${this.apiUrl}/${id}`);
   }
 
-  getAll(): Observable<Spending[]> {
-    return this.http.get<Spending[]>(this.apiUrl);
-  }
+  /**
+   * Get spendings with optional filters for bucket, description, owner, and enabled status
+   * Uses GetSpendingsQuery handler with optional parameters
+   */
+  getAll(bucketId?: number, description?: string, owner?: string, enabled?: boolean): Observable<Spending[]> {
+    let params = new HttpParams();
 
-  getByBucketId(bucketId: number): Observable<Spending[]> {
-    return this.http.get<Spending[]>(`${this.apiUrl}/bucket/${bucketId}`);
-  }
+    if (bucketId !== undefined) {
+      params = params.set('bucketId', bucketId.toString());
+    }
+    if (description !== undefined && description.length > 0) {
+      params = params.set('description', description);
+    }
+    if (owner !== undefined && owner.length > 0) {
+      params = params.set('owner', owner);
+    }
+    if (enabled !== undefined) {
+      params = params.set('enabled', enabled.toString());
+    }
 
-  getByOwner(owner: string): Observable<Spending[]> {
-    return this.http.get<Spending[]>(`${this.apiUrl}/owner/${owner}`);
+    return this.http.get<Spending[]>(this.apiUrl, { params });
   }
 
   create(command: CreateSpendingCommand): Observable<Spending> {
@@ -44,3 +55,4 @@ export class SpendingService {
     return this.http.patch<Spending>(`${this.apiUrl}/${id}/enable`, {});
   }
 }
+

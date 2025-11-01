@@ -1,11 +1,4 @@
 namespace zerobudget.core.application.Queries;
 
 public record GetMonthlySpendingByIdQuery(int Id);
-
-public record GetAllMonthlySpendingsQuery();
-
-public record GetMonthlySpendingsByMonthlyBucketIdQuery(int MonthlyBucketId);
-
-public record GetMonthlySpendingsByDateRangeQuery(DateOnly StartDate, DateOnly EndDate);
-
-public record GetMonthlySpendingsByOwnerQuery(string Owner);
+public record GetMonthlySpendingsQuery(int? MonthlyBucketId = null, string? Description = null, string? Owner = null, DateOnly? StartDate = null, DateOnly? EndDate = null);

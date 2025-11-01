@@ -56,11 +56,11 @@ public class MonthlySpendingQueryHandlerTests
     }
 
     [Fact]
-    public async Task Handle_GetAllMonthlySpendingsQuery_ReturnsAllMonthlySpendings()
+    public async Task Handle_GetMonthlySpendingsQuery_NoFilters_ReturnsAllMonthlySpendings()
     {
         // Arrange
         var monthlySpendingRepository = new Mock<IMonthlySpendingRepository>();
-        var handler = new GetAllMonthlySpendingsQueryHandler(monthlySpendingRepository.Object);
+        var handler = new MonthlySpendingCollectionQueryHandler(monthlySpendingRepository.Object);
 
         var bucket = Bucket.Create("Test", "Description", 1000m).Value!.WithIdentity<Bucket, int>(1);
         var monthlyBucket = bucket.CreateMonthly(2024, 10).Value!.WithIdentity<MonthlyBucket, int>(1);
@@ -71,7 +71,7 @@ public class MonthlySpendingQueryHandlerTests
 
         monthlySpendingRepository.SetupAsQueryable<IMonthlySpendingRepository, MonthlySpending, int>(new[] { monthlySpending1, monthlySpending2 });
 
-        var query = new GetAllMonthlySpendingsQuery();
+        var query = new GetMonthlySpendingsQuery();
 
         // Act
         var result = await handler.Handle(query);
@@ -82,11 +82,11 @@ public class MonthlySpendingQueryHandlerTests
     }
 
     [Fact]
-    public async Task Handle_GetMonthlySpendingsByMonthlyBucketIdQuery_ReturnsFilteredMonthlySpendings()
+    public async Task Handle_GetMonthlySpendingsQuery_WithFilters_ReturnsFilteredMonthlySpendings()
     {
         // Arrange
         var monthlySpendingRepository = new Mock<IMonthlySpendingRepository>();
-        var handler = new GetMonthlySpendingsByMonthlyBucketIdQueryHandler(monthlySpendingRepository.Object);
+        var handler = new MonthlySpendingCollectionQueryHandler(monthlySpendingRepository.Object);
 
         var bucket = Bucket.Create("Test", "Description", 1000m).Value!.WithIdentity<Bucket, int>(1);
         var monthlyBucket1 = bucket.CreateMonthly(2024, 10).Value!.WithIdentity<MonthlyBucket, int>(1);
@@ -98,7 +98,7 @@ public class MonthlySpendingQueryHandlerTests
 
         monthlySpendingRepository.SetupAsQueryable<IMonthlySpendingRepository, MonthlySpending, int>(new[] { monthlySpending1, monthlySpending2 });
 
-        var query = new GetMonthlySpendingsByMonthlyBucketIdQuery(monthlyBucket1.Identity);
+        var query = new GetMonthlySpendingsQuery(MonthlyBucketId: monthlyBucket1.Identity);
 
         // Act
         var result = await handler.Handle(query);
@@ -110,11 +110,11 @@ public class MonthlySpendingQueryHandlerTests
     }
 
     [Fact]
-    public async Task Handle_GetMonthlySpendingsByDateRangeQuery_ReturnsFilteredMonthlySpendings()
+    public async Task Handle_GetMonthlySpendingsQuery_WithDateRangeFilter_ReturnsFilteredMonthlySpendings()
     {
         // Arrange
         var monthlySpendingRepository = new Mock<IMonthlySpendingRepository>();
-        var handler = new GetMonthlySpendingsByDateRangeQueryHandler(monthlySpendingRepository.Object);
+        var handler = new MonthlySpendingCollectionQueryHandler(monthlySpendingRepository.Object);
 
         var bucket = Bucket.Create("Test", "Description", 1000m).Value!.WithIdentity<Bucket, int>(1);
         var monthlyBucket1 = bucket.CreateMonthly(2024, 10).Value!.WithIdentity<MonthlyBucket, int>(1);
@@ -126,9 +126,9 @@ public class MonthlySpendingQueryHandlerTests
 
         monthlySpendingRepository.SetupAsQueryable<IMonthlySpendingRepository, MonthlySpending, int>(new[] { monthlySpending1, monthlySpending2 });
 
-        var query = new GetMonthlySpendingsByDateRangeQuery(
-            new DateOnly(2024, 10, 1),
-            new DateOnly(2024, 10, 31));
+        var query = new GetMonthlySpendingsQuery(
+            StartDate: new DateOnly(2024, 10, 1),
+            EndDate: new DateOnly(2024, 10, 31));
 
         // Act
         var result = await handler.Handle(query);
@@ -140,11 +140,11 @@ public class MonthlySpendingQueryHandlerTests
     }
 
     [Fact]
-    public async Task Handle_GetMonthlySpendingsByOwnerQuery_ReturnsFilteredMonthlySpendings()
+    public async Task Handle_GetMonthlySpendingsQuery_WithOwnerFilter_ReturnsFilteredMonthlySpendings()
     {
         // Arrange
         var monthlySpendingRepository = new Mock<IMonthlySpendingRepository>();
-        var handler = new GetMonthlySpendingsByOwnerQueryHandler(monthlySpendingRepository.Object);
+        var handler = new MonthlySpendingCollectionQueryHandler(monthlySpendingRepository.Object);
 
         var bucket = Bucket.Create("Test", "Description", 1000m).Value!.WithIdentity<Bucket, int>(1);
         var monthlyBucket = bucket.CreateMonthly(2024, 10).Value!.WithIdentity<MonthlyBucket, int>(1);
@@ -155,7 +155,7 @@ public class MonthlySpendingQueryHandlerTests
 
         monthlySpendingRepository.SetupAsQueryable<IMonthlySpendingRepository, MonthlySpending, int>(new[] { monthlySpending1, monthlySpending2 });
 
-        var query = new GetMonthlySpendingsByOwnerQuery("Owner1");
+        var query = new GetMonthlySpendingsQuery(Owner: "Owner1");
 
         // Act
         var result = await handler.Handle(query);

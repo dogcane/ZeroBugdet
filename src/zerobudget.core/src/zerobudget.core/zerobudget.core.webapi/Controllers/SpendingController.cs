@@ -27,7 +27,7 @@ public class SpendingController(IMessageBus messageBus) : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<SpendingDto>>> GetAll()
     {
-        var query = new GetAllSpendingsQuery();
+        var query = new GetSpendingsQuery();
         var result = await messageBus.InvokeAsync<IEnumerable<SpendingDto>>(query);
 
         return Ok(result);
@@ -36,7 +36,7 @@ public class SpendingController(IMessageBus messageBus) : ControllerBase
     [HttpGet("bucket/{bucketId}")]
     public async Task<ActionResult<IEnumerable<SpendingDto>>> GetByBucketId(int bucketId)
     {
-        var query = new GetSpendingsByBucketIdQuery(bucketId);
+        var query = new GetSpendingsQuery(BucketId: bucketId);
         var result = await messageBus.InvokeAsync<IEnumerable<SpendingDto>>(query);
 
         return Ok(result);
@@ -45,7 +45,7 @@ public class SpendingController(IMessageBus messageBus) : ControllerBase
     [HttpGet("owner/{owner}")]
     public async Task<ActionResult<IEnumerable<SpendingDto>>> GetByOwner(string owner)
     {
-        var query = new GetSpendingsByOwnerQuery(owner);
+        var query = new GetSpendingsQuery(Owner: owner);
         var result = await messageBus.InvokeAsync<IEnumerable<SpendingDto>>(query);
 
         return Ok(result);

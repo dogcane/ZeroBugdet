@@ -1,9 +1,4 @@
 namespace zerobudget.core.application.Queries;
 
 public record GetSpendingByIdQuery(int Id);
-
-public record GetAllSpendingsQuery();
-
-public record GetSpendingsByBucketIdQuery(int BucketId);
-
-public record GetSpendingsByOwnerQuery(string Owner);
+public record GetSpendingsQuery(int? BucketId = null, string? Description = null, string? Owner = null, bool? Enabled = null);

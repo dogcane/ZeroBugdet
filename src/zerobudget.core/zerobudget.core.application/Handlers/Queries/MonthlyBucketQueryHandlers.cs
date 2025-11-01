@@ -19,43 +19,69 @@ public class GetMonthlyBucketByIdQueryHandler(IMonthlyBucketRepository monthlyBu
     }
 }
 
-public class GetAllMonthlyBucketsQueryHandler(IMonthlyBucketRepository monthlyBucketRepository, ILogger<GetAllMonthlyBucketsQueryHandler>? logger = null)
+/// <summary>
+/// Query handler for GetMonthlyBucketsQuery
+/// Applies strongly-typed LINQ filters without reflection
+/// Orders by Description ascending
+/// </summary>
+public class MonthlyBucketCollectionQueryHandler(IMonthlyBucketRepository repository, ILogger<MonthlyBucketCollectionQueryHandler>? logger = null)
 {
-    private readonly MonthlyBucketMapper _mapper = new();
+    private readonly Mappers.MonthlyBucketMapper _mapper = new();
 
-    public async Task<IEnumerable<MonthlyBucketDto>> Handle(GetAllMonthlyBucketsQuery query)
+    public async Task<IEnumerable<MonthlyBucketDto>> Handle(GetMonthlyBucketsQuery query)
     {
-        var monthlyBuckets = monthlyBucketRepository.AsQueryable();
-        monthlyBuckets = monthlyBuckets.OrderBy(mb => mb.Description);
-        var result = monthlyBuckets.Select(_mapper.ToDto).ToArray();
+        var queryable = repository.AsQueryable();
+        queryable = ApplyFilters(queryable, query);
+        queryable = ApplyOrdering(queryable);
+        var result = queryable.Select(MapToDto).ToArray();
         return await Task.FromResult(result);
     }
-}
 
-public class GetMonthlyBucketsByYearMonthQueryHandler(IMonthlyBucketRepository monthlyBucketRepository, ILogger<GetMonthlyBucketsByYearMonthQueryHandler>? logger = null)
-{
-    private readonly MonthlyBucketMapper _mapper = new();
-
-    public async Task<IEnumerable<MonthlyBucketDto>> Handle(GetMonthlyBucketsByYearMonthQuery query)
+    /// <summary>
+    /// Apply LINQ filters directly based on GetMonthlyBucketsQuery properties
+    /// </summary>
+    private IQueryable<MonthlyBucket> ApplyFilters(IQueryable<MonthlyBucket> queryable, GetMonthlyBucketsQuery query)
     {
-        var monthlyBuckets = monthlyBucketRepository.AsQueryable();
-        var filteredBuckets = monthlyBuckets.Where(mb => mb.Year == query.Year && mb.Month == query.Month);
-        filteredBuckets = filteredBuckets.OrderBy(mb => mb.Description);
-        var result = filteredBuckets.Select(_mapper.ToDto).ToArray();
-        return await Task.FromResult(result);
+        // Filter by Year (exact match)
+        if (query.Year.HasValue)
+        {
+            queryable = queryable.Where(mb => mb.Year == query.Year.Value);
+        }
+
+        // Filter by Month (exact match)
+        if (query.Month.HasValue)
+        {
+            queryable = queryable.Where(mb => mb.Month == query.Month.Value);
+        }
+
+        // Filter by BucketId (exact match)
+        if (query.BucketId.HasValue)
+        {
+            queryable = queryable.Where(mb => mb.BucketId == query.BucketId.Value);
+        }
+
+        // Filter by Description (case-insensitive contains search)
+        if (!string.IsNullOrWhiteSpace(query.Description))
+        {
+            queryable = queryable.Where(mb => mb.Description.Contains(query.Description, StringComparison.OrdinalIgnoreCase));
+        }
+
+        return queryable;
     }
-}
 
-public class GetMonthlyBucketsByBucketIdQueryHandler(IMonthlyBucketRepository monthlyBucketRepository, ILogger<GetMonthlyBucketsByBucketIdQueryHandler>? logger = null)
-{
-    private readonly MonthlyBucketMapper _mapper = new();
-
-    public async Task<IEnumerable<MonthlyBucketDto>> Handle(GetMonthlyBucketsByBucketIdQuery query)
+    /// <summary>
+    /// Apply ordering by Description ascending
+    /// </summary>
+    private IQueryable<MonthlyBucket> ApplyOrdering(IQueryable<MonthlyBucket> query)
     {
-        var monthlyBuckets = monthlyBucketRepository.AsQueryable();
-        var filteredBuckets = monthlyBuckets.Where(mb => mb.BucketId == query.BucketId);
-        filteredBuckets = filteredBuckets.OrderBy(mb => mb.Description);
-        var result = filteredBuckets.Select(_mapper.ToDto).ToArray();
-        return await Task.FromResult(result);
+        return query.OrderBy(mb => mb.Description);
+    }
+
+    /// <summary>
+    /// Convert MonthlyBucket entity to MonthlyBucketDto
+    /// </summary>
+    private MonthlyBucketDto MapToDto(MonthlyBucket entity)
+    {
+        return _mapper.ToDto(entity);
     }
 }

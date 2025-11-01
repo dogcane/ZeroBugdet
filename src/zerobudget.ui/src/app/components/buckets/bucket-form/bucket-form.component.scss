@@ -1,0 +1,39 @@
+.page-mode {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+
+  mat-card {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  mat-card-header {
+    margin-bottom: 24px;
+  }
+
+  mat-form-field {
+    margin-bottom: 16px;
+
+    &.full-width {
+      width: 100%;
+    }
+  }
+
+  .button-row {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 24px;
+
+    button {
+      min-width: 120px;
+    }
+  }
+}
+
+.dialog-mode {
+  .full-width {
+    width: 100%;
+    margin-bottom: 16px;
+  }
+}

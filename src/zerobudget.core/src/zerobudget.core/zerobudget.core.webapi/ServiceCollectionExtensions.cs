@@ -47,23 +47,16 @@ public static class ServiceCollectionExtensions
         // Register command and query handlers (split into individual classes for Wolverine)
         // Query Handlers
         services.AddScoped<GetBucketByIdQueryHandler>();
-        services.AddScoped<GetBucketsByNameQueryHandler>();
+        services.AddScoped<GetBucketsQueryHandler>();
         services.AddScoped<GetMonthlyBucketByIdQueryHandler>();
-        services.AddScoped<GetAllMonthlyBucketsQueryHandler>();
-        services.AddScoped<GetMonthlyBucketsByYearMonthQueryHandler>();
-        services.AddScoped<GetMonthlyBucketsByBucketIdQueryHandler>();
+        services.AddScoped<MonthlyBucketCollectionQueryHandler>();
         services.AddScoped<GetTagByIdQueryHandler>();
         services.AddScoped<GetAllTagsQueryHandler>();
         services.AddScoped<GetTagsByNameQueryHandler>();
         services.AddScoped<GetSpendingByIdQueryHandler>();
-        services.AddScoped<GetAllSpendingsQueryHandler>();
-        services.AddScoped<GetSpendingsByBucketIdQueryHandler>();
-        services.AddScoped<GetSpendingsByOwnerQueryHandler>();
+        services.AddScoped<SpendingCollectionQueryHandler>();
         services.AddScoped<GetMonthlySpendingByIdQueryHandler>();
-        services.AddScoped<GetAllMonthlySpendingsQueryHandler>();
-        services.AddScoped<GetMonthlySpendingsByMonthlyBucketIdQueryHandler>();
-        services.AddScoped<GetMonthlySpendingsByDateRangeQueryHandler>();
-        services.AddScoped<GetMonthlySpendingsByOwnerQueryHandler>();
+        services.AddScoped<MonthlySpendingCollectionQueryHandler>();
 
         // Command Handlers
         services.AddScoped<CreateBucketCommandHandler>();

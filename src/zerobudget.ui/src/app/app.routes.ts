@@ -4,6 +4,7 @@ import { LoginComponent } from './components/auth/login/login.component';
 import { RegisterMainUserComponent } from './components/auth/register-main-user/register-main-user.component';
 import { MainLayoutComponent } from './components/layout/main-layout/main-layout.component';
 import { BucketListComponent } from './components/buckets/bucket-list/bucket-list.component';
+import { BucketFormComponent } from './components/buckets/bucket-form/bucket-form.component';
 import { SpendingListComponent } from './components/spendings/spending-list/spending-list.component';
 import { SpendingFormComponent } from './components/spendings/spending-form/spending-form.component';
 import { MonthlyViewComponent } from './components/monthly/monthly-view/monthly-view.component';
@@ -20,6 +21,7 @@ export const routes: Routes = [
     children: [
       { path: 'monthly', component: MonthlyViewComponent },
       { path: 'buckets', component: BucketListComponent },
+      { path: 'buckets/new', component: BucketFormComponent },
       { path: 'spendings', component: SpendingListComponent },
       { path: 'spendings/new', component: SpendingFormComponent },
       { path: 'users', component: UserListComponent, canActivate: [mainUserGuard] }
@@ -27,3 +29,4 @@ export const routes: Routes = [
   },
   { path: '', component: InitialCheckComponent }
 ];
+

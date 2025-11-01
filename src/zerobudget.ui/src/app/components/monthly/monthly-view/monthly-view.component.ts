@@ -31,7 +31,7 @@ export class MonthlyViewComponent implements OnInit {
   currentMonth = new Date().getMonth() + 1;
   selectedYear = this.currentYear;
   selectedMonth = this.currentMonth;
-  
+
   years: number[] = [];
   months = [
     { value: 1, name: 'January' },
@@ -50,7 +50,7 @@ export class MonthlyViewComponent implements OnInit {
 
   monthlyBuckets: MonthlyBucket[] = [];
   monthlySpendings: MonthlySpending[] = [];
-  
+
   bucketColumns: string[] = ['bucketName', 'limit', 'total', 'remaining'];
   spendingColumns: string[] = ['date', 'description', 'amount', 'owner'];
 
@@ -69,7 +69,7 @@ export class MonthlyViewComponent implements OnInit {
   }
 
   loadMonthlyData(): void {
-    this.monthlyService.getMonthlyBucketsByYearMonth(this.selectedYear, this.selectedMonth).subscribe({
+    this.monthlyService.getAllMonthlyBuckets(this.selectedYear, this.selectedMonth).subscribe({
       next: (buckets) => {
         this.monthlyBuckets = buckets;
       },
@@ -82,7 +82,7 @@ export class MonthlyViewComponent implements OnInit {
     const lastDay = new Date(this.selectedYear, this.selectedMonth, 0).getDate();
     const endDate = `${this.selectedYear}-${String(this.selectedMonth).padStart(2, '0')}-${lastDay}`;
 
-    this.monthlyService.getMonthlySpendingsByDateRange(startDate, endDate).subscribe({
+    this.monthlyService.getAllMonthlySpendings(undefined, undefined, undefined, startDate, endDate).subscribe({
       next: (spendings) => {
         this.monthlySpendings = spendings;
       },

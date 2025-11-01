@@ -27,7 +27,7 @@ public class MonthlyBucketController(IMessageBus messageBus) : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<MonthlyBucketDto>>> GetAll()
     {
-        var query = new GetAllMonthlyBucketsQuery();
+        var query = new GetMonthlyBucketsQuery();
         var result = await messageBus.InvokeAsync<IEnumerable<MonthlyBucketDto>>(query);
 
         return Ok(result);
@@ -36,7 +36,7 @@ public class MonthlyBucketController(IMessageBus messageBus) : ControllerBase
     [HttpGet("year/{year}/month/{month}")]
     public async Task<ActionResult<IEnumerable<MonthlyBucketDto>>> GetByYearMonth(short year, short month)
     {
-        var query = new GetMonthlyBucketsByYearMonthQuery(year, month);
+        var query = new GetMonthlyBucketsQuery(year, month);
         var result = await messageBus.InvokeAsync<IEnumerable<MonthlyBucketDto>>(query);
 
         return Ok(result);
@@ -45,7 +45,7 @@ public class MonthlyBucketController(IMessageBus messageBus) : ControllerBase
     [HttpGet("bucket/{bucketId}")]
     public async Task<ActionResult<IEnumerable<MonthlyBucketDto>>> GetByBucketId(int bucketId)
     {
-        var query = new GetMonthlyBucketsByBucketIdQuery(bucketId);
+        var query = new GetMonthlyBucketsQuery(BucketId: bucketId);
         var result = await messageBus.InvokeAsync<IEnumerable<MonthlyBucketDto>>(query);
 
         return Ok(result);

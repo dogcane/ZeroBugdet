@@ -34,7 +34,7 @@ public abstract class GenericCollectionQueryHandler<TEntity, TDto, TQuery, TRepo
         foreach (var queryProperty in properties)
         {
             var filterValue = queryProperty.GetValue(query);
-            
+
             // Skip null values (optional parameters not provided)
             if (filterValue == null)
                 continue;
@@ -42,19 +42,19 @@ public abstract class GenericCollectionQueryHandler<TEntity, TDto, TQuery, TRepo
             var propertyName = queryProperty.Name;
 
             // Special handling for date range filters (StartDate, EndDate)
-            if (propertyName.Equals("StartDate", StringComparison.OrdinalIgnoreCase) || 
+            if (propertyName.Equals("StartDate", StringComparison.OrdinalIgnoreCase) ||
                 propertyName.Equals("EndDate", StringComparison.OrdinalIgnoreCase))
             {
                 var actualPropertyName = "Date";
                 var actualProperty = typeof(TEntity).GetProperty(actualPropertyName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
-                
+
                 if (actualProperty != null && actualProperty.PropertyType == typeof(DateOnly))
                 {
                     var dateParameter = Expression.Parameter(typeof(TEntity), "x");
                     var actualPropertyAccess = Expression.Property(dateParameter, actualProperty);
                     var dateValue = (DateOnly)filterValue;
                     Expression dateComparison;
-                    
+
                     if (propertyName.Equals("StartDate", StringComparison.OrdinalIgnoreCase))
                     {
                         dateComparison = Expression.GreaterThanOrEqual(actualPropertyAccess, Expression.Constant(dateValue));
@@ -63,7 +63,7 @@ public abstract class GenericCollectionQueryHandler<TEntity, TDto, TQuery, TRepo
                     {
                         dateComparison = Expression.LessThanOrEqual(actualPropertyAccess, Expression.Constant(dateValue));
                     }
-                    
+
                     var dateLambda = Expression.Lambda<Func<TEntity, bool>>(dateComparison, dateParameter);
                     queryable = queryable.Where(dateLambda);
                 }
@@ -72,7 +72,7 @@ public abstract class GenericCollectionQueryHandler<TEntity, TDto, TQuery, TRepo
 
             // Find matching property in entity
             var entityProperty = typeof(TEntity).GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
-            
+
             if (entityProperty == null)
                 continue;
 
@@ -91,7 +91,7 @@ public abstract class GenericCollectionQueryHandler<TEntity, TDto, TQuery, TRepo
                     var valueExpression = Expression.Constant(stringValue, typeof(string));
                     var comparisonExpression = Expression.Constant(StringComparison.OrdinalIgnoreCase);
                     comparison = Expression.Call(propertyAccess, containsMethod, valueExpression, comparisonExpression);
-                    
+
                     var lambda = Expression.Lambda<Func<TEntity, bool>>(comparison, parameter);
                     queryable = queryable.Where(lambda);
                 }
@@ -128,135 +128,3 @@ public abstract class GenericCollectionQueryHandler<TEntity, TDto, TQuery, TRepo
     protected abstract TDto MapToDto(TEntity entity);
 }
 
-/// <summary>
-/// Generic query handler for Bucket entities
-/// Orders by Name ascending
-/// </summary>
-public class BucketCollectionQueryHandler : GenericCollectionQueryHandler<Bucket, BucketDto, BucketCollectionQuery, IBucketRepository>
-{
-    private readonly Mappers.BucketMapper _mapper = new();
-
-    public BucketCollectionQueryHandler(IBucketRepository repository, ILogger<BucketCollectionQueryHandler>? logger = null)
-        : base(repository, logger)
-    {
-    }
-
-    public async Task<IEnumerable<BucketDto>> Handle(BucketCollectionQuery query)
-    {
-        var queryable = Repository.AsQueryable();
-        queryable = ApplyFilters(queryable, query);
-        queryable = ApplyOrdering(queryable);
-        var result = queryable.Select(MapToDto).ToArray();
-        return await Task.FromResult(result);
-    }
-
-    protected override IQueryable<Bucket> ApplyOrdering(IQueryable<Bucket> query)
-    {
-        return query.OrderBy(b => b.Name);
-    }
-
-    protected override BucketDto MapToDto(Bucket entity)
-    {
-        return _mapper.ToDto(entity);
-    }
-}
-
-/// <summary>
-/// Generic query handler for MonthlyBucket entities
-/// Orders by Name ascending (via Bucket relationship, but we'll use Year/Month as proxy)
-/// </summary>
-public class MonthlyBucketCollectionQueryHandler : GenericCollectionQueryHandler<MonthlyBucket, MonthlyBucketDto, MonthlyBucketCollectionQuery, IMonthlyBucketRepository>
-{
-    private readonly Mappers.MonthlyBucketMapper _mapper = new();
-
-    public MonthlyBucketCollectionQueryHandler(IMonthlyBucketRepository repository, ILogger<MonthlyBucketCollectionQueryHandler>? logger = null)
-        : base(repository, logger)
-    {
-    }
-
-    public async Task<IEnumerable<MonthlyBucketDto>> Handle(MonthlyBucketCollectionQuery query)
-    {
-        var queryable = Repository.AsQueryable();
-        queryable = ApplyFilters(queryable, query);
-        queryable = ApplyOrdering(queryable);
-        var result = queryable.Select(MapToDto).ToArray();
-        return await Task.FromResult(result);
-    }
-
-    protected override IQueryable<MonthlyBucket> ApplyOrdering(IQueryable<MonthlyBucket> query)
-    {
-        // MonthlyBucket doesn't have Name property, order by Description which comes from Bucket
-        return query.OrderBy(mb => mb.Description);
-    }
-
-    protected override MonthlyBucketDto MapToDto(MonthlyBucket entity)
-    {
-        return _mapper.ToDto(entity);
-    }
-}
-
-/// <summary>
-/// Generic query handler for Spending entities
-/// Orders by Description ascending
-/// </summary>
-public class SpendingCollectionQueryHandler : GenericCollectionQueryHandler<Spending, SpendingDto, SpendingCollectionQuery, ISpendingRepository>
-{
-    private readonly Mappers.SpendingMapper _mapper = new();
-
-    public SpendingCollectionQueryHandler(ISpendingRepository repository, ILogger<SpendingCollectionQueryHandler>? logger = null)
-        : base(repository, logger)
-    {
-    }
-
-    public async Task<IEnumerable<SpendingDto>> Handle(SpendingCollectionQuery query)
-    {
-        var queryable = Repository.AsQueryable();
-        queryable = ApplyFilters(queryable, query);
-        queryable = ApplyOrdering(queryable);
-        var result = queryable.Select(MapToDto).ToArray();
-        return await Task.FromResult(result);
-    }
-
-    protected override IQueryable<Spending> ApplyOrdering(IQueryable<Spending> query)
-    {
-        return query.OrderBy(s => s.Description);
-    }
-
-    protected override SpendingDto MapToDto(Spending entity)
-    {
-        return _mapper.ToDto(entity);
-    }
-}
-
-/// <summary>
-/// Generic query handler for MonthlySpending entities
-/// Orders by Date descending
-/// </summary>
-public class MonthlySpendingCollectionQueryHandler : GenericCollectionQueryHandler<MonthlySpending, MonthlySpendingDto, MonthlySpendingCollectionQuery, IMonthlySpendingRepository>
-{
-    private readonly Mappers.MonthlySpendingMapper _mapper = new();
-
-    public MonthlySpendingCollectionQueryHandler(IMonthlySpendingRepository repository, ILogger<MonthlySpendingCollectionQueryHandler>? logger = null)
-        : base(repository, logger)
-    {
-    }
-
-    public async Task<IEnumerable<MonthlySpendingDto>> Handle(MonthlySpendingCollectionQuery query)
-    {
-        var queryable = Repository.AsQueryable();
-        queryable = ApplyFilters(queryable, query);
-        queryable = ApplyOrdering(queryable);
-        var result = queryable.Select(MapToDto).ToArray();
-        return await Task.FromResult(result);
-    }
-
-    protected override IQueryable<MonthlySpending> ApplyOrdering(IQueryable<MonthlySpending> query)
-    {
-        return query.OrderByDescending(ms => ms.Date);
-    }
-
-    protected override MonthlySpendingDto MapToDto(MonthlySpending entity)
-    {
-        return _mapper.ToDto(entity);
-    }
-}

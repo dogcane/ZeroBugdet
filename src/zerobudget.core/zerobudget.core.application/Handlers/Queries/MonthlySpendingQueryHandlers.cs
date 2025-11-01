@@ -20,57 +20,75 @@ public class GetMonthlySpendingByIdQueryHandler(IMonthlySpendingRepository month
     }
 }
 
-public class GetAllMonthlySpendingsQueryHandler(IMonthlySpendingRepository monthlySpendingRepository, ILogger<GetAllMonthlySpendingsQueryHandler>? logger = null)
+/// <summary>
+/// Query handler for GetMonthlySpendingsQuery
+/// Applies strongly-typed LINQ filters without reflection
+/// Orders by Date descending (most recent first)
+/// </summary>
+public class MonthlySpendingCollectionQueryHandler(IMonthlySpendingRepository repository, ILogger<MonthlySpendingCollectionQueryHandler>? logger = null)
 {
-    private readonly MonthlySpendingMapper _mapper = new();
+    private readonly Mappers.MonthlySpendingMapper _mapper = new();
 
-    public async Task<IEnumerable<MonthlySpendingDto>> Handle(GetAllMonthlySpendingsQuery query)
+    public async Task<IEnumerable<MonthlySpendingDto>> Handle(GetMonthlySpendingsQuery query)
     {
-        var monthlySpendings = monthlySpendingRepository.AsQueryable();
-        monthlySpendings = monthlySpendings.OrderByDescending(ms => ms.Date);
-        var result = monthlySpendings.Select(_mapper.ToDto).ToArray();
+        var queryable = repository.AsQueryable();
+        queryable = ApplyFilters(queryable, query);
+        queryable = ApplyOrdering(queryable);
+        var result = queryable.Select(MapToDto).ToArray();
         return await Task.FromResult(result);
     }
-}
 
-public class GetMonthlySpendingsByMonthlyBucketIdQueryHandler(IMonthlySpendingRepository monthlySpendingRepository, ILogger<GetMonthlySpendingsByMonthlyBucketIdQueryHandler>? logger = null)
-{
-    private readonly MonthlySpendingMapper _mapper = new();
-
-    public async Task<IEnumerable<MonthlySpendingDto>> Handle(GetMonthlySpendingsByMonthlyBucketIdQuery query)
+    /// <summary>
+    /// Apply LINQ filters directly based on GetMonthlySpendingsQuery properties
+    /// </summary>
+    private IQueryable<MonthlySpending> ApplyFilters(IQueryable<MonthlySpending> queryable, GetMonthlySpendingsQuery query)
     {
-        var monthlySpendings = monthlySpendingRepository.AsQueryable();
-        var filteredSpendings = monthlySpendings.Where(ms => ms.MonthlyBucketId == query.MonthlyBucketId);
-        filteredSpendings = filteredSpendings.OrderByDescending(ms => ms.Date);
-        var result = filteredSpendings.Select(_mapper.ToDto).ToArray();
-        return await Task.FromResult(result);
+        // Filter by MonthlyBucketId (exact match)
+        if (query.MonthlyBucketId.HasValue)
+        {
+            queryable = queryable.Where(ms => ms.MonthlyBucketId == query.MonthlyBucketId.Value);
+        }
+
+        // Filter by Description (case-insensitive contains search)
+        if (!string.IsNullOrWhiteSpace(query.Description))
+        {
+            queryable = queryable.Where(ms => ms.Description.Contains(query.Description, StringComparison.OrdinalIgnoreCase));
+        }
+
+        // Filter by Owner (case-insensitive exact match)
+        if (!string.IsNullOrWhiteSpace(query.Owner))
+        {
+            queryable = queryable.Where(ms => ms.Owner.Equals(query.Owner, StringComparison.OrdinalIgnoreCase));
+        }
+
+        // Filter by StartDate (greater than or equal)
+        if (query.StartDate.HasValue)
+        {
+            queryable = queryable.Where(ms => ms.Date >= query.StartDate.Value);
+        }
+
+        // Filter by EndDate (less than or equal)
+        if (query.EndDate.HasValue)
+        {
+            queryable = queryable.Where(ms => ms.Date <= query.EndDate.Value);
+        }
+
+        return queryable;
     }
-}
 
-public class GetMonthlySpendingsByDateRangeQueryHandler(IMonthlySpendingRepository monthlySpendingRepository, ILogger<GetMonthlySpendingsByDateRangeQueryHandler>? logger = null)
-{
-    private readonly MonthlySpendingMapper _mapper = new();
-
-    public async Task<IEnumerable<MonthlySpendingDto>> Handle(GetMonthlySpendingsByDateRangeQuery query)
+    /// <summary>
+    /// Apply ordering by Date descending (most recent first)
+    /// </summary>
+    private IQueryable<MonthlySpending> ApplyOrdering(IQueryable<MonthlySpending> query)
     {
-        var monthlySpendings = monthlySpendingRepository.AsQueryable();
-        var filteredSpendings = monthlySpendings.Where(ms => ms.Date >= query.StartDate && ms.Date <= query.EndDate);
-        filteredSpendings = filteredSpendings.OrderByDescending(ms => ms.Date);
-        var result = filteredSpendings.Select(_mapper.ToDto).ToArray();
-        return await Task.FromResult(result);
+        return query.OrderByDescending(ms => ms.Date);
     }
-}
 
-public class GetMonthlySpendingsByOwnerQueryHandler(IMonthlySpendingRepository monthlySpendingRepository, ILogger<GetMonthlySpendingsByOwnerQueryHandler>? logger = null)
-{
-    private readonly MonthlySpendingMapper _mapper = new();
-
-    public async Task<IEnumerable<MonthlySpendingDto>> Handle(GetMonthlySpendingsByOwnerQuery query)
+    /// <summary>
+    /// Convert MonthlySpending entity to MonthlySpendingDto
+    /// </summary>
+    private MonthlySpendingDto MapToDto(MonthlySpending entity)
     {
-        var monthlySpendings = monthlySpendingRepository.AsQueryable();
-        var filteredSpendings = monthlySpendings.Where(ms => ms.Owner.Equals(query.Owner, StringComparison.OrdinalIgnoreCase));
-        filteredSpendings = filteredSpendings.OrderByDescending(ms => ms.Date);
-        var result = filteredSpendings.Select(_mapper.ToDto).ToArray();
-        return await Task.FromResult(result);
+        return _mapper.ToDto(entity);
     }
 }

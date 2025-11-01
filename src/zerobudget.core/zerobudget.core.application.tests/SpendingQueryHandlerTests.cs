@@ -54,11 +54,11 @@ public class SpendingQueryHandlerTests
     }
 
     [Fact]
-    public async Task Handle_GetAllSpendingsQuery_ReturnsAllSpendings()
+    public async Task Handle_GetSpendingsQuery_NoFilters_ReturnsAllSpendings()
     {
         // Arrange
         var spendingRepository = new Mock<ISpendingRepository>();
-        var handler = new GetAllSpendingsQueryHandler(spendingRepository.Object);
+        var handler = new SpendingCollectionQueryHandler(spendingRepository.Object);
 
         var bucket = Bucket.Create("Test", "Description", 1000m).Value!;
         var spending1 = Spending.Create("Spending1", 100m, "Owner1", Array.Empty<Tag>(), bucket).Value!;
@@ -66,7 +66,7 @@ public class SpendingQueryHandlerTests
 
         spendingRepository.SetupAsQueryable<ISpendingRepository, Spending, int>(new[] { spending1, spending2 });
 
-        var query = new GetAllSpendingsQuery();
+        var query = new GetSpendingsQuery();
 
         // Act
         var result = await handler.Handle(query);
@@ -77,11 +77,11 @@ public class SpendingQueryHandlerTests
     }
 
     [Fact]
-    public async Task Handle_GetSpendingsByBucketIdQuery_ReturnsFilteredSpendings()
+    public async Task Handle_GetSpendingsQuery_WithFilters_ReturnsFilteredSpendings()
     {
         // Arrange
         var spendingRepository = new Mock<ISpendingRepository>();
-        var handler = new GetSpendingsByBucketIdQueryHandler(spendingRepository.Object);
+        var handler = new SpendingCollectionQueryHandler(spendingRepository.Object);
 
         var bucket1 = Bucket.Create("Test1", "Description1", 1000m).Value!.WithIdentity<Bucket, int>(1);
         var bucket2 = Bucket.Create("Test2", "Description2", 2000m).Value!.WithIdentity<Bucket, int>(2);
@@ -90,7 +90,7 @@ public class SpendingQueryHandlerTests
 
         spendingRepository.SetupAsQueryable<ISpendingRepository, Spending, int>(new[] { spending1, spending2 });
 
-        var query = new GetSpendingsByBucketIdQuery(bucket1.Identity);
+        var query = new GetSpendingsQuery(BucketId: bucket1.Identity);
 
         // Act
         var result = await handler.Handle(query);
@@ -102,11 +102,11 @@ public class SpendingQueryHandlerTests
     }
 
     [Fact]
-    public async Task Handle_GetSpendingsByOwnerQuery_ReturnsFilteredSpendings()
+    public async Task Handle_GetSpendingsQuery_WithOwnerFilter_ReturnsFilteredSpendings()
     {
         // Arrange
         var spendingRepository = new Mock<ISpendingRepository>();
-        var handler = new GetSpendingsByOwnerQueryHandler(spendingRepository.Object);
+        var handler = new SpendingCollectionQueryHandler(spendingRepository.Object);
 
         var bucket = Bucket.Create("Test", "Description", 1000m).Value!;
         var spending1 = Spending.Create("Spending1", 100m, "Owner1", Array.Empty<Tag>(), bucket).Value!;
@@ -115,7 +115,7 @@ public class SpendingQueryHandlerTests
         spendingRepository
             .SetupRepository<ISpendingRepository, Spending, int>([spending1, spending2]);
 
-        var query = new GetSpendingsByOwnerQuery("Owner1");
+        var query = new GetSpendingsQuery(Owner: "Owner1");
 
         // Act
         var result = await handler.Handle(query);

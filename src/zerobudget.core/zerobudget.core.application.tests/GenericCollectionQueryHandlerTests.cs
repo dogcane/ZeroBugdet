@@ -16,14 +16,14 @@ public class GenericCollectionQueryHandlerTests
     {
         // Arrange
         var bucketRepository = new Mock<IBucketRepository>();
-        var handler = new BucketCollectionQueryHandler(bucketRepository.Object);
+        var handler = new GetBucketsQueryHandler(bucketRepository.Object);
 
         var bucket1 = Bucket.Create("Zebra Bucket", "Description Z", 1000m).Value!;
         var bucket2 = Bucket.Create("Alpha Bucket", "Description A", 2000m).Value!;
         var bucket3 = Bucket.Create("Beta Bucket", "Description B", 3000m).Value!;
         var buckets = new[] { bucket1, bucket2, bucket3 };
 
-        var query = new BucketCollectionQuery();
+        var query = new GetBucketsQuery();
 
         bucketRepository.SetupAsQueryable<IBucketRepository, Bucket, int>(buckets);
 
@@ -44,14 +44,14 @@ public class GenericCollectionQueryHandlerTests
     {
         // Arrange
         var bucketRepository = new Mock<IBucketRepository>();
-        var handler = new BucketCollectionQueryHandler(bucketRepository.Object);
+        var handler = new GetBucketsQueryHandler(bucketRepository.Object);
 
         var bucket1 = Bucket.Create("Test Bucket 1", "Description 1", 1000m).Value!;
         var bucket2 = Bucket.Create("Test Bucket 2", "Description 2", 2000m).Value!;
         var bucket3 = Bucket.Create("Other Bucket", "Description 3", 3000m).Value!;
         var buckets = new[] { bucket1, bucket2, bucket3 };
 
-        var query = new BucketCollectionQuery(Name: "Test");
+        var query = new GetBucketsQuery(Name: "Test");
 
         bucketRepository.SetupAsQueryable<IBucketRepository, Bucket, int>(buckets);
 
@@ -69,14 +69,14 @@ public class GenericCollectionQueryHandlerTests
     {
         // Arrange
         var bucketRepository = new Mock<IBucketRepository>();
-        var handler = new BucketCollectionQueryHandler(bucketRepository.Object);
+        var handler = new GetBucketsQueryHandler(bucketRepository.Object);
 
         var bucket1 = Bucket.Create("Bucket 1", "Description 1", 1000m).Value!;
         var bucket2 = Bucket.Create("Bucket 2", "Description 2", 2000m).Value!;
         bucket2.Disable();
         var buckets = new[] { bucket1, bucket2 };
 
-        var query = new BucketCollectionQuery(Enabled: true);
+        var query = new GetBucketsQuery(Enabled: true);
 
         bucketRepository.SetupAsQueryable<IBucketRepository, Bucket, int>(buckets);
 
@@ -102,12 +102,12 @@ public class GenericCollectionQueryHandlerTests
 
         var bucket1 = Bucket.Create("Bucket 1", "Zebra Description", 1000m).Value!;
         var bucket2 = Bucket.Create("Bucket 2", "Alpha Description", 2000m).Value!;
-        
+
         var mb1 = bucket1.CreateMonthly(2024, 1).Value!;
         var mb2 = bucket2.CreateMonthly(2024, 1).Value!;
         var monthlyBuckets = new[] { mb1, mb2 };
 
-        var query = new MonthlyBucketCollectionQuery();
+        var query = new GetMonthlyBucketsQuery();
 
         monthlyBucketRepository.SetupAsQueryable<IMonthlyBucketRepository, MonthlyBucket, int>(monthlyBuckets);
 
@@ -134,7 +134,7 @@ public class GenericCollectionQueryHandlerTests
         var mb2 = bucket.CreateMonthly(2023, 1).Value!;
         var monthlyBuckets = new[] { mb1, mb2 };
 
-        var query = new MonthlyBucketCollectionQuery(Year: (short)2024);
+        var query = new GetMonthlyBucketsQuery(Year: (short)2024);
 
         monthlyBucketRepository.SetupAsQueryable<IMonthlyBucketRepository, MonthlyBucket, int>(monthlyBuckets);
 
@@ -160,7 +160,7 @@ public class GenericCollectionQueryHandlerTests
         var mb3 = bucket.CreateMonthly(2023, 1).Value!;
         var monthlyBuckets = new[] { mb1, mb2, mb3 };
 
-        var query = new MonthlyBucketCollectionQuery(Year: (short)2024, Month: (short)1);
+        var query = new GetMonthlyBucketsQuery(Year: (short)2024, Month: (short)1);
 
         monthlyBucketRepository.SetupAsQueryable<IMonthlyBucketRepository, MonthlyBucket, int>(monthlyBuckets);
 
@@ -192,7 +192,7 @@ public class GenericCollectionQueryHandlerTests
         var spending3 = Spending.Create("Beta Expense", 300m, "Owner3", [], bucket).Value!;
         var spendings = new[] { spending1, spending2, spending3 };
 
-        var query = new SpendingCollectionQuery();
+        var query = new GetSpendingsQuery();
 
         spendingRepository.SetupAsQueryable<ISpendingRepository, Spending, int>(spendings);
 
@@ -221,7 +221,7 @@ public class GenericCollectionQueryHandlerTests
         var spending3 = Spending.Create("Grocery Store", 75m, "Owner3", [], bucket).Value!;
         var spendings = new[] { spending1, spending2, spending3 };
 
-        var query = new SpendingCollectionQuery(Description: "Grocery");
+        var query = new GetSpendingsQuery(Description: "Grocery");
 
         spendingRepository.SetupAsQueryable<ISpendingRepository, Spending, int>(spendings);
 
@@ -247,7 +247,7 @@ public class GenericCollectionQueryHandlerTests
         var spending3 = Spending.Create("Expense 3", 75m, "john@example.com", [], bucket).Value!;
         var spendings = new[] { spending1, spending2, spending3 };
 
-        var query = new SpendingCollectionQuery(Owner: "john");
+        var query = new GetSpendingsQuery(Owner: "john");
 
         spendingRepository.SetupAsQueryable<ISpendingRepository, Spending, int>(spendings);
 
@@ -273,13 +273,13 @@ public class GenericCollectionQueryHandlerTests
 
         var bucket = Bucket.Create("Test Bucket", "Description", 1000m).Value!;
         var monthlyBucket = bucket.CreateMonthly(2024, 1).Value!;
-        
+
         var spending1 = MonthlySpending.Create(new DateOnly(2024, 1, 1), "Expense 1", 100m, "Owner", [], monthlyBucket).Value!;
         var spending2 = MonthlySpending.Create(new DateOnly(2024, 1, 15), "Expense 2", 200m, "Owner", [], monthlyBucket).Value!;
         var spending3 = MonthlySpending.Create(new DateOnly(2024, 1, 10), "Expense 3", 300m, "Owner", [], monthlyBucket).Value!;
         var monthlySpendings = new[] { spending1, spending2, spending3 };
 
-        var query = new MonthlySpendingCollectionQuery();
+        var query = new GetMonthlySpendingsQuery();
 
         monthlySpendingRepository.SetupAsQueryable<IMonthlySpendingRepository, MonthlySpending, int>(monthlySpendings);
 
@@ -304,13 +304,13 @@ public class GenericCollectionQueryHandlerTests
 
         var bucket = Bucket.Create("Test Bucket", "Description", 1000m).Value!;
         var monthlyBucket = bucket.CreateMonthly(2024, 1).Value!;
-        
+
         var spending1 = MonthlySpending.Create(new DateOnly(2024, 1, 5), "Expense 1", 100m, "Owner", [], monthlyBucket).Value!;
         var spending2 = MonthlySpending.Create(new DateOnly(2024, 1, 15), "Expense 2", 200m, "Owner", [], monthlyBucket).Value!;
         var spending3 = MonthlySpending.Create(new DateOnly(2024, 1, 25), "Expense 3", 300m, "Owner", [], monthlyBucket).Value!;
         var monthlySpendings = new[] { spending1, spending2, spending3 };
 
-        var query = new MonthlySpendingCollectionQuery(
+        var query = new GetMonthlySpendingsQuery(
             StartDate: new DateOnly(2024, 1, 10),
             EndDate: new DateOnly(2024, 1, 20)
         );
@@ -335,13 +335,13 @@ public class GenericCollectionQueryHandlerTests
 
         var bucket = Bucket.Create("Test Bucket", "Description", 1000m).Value!;
         var monthlyBucket = bucket.CreateMonthly(2024, 1).Value!;
-        
+
         var spending1 = MonthlySpending.Create(new DateOnly(2024, 1, 1), "Expense 1", 100m, "john@example.com", [], monthlyBucket).Value!;
         var spending2 = MonthlySpending.Create(new DateOnly(2024, 1, 2), "Expense 2", 200m, "jane@example.com", [], monthlyBucket).Value!;
         var spending3 = MonthlySpending.Create(new DateOnly(2024, 1, 3), "Expense 3", 300m, "john@example.com", [], monthlyBucket).Value!;
         var monthlySpendings = new[] { spending1, spending2, spending3 };
 
-        var query = new MonthlySpendingCollectionQuery(Owner: "john");
+        var query = new GetMonthlySpendingsQuery(Owner: "john");
 
         monthlySpendingRepository.SetupAsQueryable<IMonthlySpendingRepository, MonthlySpending, int>(monthlySpendings);
 

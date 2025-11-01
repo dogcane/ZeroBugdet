@@ -27,7 +27,7 @@ public class MonthlySpendingController(IMessageBus messageBus) : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<MonthlySpendingDto>>> GetAll()
     {
-        var query = new GetAllMonthlySpendingsQuery();
+        var query = new GetMonthlySpendingsQuery();
         var result = await messageBus.InvokeAsync<IEnumerable<MonthlySpendingDto>>(query);
 
         return Ok(result);
@@ -36,7 +36,7 @@ public class MonthlySpendingController(IMessageBus messageBus) : ControllerBase
     [HttpGet("monthly-bucket/{monthlyBucketId}")]
     public async Task<ActionResult<IEnumerable<MonthlySpendingDto>>> GetByMonthlyBucketId(int monthlyBucketId)
     {
-        var query = new GetMonthlySpendingsByMonthlyBucketIdQuery(monthlyBucketId);
+        var query = new GetMonthlySpendingsQuery(MonthlyBucketId: monthlyBucketId);
         var result = await messageBus.InvokeAsync<IEnumerable<MonthlySpendingDto>>(query);
 
         return Ok(result);
@@ -47,7 +47,7 @@ public class MonthlySpendingController(IMessageBus messageBus) : ControllerBase
         [FromQuery] DateOnly startDate,
         [FromQuery] DateOnly endDate)
     {
-        var query = new GetMonthlySpendingsByDateRangeQuery(startDate, endDate);
+        var query = new GetMonthlySpendingsQuery(StartDate: startDate, EndDate: endDate);
         var result = await messageBus.InvokeAsync<IEnumerable<MonthlySpendingDto>>(query);
 
         return Ok(result);
@@ -56,7 +56,7 @@ public class MonthlySpendingController(IMessageBus messageBus) : ControllerBase
     [HttpGet("owner/{owner}")]
     public async Task<ActionResult<IEnumerable<MonthlySpendingDto>>> GetByOwner(string owner)
     {
-        var query = new GetMonthlySpendingsByOwnerQuery(owner);
+        var query = new GetMonthlySpendingsQuery(Owner: owner);
         var result = await messageBus.InvokeAsync<IEnumerable<MonthlySpendingDto>>(query);
 
         return Ok(result);

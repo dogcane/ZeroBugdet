@@ -25,33 +25,59 @@ public class GetBucketByIdQueryHandler(IBucketRepository bucketRepository, ILogg
         return _mapper.ToDto(bucket);
     }
 }
-
 /// <summary>
-/// Handler for GetBucketsByNameQuery
+/// Query handler for GetBucketsQuery
+/// Applies strongly-typed LINQ filters without reflection
 /// </summary>
-public class GetBucketsByNameQueryHandler(IBucketRepository bucketRepository, ILogger<GetBucketsByNameQueryHandler>? logger = null)
+public class GetBucketsQueryHandler(IBucketRepository repository, ILogger<GetBucketsQueryHandler>? logger = null)
 {
-    private readonly BucketMapper _mapper = new();
+    private readonly Mappers.BucketMapper _mapper = new();
 
-    public async Task<IEnumerable<BucketDto>> Handle(GetBucketsByNameQuery query)
+    public async Task<IEnumerable<BucketDto>> Handle(GetBucketsQuery query)
     {
-        using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
-        var buckets = bucketRepository.AsQueryable();
+        var queryable = repository.AsQueryable();
+        queryable = ApplyFilters(queryable, query);
+        queryable = ApplyOrdering(queryable);
+        var result = queryable.Select(MapToDto).ToArray();
+        return await Task.FromResult(result);
+    }
+
+    /// <summary>
+    /// Apply LINQ filters directly based on GetBucketsQuery properties
+    /// </summary>
+    private IQueryable<Bucket> ApplyFilters(IQueryable<Bucket> queryable, GetBucketsQuery query)
+    {
+        // Filter by Name (case-insensitive contains search)
         if (!string.IsNullOrWhiteSpace(query.Name))
         {
-            buckets = buckets.Where(b => b.Name.Contains(query.Name, StringComparison.OrdinalIgnoreCase));
+            queryable = queryable.Where(b => b.Name.Contains(query.Name, StringComparison.OrdinalIgnoreCase));
         }
+
+        // Filter by Description (case-insensitive contains search)
         if (!string.IsNullOrWhiteSpace(query.Description))
         {
-            buckets = buckets.Where(b => b.Description.Contains(query.Description, StringComparison.OrdinalIgnoreCase));
+            queryable = queryable.Where(b => b.Description.Contains(query.Description, StringComparison.OrdinalIgnoreCase));
         }
-        if (query.Enabled)
-        {
-            buckets = buckets.Where(b => b.Enabled);
-        }
-        buckets = buckets.OrderBy(b => b.Name);
-        var result = buckets.Select(_mapper.ToDto).ToArray();
-        scope.Complete();
-        return await Task.FromResult(result);
+
+        // Filter by Enabled (exact match)
+        queryable = queryable.Where(b => b.Enabled == query.Enabled);
+
+        return queryable;
+    }
+
+    /// <summary>
+    /// Apply ordering by Name ascending
+    /// </summary>
+    private IQueryable<Bucket> ApplyOrdering(IQueryable<Bucket> query)
+    {
+        return query.OrderBy(b => b.Name);
+    }
+
+    /// <summary>
+    /// Convert Bucket entity to BucketDto
+    /// </summary>
+    private BucketDto MapToDto(Bucket entity)
+    {
+        return _mapper.ToDto(entity);
     }
 }

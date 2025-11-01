@@ -19,43 +19,69 @@ public class GetSpendingByIdQueryHandler(ISpendingRepository spendingRepository,
     }
 }
 
-public class GetAllSpendingsQueryHandler(ISpendingRepository spendingRepository, ILogger<GetAllSpendingsQueryHandler>? logger = null)
+/// <summary>
+/// Query handler for GetSpendingsQuery
+/// Applies strongly-typed LINQ filters without reflection
+/// Orders by Description ascending
+/// </summary>
+public class SpendingCollectionQueryHandler(ISpendingRepository repository, ILogger<SpendingCollectionQueryHandler>? logger = null)
 {
-    private readonly SpendingMapper _mapper = new();
+    private readonly Mappers.SpendingMapper _mapper = new();
 
-    public async Task<IEnumerable<SpendingDto>> Handle(GetAllSpendingsQuery query)
+    public async Task<IEnumerable<SpendingDto>> Handle(GetSpendingsQuery query)
     {
-        var spendings = spendingRepository.AsQueryable();
-        spendings = spendings.OrderBy(s => s.Description);
-        var result = spendings.Select(_mapper.ToDto).ToArray();
+        var queryable = repository.AsQueryable();
+        queryable = ApplyFilters(queryable, query);
+        queryable = ApplyOrdering(queryable);
+        var result = queryable.Select(MapToDto).ToArray();
         return await Task.FromResult(result);
     }
-}
 
-public class GetSpendingsByBucketIdQueryHandler(ISpendingRepository spendingRepository, ILogger<GetSpendingsByBucketIdQueryHandler>? logger = null)
-{
-    private readonly SpendingMapper _mapper = new();
-
-    public async Task<IEnumerable<SpendingDto>> Handle(GetSpendingsByBucketIdQuery query)
+    /// <summary>
+    /// Apply LINQ filters directly based on GetSpendingsQuery properties
+    /// </summary>
+    private IQueryable<Spending> ApplyFilters(IQueryable<Spending> queryable, GetSpendingsQuery query)
     {
-        var spendings = spendingRepository.AsQueryable();
-        var filteredSpendings = spendings.Where(s => s.BucketId == query.BucketId);
-        filteredSpendings = filteredSpendings.OrderBy(s => s.Description);
-        var result = filteredSpendings.Select(_mapper.ToDto).ToArray();
-        return await Task.FromResult(result);
+        // Filter by BucketId (exact match)
+        if (query.BucketId.HasValue)
+        {
+            queryable = queryable.Where(s => s.BucketId == query.BucketId.Value);
+        }
+
+        // Filter by Description (case-insensitive contains search)
+        if (!string.IsNullOrWhiteSpace(query.Description))
+        {
+            queryable = queryable.Where(s => s.Description.Contains(query.Description, StringComparison.OrdinalIgnoreCase));
+        }
+
+        // Filter by Owner (case-insensitive exact match)
+        if (!string.IsNullOrWhiteSpace(query.Owner))
+        {
+            queryable = queryable.Where(s => s.Owner.Equals(query.Owner, StringComparison.OrdinalIgnoreCase));
+        }
+
+        // Filter by Enabled (exact match)
+        if (query.Enabled.HasValue)
+        {
+            queryable = queryable.Where(s => s.Enabled == query.Enabled.Value);
+        }
+
+        return queryable;
     }
-}
 
-public class GetSpendingsByOwnerQueryHandler(ISpendingRepository spendingRepository, ILogger<GetSpendingsByOwnerQueryHandler>? logger = null)
-{
-    private readonly SpendingMapper _mapper = new();
-
-    public async Task<IEnumerable<SpendingDto>> Handle(GetSpendingsByOwnerQuery query)
+    /// <summary>
+    /// Apply ordering by Description ascending
+    /// </summary>
+    private IQueryable<Spending> ApplyOrdering(IQueryable<Spending> query)
     {
-        var spendings = spendingRepository.AsQueryable();
-        var filteredSpendings = spendings.Where(s => s.Owner.Equals(query.Owner, StringComparison.OrdinalIgnoreCase));
-        filteredSpendings = filteredSpendings.OrderBy(s => s.Description);
-        var result = filteredSpendings.Select(_mapper.ToDto).ToArray();
-        return await Task.FromResult(result);
+        return query.OrderBy(s => s.Description);
+    }
+
+    /// <summary>
+    /// Convert Spending entity to SpendingDto
+    /// </summary>
+    private SpendingDto MapToDto(Spending entity)
+    {
+        return _mapper.ToDto(entity);
     }
 }

@@ -52,17 +52,8 @@ export class BucketListComponent implements OnInit {
     });
   }
 
-  openCreateDialog(): void {
-    const dialogRef = this.dialog.open(BucketFormComponent, {
-      width: '500px',
-      data: { bucket: null }
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.loadBuckets();
-      }
-    });
+  openCreatePage(): void {
+    this.router.navigate(['/buckets/new']);
   }
 
   openEditDialog(bucket: Bucket): void {

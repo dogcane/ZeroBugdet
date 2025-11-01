@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { MonthlyBucket, MonthlySpending, GenerateMonthlyDataRequest } from '../models/monthly.model';
 import { environment } from '../../environments/environment';
@@ -11,49 +11,74 @@ export class MonthlyService {
   private bucketApiUrl = `${environment.apiUrl}/monthlybucket`;
   private spendingApiUrl = `${environment.apiUrl}/monthlyspending`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
-  // Monthly Buckets
+  // ===== Monthly Buckets =====
+
   getMonthlyBucketById(id: number): Observable<MonthlyBucket> {
     return this.http.get<MonthlyBucket>(`${this.bucketApiUrl}/${id}`);
   }
 
-  getAllMonthlyBuckets(): Observable<MonthlyBucket[]> {
-    return this.http.get<MonthlyBucket[]>(this.bucketApiUrl);
-  }
+  /**
+   * Get monthly buckets with optional filters for year, month, bucketId, and description
+   * Uses GetMonthlyBucketsQuery handler with optional parameters
+   */
+  getAllMonthlyBuckets(year?: number, month?: number, bucketId?: number, description?: string): Observable<MonthlyBucket[]> {
+    let params = new HttpParams();
 
-  getMonthlyBucketsByYearMonth(year: number, month: number): Observable<MonthlyBucket[]> {
-    return this.http.get<MonthlyBucket[]>(`${this.bucketApiUrl}/year/${year}/month/${month}`);
-  }
+    if (year !== undefined) {
+      params = params.set('year', year.toString());
+    }
+    if (month !== undefined) {
+      params = params.set('month', month.toString());
+    }
+    if (bucketId !== undefined) {
+      params = params.set('bucketId', bucketId.toString());
+    }
+    if (description !== undefined && description.length > 0) {
+      params = params.set('description', description);
+    }
 
-  getMonthlyBucketsByBucketId(bucketId: number): Observable<MonthlyBucket[]> {
-    return this.http.get<MonthlyBucket[]>(`${this.bucketApiUrl}/bucket/${bucketId}`);
+    return this.http.get<MonthlyBucket[]>(this.bucketApiUrl, { params });
   }
 
   generateMonthlyData(request: GenerateMonthlyDataRequest): Observable<void> {
     return this.http.post<void>(`${this.bucketApiUrl}/generate`, request);
   }
 
-  // Monthly Spendings
+  // ===== Monthly Spendings =====
+
   getMonthlySpendingById(id: number): Observable<MonthlySpending> {
     return this.http.get<MonthlySpending>(`${this.spendingApiUrl}/${id}`);
   }
 
-  getAllMonthlySpendings(): Observable<MonthlySpending[]> {
-    return this.http.get<MonthlySpending[]>(this.spendingApiUrl);
-  }
+  /**
+   * Get monthly spendings with optional filters for monthlyBucketId, description, owner, and date range
+   * Uses GetMonthlySpendingsQuery handler with optional parameters
+   */
+  getAllMonthlySpendings(monthlyBucketId?: number, description?: string, owner?: string, startDate?: DateOnly, endDate?: DateOnly): Observable<MonthlySpending[]> {
+    let params = new HttpParams();
 
-  getMonthlySpendingsByMonthlyBucketId(monthlyBucketId: number): Observable<MonthlySpending[]> {
-    return this.http.get<MonthlySpending[]>(`${this.spendingApiUrl}/monthly-bucket/${monthlyBucketId}`);
-  }
+    if (monthlyBucketId !== undefined) {
+      params = params.set('monthlyBucketId', monthlyBucketId.toString());
+    }
+    if (description !== undefined && description.length > 0) {
+      params = params.set('description', description);
+    }
+    if (owner !== undefined && owner.length > 0) {
+      params = params.set('owner', owner);
+    }
+    if (startDate !== undefined) {
+      params = params.set('startDate', startDate.toString());
+    }
+    if (endDate !== undefined) {
+      params = params.set('endDate', endDate.toString());
+    }
 
-  getMonthlySpendingsByDateRange(startDate: string, endDate: string): Observable<MonthlySpending[]> {
-    return this.http.get<MonthlySpending[]>(`${this.spendingApiUrl}/date-range`, {
-      params: { startDate, endDate }
-    });
-  }
-
-  getMonthlySpendingsByOwner(owner: string): Observable<MonthlySpending[]> {
-    return this.http.get<MonthlySpending[]>(`${this.spendingApiUrl}/owner/${owner}`);
+    return this.http.get<MonthlySpending[]>(this.spendingApiUrl, { params });
   }
 }
+
+// Type alias for DateOnly - represents a date without time component
+type DateOnly = string; // Format: YYYY-MM-DD
+
