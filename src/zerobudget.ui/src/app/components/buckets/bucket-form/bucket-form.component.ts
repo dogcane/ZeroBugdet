@@ -53,7 +53,7 @@ export class BucketFormComponent implements OnInit {
     });
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void { }
 
   onSubmit(): void {
     if (this.bucketForm.valid) {

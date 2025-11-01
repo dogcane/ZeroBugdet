@@ -56,7 +56,8 @@
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Default Limit</mat-label>
             <input matInput type="number" formControlName="defaultLimit" placeholder="0.00">
-            <mat-error *ngIf="bucketForm.get('defaultLimit')?.hasError('required')">Default limit is required</mat-error>
+            <mat-error *ngIf="bucketForm.get('defaultLimit')?.hasError('required')">Default limit is
+              required</mat-error>
             <mat-error *ngIf="bucketForm.get('defaultLimit')?.hasError('min')">Must be a positive number</mat-error>
           </mat-form-field>
 
