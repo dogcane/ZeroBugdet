@@ -27,6 +27,7 @@ public class GetAllMonthlySpendingsQueryHandler(IMonthlySpendingRepository month
     public async Task<IEnumerable<MonthlySpendingDto>> Handle(GetAllMonthlySpendingsQuery query)
     {
         var monthlySpendings = monthlySpendingRepository.AsQueryable();
+        monthlySpendings = monthlySpendings.OrderByDescending(ms => ms.Date);
         var result = monthlySpendings.Select(_mapper.ToDto).ToArray();
         return await Task.FromResult(result);
     }
@@ -40,6 +41,7 @@ public class GetMonthlySpendingsByMonthlyBucketIdQueryHandler(IMonthlySpendingRe
     {
         var monthlySpendings = monthlySpendingRepository.AsQueryable();
         var filteredSpendings = monthlySpendings.Where(ms => ms.MonthlyBucketId == query.MonthlyBucketId);
+        filteredSpendings = filteredSpendings.OrderByDescending(ms => ms.Date);
         var result = filteredSpendings.Select(_mapper.ToDto).ToArray();
         return await Task.FromResult(result);
     }
@@ -53,6 +55,7 @@ public class GetMonthlySpendingsByDateRangeQueryHandler(IMonthlySpendingReposito
     {
         var monthlySpendings = monthlySpendingRepository.AsQueryable();
         var filteredSpendings = monthlySpendings.Where(ms => ms.Date >= query.StartDate && ms.Date <= query.EndDate);
+        filteredSpendings = filteredSpendings.OrderByDescending(ms => ms.Date);
         var result = filteredSpendings.Select(_mapper.ToDto).ToArray();
         return await Task.FromResult(result);
     }
@@ -66,6 +69,7 @@ public class GetMonthlySpendingsByOwnerQueryHandler(IMonthlySpendingRepository m
     {
         var monthlySpendings = monthlySpendingRepository.AsQueryable();
         var filteredSpendings = monthlySpendings.Where(ms => ms.Owner.Equals(query.Owner, StringComparison.OrdinalIgnoreCase));
+        filteredSpendings = filteredSpendings.OrderByDescending(ms => ms.Date);
         var result = filteredSpendings.Select(_mapper.ToDto).ToArray();
         return await Task.FromResult(result);
     }
